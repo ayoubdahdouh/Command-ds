@@ -7,121 +7,145 @@
 #include "format_column.h"
 #include "common.h"
 #include "format_long.h"
+#include "list.h"
 
-void column_display(char **tb, int *tb_max, int c, int l, int tbsiz, char **tb2, int *tb2_max)
+void column_display(LIST l, int *ls, int *lm, char **tb, int *ts, int *tm, int cl, int ln)
 {
-    struct stat s;
-    int tmp;
+    int x;
+    lftype t;
 
-    for (int i = 0; i < l; i++)
+    for (int i = 0; i < ln; i++)
     {
-        for (int j = 0; j < c && j * l + i < tbsiz; j++)
-        { // if options -s, -p, -m, -u or -g is set
-            // then call "func" to printout the size, the permissions, the modification time, etc...
-            if (tb2)
+        for (int j = 0; j < cl; j++)
+        {
+            x = j * ln + i;
+            if (x < l->count)
             {
-                long_selector(tb2[j * l + i], tb2_max[j] - 1);
-            }
-            strcpy(&path[pathsiz], tb[j * l + i]);
-            lf_stat(path, &s);
-            lf_print(tb[j * l + i], &s.st_mode);
-            tmp = tb_max[j] - strlen(tb[j * l + i]);
-            for (int k = 0; k < tmp; k++)
-            { // the +1 is for the last space between columns.
-                printf(" ");
-            }
-
-            if (j != tbsiz - 1)
-            { // don't add space at the last column
-                printf("  ");
+                // if options -s, -p, -m, -u or -g is set
+                // then call "func" to printout the size, the permissions, the modification time, etc...
+                t = (lftype)LGET(l, x);
+                if (tb)
+                {
+                    long_print(tb[x], tm[j] - 1, 1);
+                }
+                lf_print(t->name, &t->st.st_mode, 0);
+                x = lm[j] - ls[x];
+                for (int k = 0; k < x; k++)
+                { // the +1 is for the last space between columns.
+                    printf(" ");
+                }
+                if (j != cl - 1)
+                { // don't add space at the last column
+                    printf("  ");
+                }
             }
         }
         printf("\n");
     }
 }
 
-void column_main(char **tb, char **tb2, int tbsiz)
+void column_main(LIST l, char **tb)
 {
     struct winsize w;
-    int c = tbsiz, l = 1, winsiz, ok = 0, cnt;
-    int *tb_sizes, *tb_max;
-    int *tb2_sizes = NULL, *tb2_max = NULL;
-    int tmp, tmp2 = 0;
+    int cl = l->count, ln = 1, winsiz, ok = 0, cnt;
+    int *ls;        // list sizes
+    int *lm;        // list max sizes
+    int *ts = NULL; // array sizes of "tb"
+    int *tm = NULL; // array max sizes of "tb"
+    int x, y = 0;
+    ITERATOR it;
+    lftype t;
+    int k;
 
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     winsiz = w.ws_col;
-    tb_sizes = (int *)lf_malloc(sizeof(int) * tbsiz);
-    tb_max = (int *)lf_malloc(sizeof(int) * tbsiz);
-    if (tb2)
+    ls = (int *)lfalloc(sizeof(int) * l->count);
+    lm = (int *)lfalloc(sizeof(int) * l->count);
+    if (tb)
     {
-        tb2_sizes = (int *)lf_malloc(sizeof(int) * tbsiz);
-        tb2_max = (int *)lf_malloc(sizeof(int) * tbsiz);
+        ts = (int *)lfalloc(sizeof(int) * l->count);
+        tm = (int *)lfalloc(sizeof(int) * l->count);
     }
     // length of each name.
-    for (int i = 0; i < tbsiz; i++)
+    it = LAT(l, LFIRST);
+    for (int i = 0; i < l->count; i++)
     {
-        if (has_space(tb[i]))
+        t = (lftype)it->data;
+        if (has_space(t->name))
         { // if name has space add +2, for the ""
-            tb_sizes[i] = strlen(tb[i]) + 2;
+            ls[i] = strlen(t->name) + 2;
         }
         else
         {
-            tb_sizes[i] = strlen(tb[i]);
+            ls[i] = strlen(t->name);
         }
-        if (tb2)
+        if (S_ISDIR(t->st.st_mode) && !opt.c)
         {
-            tb2_sizes[i] = strlen(tb2[i]) + 1; // +1 for space between tb and tb2
+            ls[i] += 1;
         }
+        if (tb)
+        {
+            ts[i] = strlen(tb[i]) + 1; // +1 for space between "tb" and "l"
+        }
+        LINC(&it);
     }
     while (!ok)
     {
         cnt = 0;
-        for (int i = 0; i < c; i++)
+        for (int i = 0; i < cl; i++)
         { // for each column "i", calculates the maximum of that column
-            tmp = tb_sizes[i * l];
-            if (tb2)
+            x = ls[i * ln];
+            if (tb)
             {
-                tmp2 = tb2_sizes[i * l];
+                y = ts[i * ln];
             }
-            for (int j = 1; j < l && i * l + j < tbsiz; j++)
+            for (int j = 1; j < ln; j++)
             {
-                if (tb_sizes[i * l + j] > tmp)
+                k = i * ln + j;
+                if (k < l->count)
                 {
-                    tmp = tb_sizes[i * l + j];
-                }
-                if (tb2 && (tb2_sizes[i * l + j] > tmp2))
-                {
-                    tmp2 = tb2_sizes[i * l + j];
+                    if (ls[k] > x)
+                    {
+                        x = ls[k];
+                    }
+                    if (tb && (ts[k] > y))
+                    {
+                        y = ts[k];
+                    }
                 }
             }
-            cnt += tmp + tmp2;
-            tb_max[i] = tmp;
-            if (tb2)
+            if (tb)
             {
-                tb2_max[i] = tmp2;
+                tm[i] = y;
+                cnt += x + y;
             }
+            else
+            {
+                cnt += x;
+            }
+            lm[i] = x;
         }
-        cnt += 2 * (c - 1); // space between columns
-        if (cnt < winsiz)
+        cnt += 2 * (cl - 1); // space between columns
+        if (cnt <= winsiz)
         {
             ok = 1;
         }
         else
         {
-            c--;
-            if (tbsiz % c)
+            cl--;
+            if (l->count % cl)
             {
-                l = tbsiz / c + 1;
+                ln = l->count / cl + 1;
             }
             else
             {
-                l = tbsiz / c;
+                ln = l->count / cl;
             }
         }
     }
-    free(tb_sizes);
-    free(tb2_sizes);
-    column_display(tb, tb_max, c, l, tbsiz, tb2, tb2_max);
-    free(tb_max);
-    free(tb2_max);
+    column_display(l, ls, lm, tb, ts, tm, cl, ln);
+    free(ls);
+    free(ts);
+    free(lm);
+    free(tm);
 }

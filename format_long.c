@@ -10,133 +10,138 @@
 #include "common.h"
 #include "format_column.h"
 
-void long_selector(char *fname, int max)
-{
-    int tmp = max - strlen(fname);
-    if (opt.s)
+void long_print(char *fn, int m, int f)
+{ // flag  is used to adjust the data (suffix/prefix)
+    int x = m - strlen(fn);
+
+    if (f)
     {
-        for (int i = 0; i < tmp; i++)
+        for (int i = 0; i < x; i++)
         {
             printf(" ");
         }
     }
-    printf("%s ", fname);
-    if (!opt.s)
+    printf("%s ", fn);
+    if (!f)
     {
-        for (int i = 0; i < tmp; i++)
+        for (int i = 0; i < x; i++)
         {
             printf(" ");
         }
     }
 }
-void long_display(char **tb, format_long_t *fl, int tbsiz, int max_user, int max_group, int max_size, int max_perm)
+
+void long_display(LIST l, format_long_t *fl, int max_user, int max_group, int max_size, int max_perm)
 {
     char buf[20];
-    for (int i = 0; i < tbsiz; i++)
+    lftype t;
+    int j = 0;
+    for (ITERATOR i = LAT(l, LFIRST); i; LINC(&i))
     {
+        t = (lftype)i->data;
         // type of file.
         if (opt.l)
         {
-            switch (fl->st[i].st_mode & S_IFMT)
+            switch (t->st.st_mode & S_IFMT)
             {
             case S_IFBLK:
-                printf("b ");
+                printf("b");
                 break;
             case S_IFCHR:
-                printf("c ");
+                printf("c");
                 break;
             case S_IFDIR:
-                printf("d ");
+                printf("d");
                 break;
             case S_IFIFO:
-                printf("p ");
+                printf("p");
                 break;
             case S_IFLNK:
-                printf("l ");
+                printf("l");
                 break;
             case S_IFREG:
-                printf("- ");
+                printf("-");
                 break;
             case S_IFSOCK:
-                printf("s ");
+                printf("s");
                 break;
             default:
-                printf("? ");
+                printf("?");
                 break;
             }
         }
         if (opt.l || opt.p)
         {
-            long_selector(fl->perm[i], max_perm);
+            long_print(fl->perm[j], max_perm, 0);
         }
         if (opt.l || opt.u)
         {
-            long_selector(fl->user[i], max_user);
+            long_print(fl->user[j], max_user, 0);
         }
         if (opt.l || opt.g)
         {
-            long_selector(fl->group[i], max_group);
+            long_print(fl->group[j], max_group, 0);
         }
         if (opt.l || opt.m)
         {
-            long_mtime(buf, &(fl->st[i].st_mtime));
+            long_mtime(buf, &t->st.st_mtime);
             printf("%s ", buf);
         }
         if (opt.l || opt.s)
         {
-            long_selector(fl->size[i], max_size);
+            long_print(fl->size[j], max_size, 1);
         }
-        lf_print(tb[i], &fl->st[i].st_mode);
+        lf_print(t->name, &t->st.st_mode, 1);
+        j++;
     }
 }
 
-void long_main(char **tb, int tb_f, int tb_d, int tbsiz)
+void long_main(LIST l)
 {
     struct stat s;
     format_long_t fl;
+    lftype t;
     int max_user = 0, max_group = 0, max_size = 0, max_perm = 0;
     int tmp;
     int multcol = 0;
     char **secondcol = NULL;
 
     if (!opt.l && (opt.s ^ opt.p ^ opt.m ^ opt.u ^ opt.g))
-    { // if only one of the options s,p,u,g,m  is setted
+    { // if only one of the optit = (lf_t)LGET(l, i);ons s, p, u, g, m  is setted
         multcol = 1;
     }
-
-    fl.st = (struct stat *)lf_malloc(sizeof(struct stat) * tbsiz);
+    memset(&fl, 0, FORMATLONGSIZ);
     if (opt.l || opt.s)
     {
-        fl.size = (char **)lf_malloc(sizeof(char *) * tbsiz);
+        fl.size = (char **)lfalloc(sizeof(char *) * l->count);
     }
     if (opt.l || opt.p)
     {
-        fl.perm = (char **)lf_malloc(sizeof(char *) * tbsiz);
+        fl.perm = (char **)lfalloc(sizeof(char *) * l->count);
     }
     if (multcol && opt.m)
     { // allocate memory in case where multcol is set.
-        fl.mtime = (char **)lf_malloc(sizeof(char *) * tbsiz);
+        fl.mtime = (char **)lfalloc(sizeof(char *) * l->count);
     }
     if (opt.l || opt.u)
     {
-        fl.user = (char **)lf_malloc(sizeof(char *) * tbsiz);
+        fl.user = (char **)lfalloc(sizeof(char *) * l->count);
     }
     if (opt.l || opt.g)
     {
-        fl.group = (char **)lf_malloc(sizeof(char *) * tbsiz);
+        fl.group = (char **)lfalloc(sizeof(char *) * l->count);
     }
 
-    for (int i = 0; i < tbsiz; i++)
+    int j = 0;
+    ITERATOR it = LAT(l, LFIRST);
+    while (it)
     {
-        strcpy(&path[pathsiz], tb[i]);
-
-        lf_stat(path, &s);
-        fl.st[i] = s;
+        t = (lftype)it->data;
         // user
         if (opt.l || opt.u)
         {
-            fl.user[i] = long_user(NULL, s.st_uid);
-            tmp = strlen(fl.user[i]);
+            fl.user[j] = long_user(NULL, t->st.st_uid);
+            tmp = strlen(fl.user[j]);
             if (tmp > max_user)
             {
                 max_user = tmp;
@@ -145,8 +150,8 @@ void long_main(char **tb, int tb_f, int tb_d, int tbsiz)
         // group
         if (opt.l || opt.g)
         {
-            fl.group[i] = long_group(NULL, s.st_gid);
-            tmp = strlen(fl.group[i]);
+            fl.group[j] = long_group(NULL, t->st.st_gid);
+            tmp = strlen(fl.group[j]);
             if (tmp > max_group)
             {
                 max_group = tmp;
@@ -155,8 +160,8 @@ void long_main(char **tb, int tb_f, int tb_d, int tbsiz)
         // size
         if (opt.l || opt.s)
         {
-            fl.size[i] = long_size(NULL, s.st_size);
-            tmp = strlen(fl.size[i]);
+            fl.size[j] = long_size(NULL, t->st.st_size);
+            tmp = strlen(fl.size[j]);
             if (tmp > max_size)
             {
                 max_size = tmp;
@@ -165,18 +170,19 @@ void long_main(char **tb, int tb_f, int tb_d, int tbsiz)
         // permissions
         if (opt.l || opt.p)
         {
-            fl.perm[i] = long_permission(NULL, &s.st_mode);
-            tmp = strlen(fl.perm[i]);
+            fl.perm[j] = long_permission(NULL, &t->st.st_mode);
+            tmp = strlen(fl.perm[j]);
             if (tmp > max_perm)
             {
                 max_perm = tmp;
             }
         }
         if (multcol && opt.m)
-        { // modification time.
-            fl.mtime[i] = long_mtime(NULL, &(s.st_mtime));
-            // max_mtime = 16 (doesn't change).
+        { // modification time; max_mtime = 16 (doesn't change)
+            fl.mtime[j] = long_mtime(NULL, &(s.st_mtime));
         }
+        LINC(&it);
+        ++j;
     }
     if (multcol && opt.s)
     {
@@ -200,11 +206,52 @@ void long_main(char **tb, int tb_f, int tb_d, int tbsiz)
     }
     if (multcol)
     { // display multiple columns
-        column_main(tb, secondcol, tbsiz);
+        column_main(l, secondcol);
     }
     else
     { // display one column
-        long_display(tb, &fl, tbsiz, max_user, max_group, max_size, max_perm);
+        long_display(l, &fl, max_user, max_group, max_size, max_perm);
+    }
+    // desallocate memory
+    if (fl.user)
+    {
+        for (int i = 0; i < l->count; i++)
+        {
+            free(fl.user[i]);
+        }
+        free(fl.user);
+    }
+    if (fl.group)
+    {
+        for (int i = 0; i < l->count; i++)
+        {
+            free(fl.group[i]);
+        }
+        free(fl.group);
+    }
+    if (fl.size)
+    {
+        for (int i = 0; i < l->count; i++)
+        {
+            free(fl.size[i]);
+        }
+        free(fl.size);
+    }
+    if (fl.perm)
+    {
+        for (int i = 0; i < l->count; i++)
+        {
+            free(fl.perm[i]);
+        }
+        free(fl.perm);
+    }
+    if (fl.mtime)
+    {
+        for (int i = 0; i < l->count; i++)
+        {
+            free(fl.mtime[i]);
+        }
+        free(fl.mtime);
     }
 }
 
@@ -222,7 +269,7 @@ char *long_size(char *buf, long int size2)
             n /= 10; // n = n/10
             ++i;
         }
-        buf = (char *)lf_malloc(sizeof(char) * (i + 1));
+        buf = (char *)lfalloc(sizeof(char) * (i + 1));
         i = 0;
     }
     if (opt.h)
@@ -265,7 +312,7 @@ char *long_user(char *user, uid_t uid)
      * */
     if (!user)
     {
-        user = (char *)lf_malloc(sizeof(char) * (strlen(pw->pw_name) + 1));
+        user = (char *)lfalloc(sizeof(char) * (strlen(pw->pw_name) + 1));
     }
     strcpy(user, pw->pw_name);
     return user;
@@ -278,7 +325,7 @@ char *long_group(char *group, gid_t gid)
     gr = getgrgid(gid);
     if (!group)
     {
-        group = (char *)lf_malloc(sizeof(char) * (strlen(gr->gr_name) + 1));
+        group = (char *)lfalloc(sizeof(char) * (strlen(gr->gr_name) + 1));
     }
     /**
      * 
@@ -295,7 +342,7 @@ char *long_mtime(char *buf, const time_t *atm)
 
     if (!buf)
     {
-        buf = (char *)lf_malloc(sizeof(char) * 17);
+        buf = (char *)lfalloc(sizeof(char) * 17);
     }
     tm = *localtime(atm);
     sprintf(buf, "%d-%02d-%02d %02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min);
@@ -308,7 +355,7 @@ char *long_permission(char *buf, __mode_t *mode)
     __mode_t modes[9] = {S_IRUSR, S_IWUSR, S_IXUSR, S_IRGRP, S_IWGRP, S_IXGRP, S_IROTH, S_IWOTH, S_IXOTH};
     if (!buf)
     {
-        buf = (char *)lf_malloc(sizeof(char) * 11);
+        buf = (char *)lfalloc(sizeof(char) * 11);
     }
 
     for (i = 0; i < 9; i += 3)

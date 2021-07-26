@@ -5,7 +5,7 @@
 #include "lf.h"
 #include "common.h"
 
-lf_options opt;
+lfoptions opt;
 char *path;
 int pathsiz;
 int with_colors;
@@ -57,7 +57,7 @@ void lf_set_option(char c)
     }
 }
 
-void lf_set_arguments(int argc, char *argv[], list l_argv)
+void lf_set_arguments(int argc, char *argv[], LIST l)
 {
     int tmp;
 
@@ -91,45 +91,48 @@ void lf_set_arguments(int argc, char *argv[], list l_argv)
         }
         else
         {
-            l_add_bot(l_argv, argv[i]);
+            LADD(l, LLAST, argv[i]);
         }
     }
 }
 
 int main(int argc, char *argv[], char *envp[])
 {
-    list arguments;
+    LIST l;
 
-    initial();
-    arguments = l_open(L_POINTER);
-    lf_set_arguments(argc, argv, arguments);
-    if (l_empty(arguments))
+    setbuf(stdout, NULL);
+    path = (char *)lfalloc(sizeof(char) * PATH_MAX);
+    buf = (char *)lfalloc(sizeof(char) * PATH_MAX);
+    memset(&opt, 0, OPTIONSIZ);
+
+    l = LOPEN();
+    lf_set_arguments(argc, argv, l);
+    if (LEMPTY(l))
     {
-        l_add_top(arguments, "./");
+        LADD(l, LFIRST, "./");
     }
     if (opt.help)
     {
         help();
-        finish();
-        return 0;
     }
-    if (opt.version)
+    else if (opt.version)
     {
         version();
-        finish();
-        return 0;
     }
-    if (opt.t && (opt.f || opt.d || opt.l || opt.p || opt.s || opt.u || opt.g || opt.m))
+    else if (opt.t && (opt.f || opt.d || opt.l || opt.p || opt.s || opt.u || opt.g || opt.m))
     {
-        puts("Warning: The option 't' cannot be used with 'f', 'd', 'l', 'p', 's', 'u', 'g' or 'm'.");
-        exit(EXIT_FAILURE);
+        printf("Warning: The option 't' cannot be used with 'f', 'd', 'l', 'p', 's', 'u', 'g' or 'm'.\n");
     }
-    if (!opt.f && !opt.d)
+    else
     {
-        opt.f = opt.d = 1;
+        if (!opt.f && !opt.d)
+        {
+            opt.f = opt.d = 1;
+        }
+        run(l);
     }
-    run(arguments);
-    l_close(arguments);
-    finish();
+    LCLOSE(l);
+    free(buf);
+    free(path);
     return 0;
 }

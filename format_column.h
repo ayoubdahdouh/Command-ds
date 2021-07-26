@@ -1,7 +1,9 @@
 #ifndef FORMAT_COLUMN
 #define FORMAT_COLUMN 1
 
-void column_main(char **tb, char **tb2, int tbsiz);
-void column_display(char **tb, int *tb_max, int c, int l, int tbsiz, char **tb2, int *tb2_max);
+#include "list.h"
+
+void column_main(LIST l, char **tb2);
+void column_display(LIST l, int *ls, int *lm, char **tb, int *ts, int *tm, int cl, int ln);
 
 #endif

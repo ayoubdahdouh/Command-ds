@@ -50,7 +50,7 @@ void lf_error(int err, char *cause)
     exit(EXIT_FAILURE);
 }
 
-void *lf_malloc(long int size)
+void *lfalloc(long int size)
 {
     void *buf = NULL;
 
@@ -118,24 +118,17 @@ int is_absolute_path(const char *path)
     return (path[0] == '/');
 }
 
-void lf_print_color(const char *fname, mode_t *mode)
+void lf_print_color(const char *fname, mode_t *mode, int nl)
 {
     struct stat s;
-    int fl = 0; // follow_link
-    int lk = 0; // link
+    int fl = 0; // follow link ?
+    int lk = 0; // is file link?
     char *color, *color2;
-    int multcol = 0;
 
-    if (!opt.l && (opt.s ^ opt.p ^ opt.m ^ opt.u ^ opt.g))
-    { // if only one of the options s,p,u,g,m  is setted
-        multcol = 1;
-    }
-    if (opt.t || opt.l || opt.p || opt.s || opt.u || opt.g || opt.m)
+    if (opt.l || opt.t)
     {
         fl = 1;
     }
-    // follow link only if it aren't multiple columns.
-    fl = fl && !multcol;
     switch (*mode & S_IFMT)
     {
     case S_IFDIR:
@@ -189,7 +182,6 @@ void lf_print_color(const char *fname, mode_t *mode)
         }
         break;
     case S_IFREG:
-
         if (*mode & S_IXUSR)
         { // if executable, green colour
             color = GREEN;
@@ -223,33 +215,29 @@ void lf_print_color(const char *fname, mode_t *mode)
             printf(" -> %s%s%s", color2, buf, RST);
         }
     }
-    if (fl)
+    if (nl)
     {
         printf("\n");
     }
 }
 
-void lf_print(char *fname, mode_t *mode)
+void lf_print(char *fname, mode_t *mode, int nl)
 {
     struct stat s;
-    int fl = 0; // follow_link
-    int lk = 0; // link
-    int multcol = 0;
-
-    if (!opt.l && (opt.s ^ opt.p ^ opt.m ^ opt.u ^ opt.g))
-    { // if only one of the options s,p,u,g,m  is setted
-        multcol = 1;
-    }
+    int fl; // follow_link
+    int lk; // link
     if (opt.c)
     {
-        lf_print_color(fname, mode);
+        lf_print_color(fname, mode, nl);
         return;
     }
-    if (opt.t || opt.l || opt.p || opt.s || opt.u || opt.g || opt.m)
+
+    fl = 0;
+    lk = 0;
+    if (opt.l || opt.t)
     {
         fl = 1;
     }
-    fl = fl && !multcol;
     if (fl && ((*mode & S_IFMT) == S_IFLNK))
     {
         lk = 1;
@@ -314,7 +302,7 @@ void lf_print(char *fname, mode_t *mode)
             }
         }
     }
-    if (fl)
+    if (nl)
     {
         printf("\n");
     }

@@ -3,377 +3,526 @@
 #include <string.h>
 #include "list.h"
 
-l_node l_create_node(long size);
+void quicksort(LIST l, int from, int to, int compare(void *, void *));
+int partition(LIST l, int from, int to, int compare(void *, void *));
 
-void l_error(const char *msg);
-
-void l_error(const char *msg)
+void LERR(const char *msg)
 {
     if (msg)
     {
-        puts(msg);
+        printf("%s\n", msg);
     }
-    exit(EXIT_FAILURE);
 }
 
-list l_open(long int data_size)
+LIST LOPEN()
 {
-    list lst;
+    LIST l;
 
-    lst = (list)malloc(LIST_SIZE);
-    if (!lst)
+    l = (LIST)malloc(LISTSIZ);
+    if (!l)
     {
-        l_error("L_OPEN: Memory allocation failed");
+        LERR("[LOPEN] Memory allocation failed");
+        return NULL;
     }
-    lst->size = data_size;
-    lst->count = 0;
-    lst->top = lst->bottom = NULL;
+    l->count = 0;
+    l->first = l->last = NULL;
 
-    return lst;
+    return l;
 }
 
-void l_close(list lst)
+void LCLOSE(LIST l)
 {
-    if (!lst)
+    if (!l)
     {
-        l_error("L_CLOSE: Memory allocation failed");
+        LERR("[LCLOSE] Memory allocation failed");
+        return;
     }
-    while (!l_empty(lst))
+    NODE x, y = l->first;
+    while (l->count)
     {
-        l_del_top(lst);
+        --l->count;
+        x = y;
+        y = y->next;
+        free(x);
     }
-    free(lst);
+    free(l);
 }
 
-l_node l_create_node(long int size)
+int LEMPTY(LIST l)
 {
-    l_node tmp;
-
-    tmp = (l_node)malloc(L_NODE_SIZE);
-    if (!tmp)
+    if (l)
     {
-        l_error("L_CREATE_NODE: Memory allocation failed");
+        return (l->count == 0);
     }
-    if (size != L_POINTER)
+    return 1;
+}
+
+void LRESET(LIST l)
+{
+    if (!l)
     {
-        tmp->data = malloc(size);
-        if (!tmp->data)
+        LERR("[LRESET] No list is given");
+        return;
+    }
+    while (!LEMPTY(l))
+    {
+        LDEL(l, LFIRST);
+    }
+}
+
+void LADD(LIST l, long int at, void *data)
+{
+    NODE n, x, y;
+
+    if (!l)
+    {
+        LERR("[LADD] No list is given");
+        return;
+    }
+    if (!data)
+    {
+        LERR("[LADD] No data is given");
+        return;
+    }
+    if (at < LFIRST || at > l->count)
+    {
+        LERR("[LADD] Out of bounds");
+        return;
+    }
+    if (at == LFIRST)
+    {
+        at = 0;
+    }
+    else if (at == LLAST)
+    {
+        at = l->count;
+    }
+    n = (NODE)malloc(NODESIZ);
+    n->data = data;
+    n->next = NULL;
+
+    if (l->count == 0)
+    {
+        l->first = n;
+    }
+    else if (l->count == 1)
+    {
+        if (at == 0)
         {
-            l_error("L_CREATE_NODE: Memory allocation failed");
+            n->next = l->first;
+            l->last = l->first;
+            l->first = n;
+        }
+        else
+        {
+            l->first->next = n;
+            l->last = n;
         }
     }
     else
     {
-        tmp->data = NULL;
+        if (at == 0)
+        {
+            n->next = l->first;
+            l->first = n;
+        }
+        else if (at == l->count)
+        {
+            l->last->next = n;
+            l->last = n;
+        }
+        else
+        {
+            x = l->first;
+            while (at)
+            {
+                --at;
+                y = x;
+                x = x->next;
+            }
+            n->next = x;
+            y->next = n;
+        }
     }
-    tmp->next = NULL;
+    l->count++;
+}
+
+void LDEL(LIST l, long int at)
+{
+    NODE x, y;
+
+    if (!l)
+    {
+        LERR("[LDEL] No list is given");
+        return;
+    }
+    if (at < LFIRST || at >= l->count)
+    {
+        LERR("[LDEL] Out of bounds");
+        return;
+    }
+    if (at == LFIRST)
+    {
+        at = 0;
+    }
+    else if (at == LLAST)
+    {
+        at = l->count - 1;
+    }
+    if (l->count == 0)
+    { // if LAST's empty
+        return;
+    }
+    else if (l->count == 1)
+    {
+        x = l->first;
+        l->first = NULL;
+    }
+    else if (l->count == 2)
+    {
+        if (at == 0)
+        {
+            x = l->first;
+            l->first = l->last;
+            l->last = NULL;
+        }
+        else
+        {
+            x = l->last;
+            l->first->next = NULL;
+            l->last = NULL;
+        }
+    }
+    else
+    {
+        if (at == 0)
+        {
+            x = l->first;
+            l->first = x->next;
+        }
+        else
+        {
+            x = l->first;
+            while (at)
+            {
+                --at;
+                y = x;
+                x = x->next;
+            }
+            y->next = x->next;
+        }
+    }
+    free(x);
+    --l->count;
+}
+
+void *LGET(LIST l, long int at)
+{
+    NODE y;
+
+    if (!l)
+    {
+        LERR("[LGET] No list is given");
+        return NULL;
+    }
+    if (at < LFIRST || (at >= l->count))
+    {
+        LERR("[LGET] Out of bounds");
+        return NULL;
+    }
+    if (LEMPTY(l))
+    {
+        LERR("[LGET] The list is empty");
+        return NULL;
+    }
+    if (at == LFIRST)
+    {
+        at = 0;
+    }
+    else if (at == LLAST)
+    {
+        at = l->count - 1;
+    }
+    y = l->first;
+    while (at)
+    {
+        --at;
+        y = y->next;
+    }
+    return y->data;
+}
+
+void *LSET(LIST l, long int at, void *data)
+{
+    NODE n;
+    void *tmp;
+
+    if (!l)
+    {
+        LERR("[LSET] No list is given");
+        return NULL;
+    }
+    if (at < LFIRST || (at >= l->count))
+    {
+        LERR("[LSET] Out of bounds");
+        return NULL;
+    }
+    if (LEMPTY(l))
+    {
+        LERR("[LSET] The list is empty");
+        return NULL;
+    }
+    if (at == LFIRST)
+    {
+        at = 0;
+    }
+    else if (at == LLAST)
+    {
+        at = l->count - 1;
+    }
+    n = l->first;
+    while (at)
+    {
+        --at;
+        n = n->next;
+    }
+    tmp = n->data;
+    n->data = data;
     return tmp;
 }
 
-int l_empty(list lst)
+void LSORT(LIST l, long int from, long int to, int compare(void *, void *))
 {
-    if (!lst)
+    if (!l)
     {
-        l_error("L_EMPTY: no list is given");
+        return;
     }
-    if (!lst->top)
+    if ((from < LFIRST || (from >= l->count)) &&
+        (to < LFIRST || (to >= l->count)))
     {
-        return 1;
+        LERR("[LSORT] Out of bounds");
+        return;
     }
-    return 0;
+    if (from == LFIRST)
+    {
+        from = 0;
+    }
+    else if (from == LLAST)
+    {
+        from = l->count - 1;
+    }
+    if (to == LFIRST)
+    {
+        to = 0;
+    }
+    else if (to == LLAST)
+    {
+        to = l->count - 1;
+    }
+    if (from > to)
+    {
+        LERR("[LSORT] \"from\" must be less than \"to\"");
+        return;
+    }
+    quicksort(l, from, to, compare);
 }
 
-void *l_top(list lst)
+int partition(LIST l, int from, int to, int compare(void *, void *))
 {
-    if (!lst)
-    {
-        l_error("L_TOP: no list is given");
-    }
-    if (l_empty(lst))
-    {
-        l_error("L_TOP: the list is empty");
-    }
-    return lst->top->data;
-}
+    ITERATOR p = LAT(l, to);
+    ITERATOR j = LAT(l, from);
+    ITERATOR i = NULL;
+    void *x;
+    int k = from;
 
-void *l_bot(list lst)
-{
-    if (!lst)
+    while (to > from)
     {
-        l_error("L_BOTTOM: no list is given");
+        if (compare(j->data, p->data) < 0)
+        {
+            if (i)
+            {
+                LINC(&i);
+            }
+            else
+            {
+                i = LAT(l, from);
+            }
+            x = j->data;
+            j->data = i->data;
+            i->data = x;
+            ++k;
+        }
+        LINC(&j);
+        --to;
     }
-    if (l_empty(lst))
+    if (i)
     {
-        l_error("L_BOTTOM: the list is empty");
-    }
-    return lst->bottom->data;
-}
-
-void *l_at(list lst, int i)
-{
-    l_node tmp;
-
-    if (!lst)
-    {
-        l_error("L_AT: no list is given");
-    }
-    if ((i < 0) || (i >= lst->count))
-    {
-        l_error("L_AT: out of bounds");
-    }
-    if (l_empty(lst))
-    {
-        l_error("L_DEL_AT: the list is empty!\n");
-    }
-    tmp = lst->top;
-    while (i)
-    {
-        i--;
-        tmp = tmp->next;
-    }
-    return tmp->data;
-}
-
-void l_add_top(list lst, void *data)
-{
-    if (!lst)
-    {
-        l_error("L_ADD_TOP: no list is given\n");
-    }
-    if (!data)
-    {
-        l_error("L_ADD_TOP: no data is given");
-    }
-    l_node tmp = l_create_node(lst->size);
-    if (lst->size == L_POINTER)
-    {
-        tmp->data = data;
+        LINC(&i);
     }
     else
     {
-        memcpy(tmp->data, data, lst->size);
+        i = LAT(l, from);
     }
-    tmp->next = lst->top;
-    if (lst->top && !lst->bottom)
-    {
-        lst->bottom = lst->top;
-        lst->top = tmp;
-    }
-    else
-    {
-        lst->top = tmp;
-    }
-    lst->count++;
+    x = p->data;
+    p->data = i->data;
+    i->data = x;
+    return k;
 }
 
-void l_add_bot(list lst, void *data)
+void quicksort(LIST l, int from, int to, int compare(void *, void *))
 {
-    l_node tmp;
-
-    if (!lst)
+    if (from < to)
     {
-        l_error("L_ADD_BOTTOM: no list is given\n");
+        int p = partition(l, from, to, compare);
+        quicksort(l, from, p - 1, compare);
+        quicksort(l, p + 1, to, compare);
     }
-    if (!data)
-    {
-        l_error("L_ADD_BOTTOM: no data is given");
-    }
-    tmp = l_create_node(lst->size);
-    if (lst->size == L_POINTER)
-    {
-        tmp->data = data;
-    }
-    else
-    {
-        memcpy(tmp->data, data, lst->size);
-    }
-    if (!lst->top)
-    {
-        lst->top = tmp;
-    }
-    else if (!lst->bottom)
-    {
-        lst->top->next = tmp;
-        lst->bottom = tmp;
-    }
-    else
-    {
-        lst->bottom->next = tmp;
-        lst->bottom = tmp;
-    }
-    lst->count++;
 }
 
-// remove element from list.
-void l_del_top(list lst)
+void LINC(ITERATOR *i)
 {
-    if (!lst)
+    if (i)
     {
-        l_error("L_ADD_TOP: no list is given\n");
+        *i = (*i)->next;
     }
-    if (l_empty(lst))
-    {
-        l_error("L_ADD_TOP: the list is empty!\n");
-    }
-    l_node tmp = lst->top;
-    lst->top = lst->top->next;
-    lst->count--;
-    if (lst->size != L_POINTER)
-    {
-        free(tmp->data);
-    }
-    free(tmp);
 }
 
-// destroy list.
-void l_del_bot(list lst)
+ITERATOR LAT(LIST l, int at)
 {
-    l_node tmp, tmp2;
+    ITERATOR i;
 
-    if (!lst)
+    if (!l)
     {
-        l_error("L_DEL_BOTTOM: no list is given\n");
+        LERR("[LAT] No list is given");
+        return NULL;
     }
-    if (l_empty(lst))
+    if (at < LFIRST || (at >= l->count))
     {
-        l_error("L_DEL_BOTTOM: the list is empty!\n");
+        LERR("[LAT] Out of bounds");
+        return NULL;
     }
-    if (!lst->bottom)
+    if (LEMPTY(l))
     {
-        tmp = lst->top;
-        lst->top = NULL;
+        LERR("[LAT] The list is empty");
+        return NULL;
     }
-    else
+    if (at == LFIRST)
     {
-        tmp2 = lst->top;
-        while (tmp2->next != lst->bottom)
-        {
-            tmp2 = tmp2->next;
-        }
-        if (tmp2 == lst->top)
-        {
-            tmp = lst->bottom;
-            lst->bottom = NULL;
-            lst->top->next = NULL;
-        }
-        else
-        {
-            tmp = lst->bottom;
-            lst->bottom = tmp2;
-            lst->bottom->next = NULL;
-        }
+        at = 0;
     }
-    lst->count--;
-    if (lst->size != L_POINTER)
+    else if (at == LLAST)
     {
-        free(tmp->data);
+        at = l->count - 1;
     }
-    free(tmp);
+    i = l->first;
+    while (at)
+    {
+        --at;
+        i = i->next;
+    }
+    return i;
 }
 
-void l_del_at(list lst, int i)
-{
-    l_node tmp, tmp2;
-
-    if (!lst)
-    {
-        l_error("L_DEL_AT: no list is given");
-    }
-    if ((i < 0) || (i >= lst->count))
-    {
-        l_error("L_DEL_AT: out of bounds");
-    }
-    if (l_empty(lst))
-    {
-        l_error("L_DEL_AT: the list is empty!\n");
-    }
-    tmp = lst->top;
-    tmp2 = lst->top;
-    while (i)
-    {
-        i--;
-        tmp2 = tmp;
-        tmp = tmp->next;
-    }
-    if (tmp == lst->top)
-    {
-        if (tmp->next == lst->bottom)
-        {
-            lst->bottom = NULL;
-        }
-        lst->top = lst->top->next;
-    }
-    else if (tmp == lst->bottom)
-    {
-        tmp2->next = NULL;
-        if (tmp->next == lst->bottom)
-        {
-            lst->bottom = NULL;
-        }
-        else
-        {
-            lst->bottom = tmp2;
-        }
-    }
-    else
-    {
-        tmp2->next = tmp->next;
-    }
-    lst->count--;
-    if (lst->size != L_POINTER)
-    {
-        free(tmp->data);
-    }
-    free(tmp);
-}
-
-// void print_list(list lst)
+// void LSHOW(LIST l)
 // {
-//     if (!lst)
+//     if (!l)
 //     {
-//         l_error("PRINT_LIST: the list is empty!\n");
+//         LERR("[LSHOW]: The list is empty");
 //     }
-//     if (lst)
+//     printf("%d nodes: ", l->count);
+//     for (int i = 0; i < l->count; i++)
 //     {
-//         l_node tmp = lst->top;
-//         printf("%d: ", lst->count);
-//         while (tmp)
-//         {
-//             printf("%d -> ", *(int *)(tmp->data));
-//             tmp = tmp->next;
-//         }
-//         printf("NULL\n");
+//         printf("%s -> ", (char *)LGET(l, i));
 //     }
+//     printf("NULL\n\n");
 // }
+
+// // compare no case sensative
+// int strcompare(char *s1, char *s2)
+// {
+//     int n, l1, l2, ok;
+//     char c1, c2;
+
+//     if (!s1 && !s2)
+//     {
+//         return 0;
+//     }
+//     if (!s1)
+//     {
+//         return -1;
+//     }
+//     if (!s2)
+//     {
+//         return 1;
+//     }
+//     l1 = strlen(s1);
+//     l2 = strlen(s2);
+//     if (l1 > l2)
+//     {
+//         n = l2;
+//     }
+//     else
+//     {
+//         n = l1;
+//     }
+//     ok = 0;
+//     for (int i = 0; !ok && i < n; i++)
+//     {
+//         // convert s1 to lower case
+//         if (s1[i] >= 'A' && s1[i] <= 'Z')
+//         {
+//             c1 = s1[i] + 32;
+//         }
+//         else
+//         {
+//             c1 = s1[i];
+//         }
+//         // convert s2 to lower case
+//         if (s2[i] >= 'A' && s2[i] <= 'Z')
+//         {
+//             c2 = s2[i] + 32;
+//         }
+//         else
+//         {
+//             c2 = s2[i];
+//         }
+//         if (c1 < c2)
+//         {
+//             ok = -1;
+//         }
+//         else if (c1 > c2)
+//         {
+//             ok = 1;
+//         }
+//     }
+//     if (!ok)
+//     {
+//         if (l1 > l2)
+//         {
+//             ok = 1;
+//         }
+//         else if (l1 < l2)
+//         {
+//             ok = -1;
+//         }
+//     }
+//     return ok;
+// }
+
 // int main()
 // {
-//     list lst;
+//     LIST l;
 //     setbuf(stdout, NULL);
-//     lst = l_open(sizeof(int));
-//     for (int i = 0; i < 2; i++)
-//     {
-//         l_add_top(lst, &i);
-//     }
-//     for (int i = 3; i < 5; i++)
-//     {
-//         l_add_bottom(lst, &i);
-//     }
-//     printf("Nb: %d\n", lst->count);
-//     print_list(lst);
+//     l = LOPEN();
 
-//     l_del_at(lst, 2);
-//     print_list(lst);
-
-//     l_del_at(lst, 1);
-//     print_list(lst);
-
-//     l_del_at(lst, 0);
-//     print_list(lst);
-
-//     while (!l_empty(lst))
-//     {
-//         l_del_bottom(lst);
-//         print_list(lst);
-//     }
-//     l_close(lst);
+//     LADD(l, LFIRST, "xaaa");
+//     LADD(l, LLAST, "abc");
+//     LADD(l, 2, "cba");
+//     LADD(l, 3, "jbA");
+//     LADD(l, LLAST, "ba");
+//     LADD(l, LLAST, "acba");
+//     LSHOW(l);
+//     LSORT(l, LFIRST, LLAST, (int (*)(void *, void *))strcompare);
+//     LSHOW(l);
+//     LCLOSE(l);
 // }

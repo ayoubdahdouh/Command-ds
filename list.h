@@ -3,39 +3,45 @@
 
 #include <limits.h>
 
-typedef struct _l_node
+typedef struct NODE
 {
     void *data;
-    struct _l_node *next;
-} * l_node;
+    struct NODE *next;
+} * NODE, *ITERATOR;
 
-typedef struct _list
+typedef struct LIST
 {
-    int size;  // data size.
-    int count; // number of elements in list
-    l_node top;
-    l_node bottom;
-} * list;
+    int count; // number of elements in LIST
+    NODE first;
+    NODE last;
+} * LIST;
 
-#define LIST_SIZE sizeof(struct _list)
-#define L_NODE_SIZE sizeof(struct _l_node)
-#define L_POINTER 0
+#define LISTSIZ sizeof(struct LIST)
+#define NODESIZ sizeof(struct NODE)
+#define ITERATORSIZ NODESIZ
+#define LLAST -1
+#define LFIRST -2
 
+// list operations
+LIST LOPEN();
+void LCLOSE(LIST l);
 
-list l_open(long int data_size);
-void l_close(list lst);
+int LEMPTY(LIST l);  // if it's empty
+void LRESET(LIST l); // empty listI
 
-int l_empty(list lst);
+void LADD(LIST l, long int at, void *data);
+void LDEL(LIST l, long int at);
 
-void *l_top(list lst);
-void *l_bot(list lst);
-void *l_at(list lst, int i);
+void *LGET(LIST l, long int at);
+void *LSET(LIST l, long int at, void *data);
 
-void l_add_top(list lst, void *d);
-void l_add_bot(list lst, void *d);
-void l_del_top(list lst);
-void l_del_bot(list lst);
-void l_del_at(list lst, int i);
+void LSORT(LIST l, long int from, long int to, int selector(void *, void *));
 
+// show list
+void LSHOW(LIST l);
+
+//  iterator functions
+ITERATOR LAT(LIST l, int at);
+void LINC(ITERATOR *i);
 
 #endif
