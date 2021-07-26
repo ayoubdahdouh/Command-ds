@@ -5,6 +5,7 @@
 #include "format_tree.h"
 #include "common.h"
 #include "lf.h"
+#include "list.h"
 
 void tree_display(format_tree_t *tree, int last)
 {
@@ -29,43 +30,36 @@ void tree_display(format_tree_t *tree, int last)
     }
 }
 
-void tree_main(format_tree_t *tree, char **tb, int tb_f, int tb_d, int tb_len)
+void tree_main(LIST l, int index, format_tree_t *tree)
 {
     int last;
-    struct stat s;
-    int p_len;
+    int psiz;
     int if_a;
+    lftype t;
+    int j = 0;
+    int n = l->count;
 
     if_a = opt.a ? 3 : 1;
     // for files.
-    for (int i = 0; i < tb_f; i++)
+    while (j < index)
     {
-        strcpy(&path[pathsiz], tb[i]);
-        // lf_stat(path, &s);
-        if (lstat(path, &s) == -1)
-        {
-            printf("%s %s(access denied)%s\n", tb[i], RED, RST);
-            return;
-        }
-        last = (i == tb_len - if_a) ? 1 : 0;
+        t = (lftype)(LAT(l, LFIRST))->data;
+        last = (j == n - if_a) ? 1 : 0;
         tree_display(tree, last);
-        lf_print(tb[i], &s.st_mode);
+        lf_print(t->name, &t->st.st_mode, 1);
+        free(t);
+        LDEL(l, LFIRST);
+        ++j;
     }
-
-    p_len = pathsiz;
     // for folders.
-    for (int i = tb_f; i < tb_len; i++)
+    psiz = pathsiz;
+    while (j < n)
     {
-        if (strcmp(tb[i], ".") && strcmp(tb[i], ".."))
+        t = (lftype)(LAT(l, LFIRST))->data;
+        if (strcmp(t->name, ".") && strcmp(t->name, ".."))
         {
-            pathsiz = p_len;
-            strcpy(&path[pathsiz], tb[i]);
-            if (lstat(path, &s) == -1)
-            {
-                printf("%s %s(access denied)%s\n", tb[i], RED, RST);
-                return;
-            }
-            last = (i == tb_len - 1) ? 1 : 0;
+            pathsiz = psiz;
+            last = (j == n - 1) ? 1 : 0;
             if (last)
             {
                 tree->parent_has_next[tree->level] = '0';
@@ -75,14 +69,20 @@ void tree_main(format_tree_t *tree, char **tb, int tb_f, int tb_d, int tb_len)
                 tree->parent_has_next[tree->level] = '1';
             }
             tree_display(tree, last);
-            lf_print(tb[i], &s.st_mode);
+            lf_print(t->name, &t->st.st_mode, 1);
             tree->level++;
+            // initial "path" and "pathsiz"
+            strcpy(&path[pathsiz], t->name);
             pathsiz = strlen(path);
+            // add slash to path
             path[pathsiz] = '/';
             pathsiz++;
-            path[pathsiz] = '\0';
+            path[pathsiz] = 0;
             core(tree);
             tree->level--;
         }
+        free(t);
+        LDEL(l, LFIRST);
+        ++j;
     }
 }

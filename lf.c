@@ -14,90 +14,94 @@
 #include "format_tree.h"
 #include "list.h"
 
-void initial()
-{
-    setbuf(stdout, NULL);
-    path = (char *)lf_malloc(sizeof(char) * PATH_MAX);
-    buf = (char *)lf_malloc(sizeof(char) * PATH_MAX);
-    // init all options to 0.
-    memset(&opt, 0, LF_OPTIONS_Z);
-}
-void finish()
-{
-    free(buf);
-    free(path);
-}
-
-void run(list arguments)
+void run(LIST l)
 {
     char *tmp;
+    int i = 0;
     struct stat s;
     format_tree_t tree;
+    lftype t;
+    LIST l2;
+    ITERATOR it;
 
-    for (int i = 0; i < arguments->count; i++)
+    it = LAT(l, LFIRST);
+    l2 = LOPEN();
+    while (it)
     {
         // initialise 'path' and 'path_len'
-        path[0] = '\0';
+        path[0] = 0;
         pathsiz = 0;
-        tmp = (char *)l_at(arguments, i);
+        tmp = (char *)it->data;
         lf_stat(tmp, &s);
         /**
          * 
-         *  case where link is dir....
+         *  case where link is dir...
          * 
          */
         if (S_ISDIR(s.st_mode))
         {
+            // init global variable "path" and "pathsiz"
             strcpy(path, tmp);
             pathsiz = strlen(tmp);
+            // if tree
             if (opt.t)
-            {
-                // if first time then allocate memory for "parent_has_next".
+            { // if first time then allocate memory for "parent_has_next".
                 tree.level = 0;
                 if (!tree.parent_has_next)
                 {
-                    tree.parent_has_next = (char *)lf_malloc(sizeof(char) * PATH_MAX);
+                    tree.parent_has_next = (char *)lfalloc(sizeof(char) * PATH_MAX);
                 }
                 if (path[pathsiz - 1] == '/')
                 {
                     pathsiz--;
-                    path[pathsiz] = '\0';
+                    path[pathsiz] = 0;
                 }
-                lf_print(path, &s.st_mode);
+                lf_print(path, &s.st_mode, 1);
             }
+            // add slash if doesn't have it.
             if (path[pathsiz - 1] != '/')
             {
                 path[pathsiz] = '/';
                 pathsiz++;
-                path[pathsiz] = '\0';
+                path[pathsiz] = 0;
             }
-            if (arguments->count != 1)
+            // if multiple arguments then print name of each argument.
+            if (l->count != 1)
             {
                 printf("%s:\n", path);
             }
+            // engine :)
             core(&tree);
         }
         else
         {
-            if (arguments->count != 1)
+            LRESET(l2);
+            t = (lftype)lfalloc(LFSIZ);
+            t->st = s;
+            t->name = tmp;
+            LADD(l2, LFIRST, t);
+            if (l->count != 1)
             {
                 printf("%s:\n", tmp);
             }
             if (opt.l || opt.p || opt.s || opt.u || opt.g || opt.m)
             {
-                long_main((char **)&tmp, 1, 1, 1);
+                long_main(l2);
             }
             else
             {
-                lf_print(tmp, &s.st_mode);
+                lf_print(tmp, &s.st_mode, 1);
                 printf("\n");
             }
         }
-        if (i != arguments->count - 1)
+        if (i != l->count - 1)
         {
             printf("\n");
         }
+        LINC(&it);
+        ++i;
     }
+    LCLOSE(l2);
 }
 
 int lf_count_dir_items(DIR *d)
@@ -112,11 +116,18 @@ int lf_count_dir_items(DIR *d)
 }
 
 // compare no case sensative
-int str_cmp(char *s1, char *s2)
+int cmp(lftype t1, lftype t2)
 {
+    char *s1, *s2;
     int n, l1, l2, ok;
     char c1, c2;
 
+    if (!t1 || !t2)
+    {
+        return 0;
+    }
+    s1 = t1->name;
+    s2 = t2->name;
     if (!s1 && !s2)
     {
         return 0;
@@ -183,45 +194,26 @@ int str_cmp(char *s1, char *s2)
     return ok;
 }
 
-void sort_tb(char **tb, int n)
-{
-    int min;
-    char *tmp;
-    for (int i = 0; i < n; i++)
-    {
-        min = i;
-        for (int j = i; j < n; j++)
-        {
-            if (str_cmp(tb[j], tb[min]) < 0)
-            {
-                min = j;
-            }
-        }
-        if (min != i)
-        {
-            tmp = tb[i];
-            tb[i] = tb[min];
-            tb[min] = tmp;
-        }
-    }
-}
-
 void core(format_tree_t *tree)
 {
     DIR *d;
     struct dirent *f;
     struct stat s;
-    int tb_len = 0;
-    char **tb;
-    int tb_d, tb_f = 0; // indexes of files and directories in "tb".
-    char *tmp;
+    LIST l;
+    lftype t;
+    int index;
 
-    // keep value of path and path_z
+    // keep value of "path" and "path_z"
     if (!(d = opendir(path)))
     {
         if (opt.t)
         {
             tree_display(tree, 1);
+            /**
+             * 
+             * Modify the error inst.
+             * 
+             * */
             printf("%saccess denied%s\n", RED, RST);
         }
         else
@@ -230,13 +222,8 @@ void core(format_tree_t *tree)
         }
         return;
     }
-    tb_len = lf_count_dir_items(d);
-    if (tb_len < 1)
-    {
-        return;
-    }
-    tb = lf_malloc(tb_len * sizeof(char *));
-    tb_d = tb_len - 1;
+    l = LOPEN();
+    index = 0;
     while ((f = readdir(d)))
     {
         if (opt.a || (f->d_name[0] != '.'))
@@ -245,55 +232,62 @@ void core(format_tree_t *tree)
             lf_stat(path, &s);
             /**
              * 
-             *  case where link is dir....
+             *  #case where link is dir
+             *  # allocate strlen(f->d_name) + 2 // +2 is for the "/"
              * 
              */
-            tmp = (char *)lf_malloc(sizeof(char) * (strlen(f->d_name) + 1));
-            strcpy(tmp, f->d_name);
+            t = (lftype)lfalloc(LFSIZ);
+            t->st = s;
+            t->name = (char *)lfalloc(sizeof(char) * (strlen(f->d_name) + 1));
+            strcpy(t->name, f->d_name);
             if (S_ISDIR(s.st_mode))
             {
                 if (opt.d)
                 {
-                    tb[tb_d] = tmp;
-                    tb_d--;
+                    LADD(l, LLAST, t);
                 }
             }
-            else if (opt.f)
+            else
             {
-                tb[tb_f] = tmp;
-                tb_f++;
+                if (opt.f)
+                {
+                    LADD(l, LFIRST, t);
+                    ++index;
+                }
             }
         }
     }
-
-    // move empty cells to end of the array "tb".
-    if (tb_f <= tb_d)
+    if (LEMPTY(l))
     {
-        for (int i = 0; i < tb_len - tb_d - 1; i++)
-        {
-            tb[tb_f + i] = tb[tb_d + i + 1];
-        }
-        tb_len -= tb_d - tb_f + 1;
-        tb_d = tb_f - 1;
+        return;
     }
-    sort_tb(tb, tb_f);
-    sort_tb(&tb[tb_d + 1], tb_len - tb_d - 1);
+    if (index > 0)
+    { // if there's files
+        LSORT(l, LFIRST, index - 1, (int (*)(void *, void *))cmp);
+    }
+    if (index != l->count)
+    { // if there's folders
+        LSORT(l, index, LLAST, (int (*)(void *, void *))cmp);
+    }
     if (opt.t)
     { // format tree
-        tree_main(tree, tb, tb_f, tb_d, tb_len);
+        tree_main(l, index, tree);
     }
     else if (opt.l || opt.p || opt.s || opt.u || opt.g || opt.m)
     { // format long
-        long_main(tb, tb_f, tb_d, tb_len);
+        long_main(l);
     }
     else
     { // format column
-        column_main(tb, NULL, tb_len);
+        column_main(l, NULL);
     }
-    // free array "tb"
-    for (int i = 0; i < tb_len; i++)
-    {
-        free(tb[i]);
-    }
-    free(tb);
+    // i = LAT(l, LFIRST);
+    // while (i)
+    // {
+    //     t = (lftype)i->data;
+    //     free(t->name);
+    //     free(t);
+    //     LINC(&i);
+    // }
+    LCLOSE(l);
 }

@@ -1,6 +1,7 @@
 #ifndef FORMAT_LONG
 #define FORMAT_LONG 1
 
+#include "list.h"
 typedef struct format_long_t
 {
     char **user;
@@ -11,13 +12,14 @@ typedef struct format_long_t
     /**
      * perhaps we will add ctime, atime.
      * */ 
-    struct stat *st;
 } format_long_t;
 
+#define FORMATLONGSIZ sizeof(struct format_long_t)
+
 // S_ISVTX
-void long_selector(char *fname, int max);
-void long_display(char **tb, format_long_t *lf_tb, int tb_len, int max_user, int max_group, int max_size, int max_perm);
-void long_main(char **tb, int tb_f, int tb_d, int tb_len);
+void long_print(char *fname, int max, int flag);
+void long_display(LIST l, format_long_t *lf_tb, int max_user, int max_group, int max_size, int max_perm);
+void long_main(LIST l);
 char *long_permission(char *perm, __mode_t *mode);
 char *long_size(char *buf, long int size2);
 char *long_user(char *user, uid_t uid);

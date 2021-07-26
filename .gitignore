@@ -8,3 +8,4 @@ build/*
 *.png
 .gitignore
 README.md
+list
