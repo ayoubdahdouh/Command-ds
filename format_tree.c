@@ -46,7 +46,8 @@ void tree_main(LIST l, int index, format_tree_t *tree)
         t = (lftype)(LAT(l, LFIRST))->data;
         last = (j == n - if_a) ? 1 : 0;
         tree_display(tree, last);
-        lf_print(t->name, &t->st.st_mode, 1);
+        lf_show(t->name, &t->st.st_mode, 1);
+        free(t->name);
         free(t);
         LDEL(l, LFIRST);
         ++j;
@@ -69,7 +70,7 @@ void tree_main(LIST l, int index, format_tree_t *tree)
                 tree->parent_has_next[tree->level] = '1';
             }
             tree_display(tree, last);
-            lf_print(t->name, &t->st.st_mode, 1);
+            lf_show(t->name, &t->st.st_mode, 1);
             tree->level++;
             // initial "path" and "pathsiz"
             strcpy(&path[pathsiz], t->name);
@@ -81,6 +82,7 @@ void tree_main(LIST l, int index, format_tree_t *tree)
             core(tree);
             tree->level--;
         }
+        free(t->name);
         free(t);
         LDEL(l, LFIRST);
         ++j;

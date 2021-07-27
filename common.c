@@ -118,7 +118,7 @@ int is_absolute_path(const char *path)
     return (path[0] == '/');
 }
 
-void lf_print_color(const char *fname, mode_t *mode, int nl)
+void lf_show_color(const char *fname, mode_t *mode, int nl)
 {
     struct stat s;
     int fl = 0; // follow link ?
@@ -221,14 +221,14 @@ void lf_print_color(const char *fname, mode_t *mode, int nl)
     }
 }
 
-void lf_print(char *fname, mode_t *mode, int nl)
+void lf_show(char *fname, mode_t *mode, int nl)
 {
     struct stat s;
     int fl; // follow_link
     int lk; // link
     if (opt.c)
     {
-        lf_print_color(fname, mode, nl);
+        lf_show_color(fname, mode, nl);
         return;
     }
 
@@ -313,23 +313,22 @@ void lf_path_error(int err)
     switch (err)
     {
     case EACCES:
-        buf = "Permission denied";
+        strcpy(buf, "Permission denied");
         break;
     case ENOENT:
-        buf = "No such file or directory";
+        strcpy(buf, "No such file or directory");
         break;
     case ENOTDIR:
-        buf = "Not a directory";
+        strcpy(buf, "Not a directory");
         break;
     case ELOOP:
-        buf = "Too many symbolic links encountered";
+        strcpy(buf, "Too many symbolic links encountered");
         break;
     case ENAMETOOLONG:
-        buf = "File name too long";
+        strcpy(buf, "File name too long");
         break;
     default:
-        buf = "External error";
-        break;
+        strcpy(buf, "External error");
         break;
     }
 }

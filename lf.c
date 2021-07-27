@@ -7,6 +7,7 @@
 #include <string.h>
 #include <pwd.h>
 #include <limits.h>
+#include <errno.h>
 #include "common.h"
 #include "lf.h"
 #include "format_column.h"
@@ -56,7 +57,7 @@ void run(LIST l)
                     pathsiz--;
                     path[pathsiz] = 0;
                 }
-                lf_print(path, &s.st_mode, 1);
+                lf_show(path, &s.st_mode, 1);
             }
             // add slash if doesn't have it.
             if (path[pathsiz - 1] != '/')
@@ -90,7 +91,7 @@ void run(LIST l)
             }
             else
             {
-                lf_print(tmp, &s.st_mode, 1);
+                lf_show(tmp, &s.st_mode, 1);
                 printf("\n");
             }
         }
@@ -203,9 +204,17 @@ void core(format_tree_t *tree)
     lftype t;
     int index;
 
-    // keep value of "path" and "path_z"
-    if (!(d = opendir(path)))
+    if (tree->level == 0)
     {
+        int ok = 0;
+        ++ok;
+    }
+
+    // keep value of "path" and "path_z"
+    d = opendir(path);
+    if (!d)
+    {
+        lf_path_error(errno);
         if (opt.t)
         {
             tree_display(tree, 1);
@@ -214,7 +223,8 @@ void core(format_tree_t *tree)
              * Modify the error inst.
              * 
              * */
-            printf("%saccess denied%s\n", RED, RST);
+            printf("%saccess denied: %s%s\n", RED, buf, RST);
+            buf[0] = 0;
         }
         else
         {
@@ -257,6 +267,7 @@ void core(format_tree_t *tree)
             }
         }
     }
+    closedir(d);
     if (LEMPTY(l))
     {
         return;
@@ -281,13 +292,17 @@ void core(format_tree_t *tree)
     { // format column
         column_main(l, NULL);
     }
-    // i = LAT(l, LFIRST);
-    // while (i)
-    // {
-    //     t = (lftype)i->data;
-    //     free(t->name);
-    //     free(t);
-    //     LINC(&i);
-    // }
+    if (!LEMPTY(l))
+    {
+        ITERATOR i = LAT(l, LFIRST);
+        while (i)
+        {
+            t = (lftype)i->data;
+            free(t->name);
+            free(t);
+            LINC(&i);
+        }
+    }
+
     LCLOSE(l);
 }
