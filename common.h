@@ -57,8 +57,8 @@ int is_absolute_path(const char *path);
 void lf_error(int err, char *cause);
 void *lfalloc(long int size);
 int lf_stat(const char *fname, struct stat *s);
-void lf_print_color(const char *fname, mode_t *mode, int nl);
-void lf_print(char *fname, mode_t *mode, int nl); // afficher le nom des fichiers
+void lf_show_color(const char *fname, mode_t *mode, int nl);
+void lf_show(char *fname, mode_t *mode, int nl); // afficher le nom des fichiers
 void lf_path_error(int err);
 
 #endif

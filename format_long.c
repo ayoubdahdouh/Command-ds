@@ -91,7 +91,7 @@ void long_display(LIST l, format_long_t *fl, int max_user, int max_group, int ma
         {
             long_print(fl->size[j], max_size, 1);
         }
-        lf_print(t->name, &t->st.st_mode, 1);
+        lf_show(t->name, &t->st.st_mode, 1);
         j++;
     }
 }

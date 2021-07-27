@@ -28,7 +28,7 @@ void column_display(LIST l, int *ls, int *lm, char **tb, int *ts, int *tm, int c
                 {
                     long_print(tb[x], tm[j] - 1, 1);
                 }
-                lf_print(t->name, &t->st.st_mode, 0);
+                lf_show(t->name, &t->st.st_mode, 0);
                 x = lm[j] - ls[x];
                 for (int k = 0; k < x; k++)
                 { // the +1 is for the last space between columns.
