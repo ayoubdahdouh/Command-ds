@@ -9,6 +9,7 @@
 #include "format_long.h"
 #include "common.h"
 #include "format_column.h"
+#include "display.h"
 
 void long_print(char *fn, int m, int f)
 { // flag  is used to adjust the data (suffix/prefix)
@@ -91,7 +92,7 @@ void long_display(LIST l, format_long_t *fl, int max_user, int max_group, int ma
         {
             long_print(fl->size[j], max_size, 1);
         }
-        lf_show(t->name, &t->st.st_mode, 1);
+        lf_show(t->name, &t->st.st_mode, true);
         j++;
     }
 }
@@ -113,23 +114,23 @@ void long_main(LIST l)
     memset(&fl, 0, FORMATLONGSIZ);
     if (opt.l || opt.s)
     {
-        fl.size = (char **)lfalloc(sizeof(char *) * l->count);
+        fl.size = (char **)lf_alloc(sizeof(char *) * l->count);
     }
     if (opt.l || opt.p)
     {
-        fl.perm = (char **)lfalloc(sizeof(char *) * l->count);
+        fl.perm = (char **)lf_alloc(sizeof(char *) * l->count);
     }
     if (multcol && opt.m)
     { // allocate memory in case where multcol is set.
-        fl.mtime = (char **)lfalloc(sizeof(char *) * l->count);
+        fl.mtime = (char **)lf_alloc(sizeof(char *) * l->count);
     }
     if (opt.l || opt.u)
     {
-        fl.user = (char **)lfalloc(sizeof(char *) * l->count);
+        fl.user = (char **)lf_alloc(sizeof(char *) * l->count);
     }
     if (opt.l || opt.g)
     {
-        fl.group = (char **)lfalloc(sizeof(char *) * l->count);
+        fl.group = (char **)lf_alloc(sizeof(char *) * l->count);
     }
 
     int j = 0;
@@ -269,7 +270,7 @@ char *long_size(char *buf, long int size2)
             n /= 10; // n = n/10
             ++i;
         }
-        buf = (char *)lfalloc(sizeof(char) * (i + 1));
+        buf = (char *)lf_alloc(sizeof(char) * (i + 1));
         i = 0;
     }
     if (opt.h)
@@ -312,7 +313,7 @@ char *long_user(char *user, uid_t uid)
      * */
     if (!user)
     {
-        user = (char *)lfalloc(sizeof(char) * (strlen(pw->pw_name) + 1));
+        user = (char *)lf_alloc(sizeof(char) * (strlen(pw->pw_name) + 1));
     }
     strcpy(user, pw->pw_name);
     return user;
@@ -325,7 +326,7 @@ char *long_group(char *group, gid_t gid)
     gr = getgrgid(gid);
     if (!group)
     {
-        group = (char *)lfalloc(sizeof(char) * (strlen(gr->gr_name) + 1));
+        group = (char *)lf_alloc(sizeof(char) * (strlen(gr->gr_name) + 1));
     }
     /**
      * 
@@ -342,7 +343,7 @@ char *long_mtime(char *buf, const time_t *atm)
 
     if (!buf)
     {
-        buf = (char *)lfalloc(sizeof(char) * 17);
+        buf = (char *)lf_alloc(sizeof(char) * 17);
     }
     tm = *localtime(atm);
     sprintf(buf, "%d-%02d-%02d %02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min);
@@ -355,7 +356,7 @@ char *long_permission(char *buf, __mode_t *mode)
     __mode_t modes[9] = {S_IRUSR, S_IWUSR, S_IXUSR, S_IRGRP, S_IWGRP, S_IXGRP, S_IROTH, S_IWOTH, S_IXOTH};
     if (!buf)
     {
-        buf = (char *)lfalloc(sizeof(char) * 11);
+        buf = (char *)lf_alloc(sizeof(char) * 11);
     }
 
     for (i = 0; i < 9; i += 3)

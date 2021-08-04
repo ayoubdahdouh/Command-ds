@@ -8,6 +8,7 @@
 #include "common.h"
 #include "format_long.h"
 #include "list.h"
+#include "display.h"
 
 void column_display(LIST l, int *ls, int *lm, char **tb, int *ts, int *tm, int cl, int ln)
 {
@@ -28,7 +29,7 @@ void column_display(LIST l, int *ls, int *lm, char **tb, int *ts, int *tm, int c
                 {
                     long_print(tb[x], tm[j] - 1, 1);
                 }
-                lf_show(t->name, &t->st.st_mode, 0);
+                lf_show(t->name, &t->st.st_mode, false);
                 x = lm[j] - ls[x];
                 for (int k = 0; k < x; k++)
                 { // the +1 is for the last space between columns.
@@ -59,12 +60,12 @@ void column_main(LIST l, char **tb)
 
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     winsiz = w.ws_col;
-    ls = (int *)lfalloc(sizeof(int) * l->count);
-    lm = (int *)lfalloc(sizeof(int) * l->count);
+    ls = (int *)lf_alloc(sizeof(int) * l->count);
+    lm = (int *)lf_alloc(sizeof(int) * l->count);
     if (tb)
     {
-        ts = (int *)lfalloc(sizeof(int) * l->count);
-        tm = (int *)lfalloc(sizeof(int) * l->count);
+        ts = (int *)lf_alloc(sizeof(int) * l->count);
+        tm = (int *)lf_alloc(sizeof(int) * l->count);
     }
     // length of each name.
     it = LAT(l, LFIRST);

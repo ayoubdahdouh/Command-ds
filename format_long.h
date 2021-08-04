@@ -1,7 +1,9 @@
 #ifndef FORMAT_LONG
 #define FORMAT_LONG 1
 
+#include <stdbool.h>
 #include "list.h"
+
 typedef struct format_long_t
 {
     char **user;

@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include "common.h"
+#include "list.h"
 
 int has_space(const char *name)
 {
@@ -18,48 +19,17 @@ int has_space(const char *name)
     }
     return i != tmp;
 }
-void lf_error(int err, char *cause)
-{
-    switch (err)
-    {
-    case 1:
-        break;
-    case 2:
-        printf("%s: cannot access '%s' : No such file or directory\n", PROGRAM, cause);
-        break;
-    case 3:
-        printf("%s: Memory allocation failed.\n", PROGRAM);
-        break;
-    case 4:
-        printf("%s: invalid option '%s'.\n", PROGRAM, cause);
-        help();
-        break;
-    case 7:
-        if (cause)
-        {
-            printf("%s: an internal error occurred (\"%s\", \"%s\").\n", PROGRAM, cause, path);
-        }
-        else
-        {
-            printf("%s: an internal error occurred.\n", PROGRAM);
-        }
-        break;
-    default:
-        break;
-    }
-    exit(EXIT_FAILURE);
-}
 
-void *lfalloc(long int size)
+void *lf_alloc(long int size)
 {
-    void *buf = NULL;
+    void *b = NULL;
 
-    buf = malloc(size);
-    if (!buf)
+    b = malloc(size);
+    if (!b)
     {
-        lf_error(3, NULL);
+        lf_error(errno, NULL, false);
     }
-    return buf;
+    return b;
 }
 
 void help()
@@ -89,13 +59,13 @@ void version()
 
 // places the contents of the symbolic link pathname in the buffer "buf" (global variable).
 // if failed, also print error in the buffer "buf"
-int lf_reaklink(const char *fname)
+int lf_link(const char *nm)
 {
     int readlinksiz;
     readlinksiz = readlink(path, buf, PATH_MAX - 1);
     if (readlinksiz == -1)
     {
-        lf_path_error(errno);
+        lf_error(errno, NULL, false);
         return 0;
     }
     buf[readlinksiz] = 0;
@@ -103,232 +73,104 @@ int lf_reaklink(const char *fname)
 }
 
 // if failed, also print error in the buffer "buf"
-int lf_stat(const char *fname, struct stat *s)
+int lf_stat(const char *nm, struct stat *s)
 {
-    if (lstat(fname, s) == -1)
+    if (lstat(nm, s) == -1)
     {
-        lf_path_error(errno);
+        lf_error(errno, NULL, false);
         return 0;
     }
     return 1;
 }
 
-int is_absolute_path(const char *path)
+void lf_error(int e, char *m, bool is_sys_err)
 {
-    return (path[0] == '/');
-}
-
-void lf_show_color(const char *fname, mode_t *mode, int nl)
-{
-    struct stat s;
-    int fl = 0; // follow link ?
-    int lk = 0; // is file link?
-    char *color, *color2;
-
-    if (opt.l || opt.t)
+    char *s;
+    if (is_sys_err)
     {
-        fl = 1;
-    }
-    switch (*mode & S_IFMT)
-    {
-    case S_IFDIR:
-        // if directory, blue colour
-        color = BLUE;
-        color2 = RST;
-        // printf("%s%s/%s", BLUE, print_name(fname), RST);
-        break;
-    case S_IFLNK:
-        if (fl)
+        s = strerror(e);
+        if (s)
         {
-            lk = 1;
-            strcpy(&path[pathsiz], fname);
-            if (lf_reaklink(path))
-            {
-                if (!is_absolute_path(buf))
-                {
-                    strcpy(&path[pathsiz], buf);
-                    strcpy(buf, path);
-                }
-                if (lf_stat(buf, &s))
-                {
-                    if (S_ISDIR(s.st_mode))
-                    { // if link and readpath are directories, blue colour
-                        color = CYAN;
-                        color2 = BLUE;
-                    }
-                    else if (S_IXUSR & s.st_mode)
-                    {
-                        color = CYAN;
-                        color2 = GREEN;
-                    }
-                    else if (S_IXUSR & *mode)
-                    { // if link executable, green colour
-                        color = CYAN;
-                        color2 = RST;
-                    }
-                    strcpy(buf, &path[pathsiz]);
-                }
-                else
-                {
-                    color = CYAN;
-                    color2 = RED;
-                }
-            }
+            strcpy(buf, s);
         }
         else
         {
-            color = CYAN;
-            color2 = RST;
+            buf[0] = 0;
         }
-        break;
-    case S_IFREG:
-        if (*mode & S_IXUSR)
-        { // if executable, green colour
-            color = GREEN;
-            color2 = RST;
-        }
-        else
+        if ((e == ENOMEM))
         {
-            color = color2 = RST;
-        }
-        break;
-    default:
-        color = color2 = RST;
-        break;
-    }
-    if (has_space(fname))
-    {
-        printf("%s\"%s\"%s", color, fname, RST);
-    }
-    else
-    {
-        printf("%s%s%s", color, fname, RST);
-    }
-    if (lk)
-    {
-        if (has_space(buf))
-        {
-            printf(" -> %s\"%s\"%s", color2, buf, RST);
-        }
-        else
-        {
-            printf(" -> %s%s%s", color2, buf, RST);
-        }
-    }
-    if (nl)
-    {
-        printf("\n");
-    }
-}
-
-void lf_show(char *fname, mode_t *mode, int nl)
-{
-    struct stat s;
-    int fl; // follow_link
-    int lk; // link
-    if (opt.c)
-    {
-        lf_show_color(fname, mode, nl);
-        return;
-    }
-
-    fl = 0;
-    lk = 0;
-    if (opt.l || opt.t)
-    {
-        fl = 1;
-    }
-    if (fl && ((*mode & S_IFMT) == S_IFLNK))
-    {
-        lk = 1;
-        strcpy(&path[pathsiz], fname);
-        if (lf_reaklink(path))
-        {
-            if (!is_absolute_path(buf))
-            {
-                strcpy(&path[pathsiz], buf);
-                strcpy(buf, path);
-            }
-            if (lf_stat(buf, &s))
-            {
-                strcpy(buf, &path[pathsiz]);
-            }
-        }
-    }
-    if (has_space(fname))
-    {
-        if (S_ISDIR(*mode))
-        {
-            printf("\"%s\"/", fname);
-        }
-        else
-        {
-            printf("\"%s\"", fname);
+            exit(EXIT_FAILURE);
         }
     }
     else
     {
-        if (S_ISDIR(*mode))
+        if (e == ERR_INVALID_OPTION)
         {
-            printf("%s/", fname);
+            printf("%s: Invalid option \"%s\"\n", PROGRAM, m);
+            lf_quit();
+        }
+        else if (e == ERR_COLORS_NOT_AVILABLE)
+        {
+            printf("%s : Warning: cannot use \"-c\" enavailable because the environment variable \"LS_COLORS\" is not defined.\n", PROGRAM);
+            lf_quit();
         }
         else
         {
-            printf("%s", fname);
+            strcpy(buf, m);
         }
-    }
-    if (lk)
-    {
-        if (has_space(buf))
-        {
-            if (S_ISDIR(s.st_mode))
-            {
-                printf(" -> \"%s\"/", buf);
-            }
-            else
-            {
-                printf(" -> \"%s\"", buf);
-            }
-        }
-        else
-        {
-            if (S_ISDIR(s.st_mode))
-            {
-                printf(" -> %s/", buf);
-            }
-            else
-            {
-                printf(" -> %s", buf);
-            }
-        }
-    }
-    if (nl)
-    {
-        printf("\n");
     }
 }
 
-void lf_path_error(int err)
+void lf_init()
 {
-    switch (err)
+    setbuf(stdout, NULL);
+    // init PATH
+    path = (char *)lf_alloc(sizeof(char) * PATH_MAX);
+    // init BUF
+    buf = (char *)lf_alloc(sizeof(char) * PATH_MAX);
+    // init OPT
+    memset(&opt, 0, OPTIONSIZ);
+}
+
+void lf_quit()
+{
+    free(path);
+    free(buf);
+    exit(EXIT_SUCCESS);
+}
+
+int is_absolute_path(const char *pth)
+{
+    if (pth)
     {
-    case EACCES:
-        strcpy(buf, "Permission denied");
-        break;
-    case ENOENT:
-        strcpy(buf, "No such file or directory");
-        break;
-    case ENOTDIR:
-        strcpy(buf, "Not a directory");
-        break;
-    case ELOOP:
-        strcpy(buf, "Too many symbolic links encountered");
-        break;
-    case ENAMETOOLONG:
-        strcpy(buf, "File name too long");
-        break;
-    default:
-        strcpy(buf, "External error");
-        break;
+        return (path[0] == '/');
     }
+    return 0;
+}
+
+char *lfext(char *pth)
+{
+    if (pth)
+    {
+        return NULL;
+    }
+    int n = strlen(pth) - 1, i = n, ok = 1;
+    while (ok &&
+           (i > 0) &&
+           (pth[i] != '.'))
+    {
+        if (pth[i] == '/')
+        {
+            ok = 0;
+        }
+        else
+        {
+            --i;
+        }
+    }
+    if (ok && i != n)
+    {
+        return &pth[i + 1];
+    }
+    return NULL;
 }

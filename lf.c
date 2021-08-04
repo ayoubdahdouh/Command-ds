@@ -14,26 +14,29 @@
 #include "format_long.h"
 #include "format_tree.h"
 #include "list.h"
+#include "color.h"
+#include "display.h"
 
-void run(LIST l)
+void run(LIST a)
 {
-    char *tmp;
+    char *nm;
     int i = 0;
     struct stat s;
     format_tree_t tree;
     lftype t;
-    LIST l2;
+    LIST b;
     ITERATOR it;
+    int mularg = (a->count != 1);
 
-    it = LAT(l, LFIRST);
-    l2 = LOPEN();
+    memset(&tree, 0, LFTREESIZ);
+    it = LAT(a, LFIRST);
+    b = LOPEN();
     while (it)
     {
-        // initialise 'path' and 'path_len'
+        // initialise 'path' and 'pathsiz'
         path[0] = 0;
-        pathsiz = 0;
-        tmp = (char *)it->data;
-        lf_stat(tmp, &s);
+        nm = (char *)it->data;
+        lf_stat(nm, &s);
         /**
          * 
          *  case where link is dir...
@@ -42,15 +45,15 @@ void run(LIST l)
         if (S_ISDIR(s.st_mode))
         {
             // init global variable "path" and "pathsiz"
-            strcpy(path, tmp);
-            pathsiz = strlen(tmp);
+            strcpy(path, nm);
+            pathsiz = strlen(nm);
             // if tree
             if (opt.t)
             { // if first time then allocate memory for "parent_has_next".
                 tree.level = 0;
                 if (!tree.parent_has_next)
                 {
-                    tree.parent_has_next = (char *)lfalloc(sizeof(char) * PATH_MAX);
+                    tree.parent_has_next = (char *)lf_alloc(sizeof(char) * PATH_MAX);
                 }
                 if (path[pathsiz - 1] == '/')
                 {
@@ -67,7 +70,7 @@ void run(LIST l)
                 path[pathsiz] = 0;
             }
             // if multiple arguments then print name of each argument.
-            if (l->count != 1)
+            if (mularg)
             {
                 printf("%s:\n", path);
             }
@@ -76,33 +79,33 @@ void run(LIST l)
         }
         else
         {
-            LRESET(l2);
-            t = (lftype)lfalloc(LFSIZ);
+            LRESET(b);
+            t = (lftype)lf_alloc(LFSIZ);
             t->st = s;
-            t->name = tmp;
-            LADD(l2, LFIRST, t);
-            if (l->count != 1)
+            t->name = nm;
+            LADD(b, LFIRST, t);
+            if (mularg)
             {
-                printf("%s:\n", tmp);
+                printf("%s:\n", nm);
             }
             if (opt.l || opt.p || opt.s || opt.u || opt.g || opt.m)
             {
-                long_main(l2);
+                long_main(b);
             }
             else
             {
-                lf_show(tmp, &s.st_mode, 1);
+                lf_show(nm, &s.st_mode, 1);
                 printf("\n");
             }
         }
-        if (i != l->count - 1)
+        if (i != a->count - 1)
         {
             printf("\n");
         }
         LINC(&it);
         ++i;
     }
-    LCLOSE(l2);
+    LCLOSE(b);
 }
 
 int lf_count_dir_items(DIR *d)
@@ -214,7 +217,7 @@ void core(format_tree_t *tree)
     d = opendir(path);
     if (!d)
     {
-        lf_path_error(errno);
+        strcpy(buf, strerror(errno));
         if (opt.t)
         {
             tree_display(tree, 1);
@@ -223,7 +226,7 @@ void core(format_tree_t *tree)
              * Modify the error inst.
              * 
              * */
-            printf("%saccess denied: %s%s\n", RED, buf, RST);
+            printf("\033[%saccess denied: %s\033[%s\n", getcolor(lcolor, "rs", 0), buf, getcolor(lcolor, "rs", 0));
             buf[0] = 0;
         }
         else
@@ -246,9 +249,9 @@ void core(format_tree_t *tree)
              *  # allocate strlen(f->d_name) + 2 // +2 is for the "/"
              * 
              */
-            t = (lftype)lfalloc(LFSIZ);
+            t = (lftype)lf_alloc(LFSIZ);
             t->st = s;
-            t->name = (char *)lfalloc(sizeof(char) * (strlen(f->d_name) + 1));
+            t->name = (char *)lf_alloc(sizeof(char) * (strlen(f->d_name) + 1));
             strcpy(t->name, f->d_name);
             if (S_ISDIR(s.st_mode))
             {

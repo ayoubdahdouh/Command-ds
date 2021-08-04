@@ -4,12 +4,12 @@
 #include "list.h"
 #include "lf.h"
 #include "common.h"
+#include "color.h"
 
 lfoptions opt;
-char *path;
-int pathsiz;
-int with_colors;
-char *buf;
+char *path, *buf;
+int pathsiz, clr = 0, fl = 0;
+LIST lcolor;
 
 void lf_set_option(char c)
 {
@@ -52,7 +52,7 @@ void lf_set_option(char c)
         opt.u = 1;
         break;
     default:
-        lf_error(ERR_INVALID_OPTION, &c);
+        lf_error(ERR_INVALID_OPTION, &c, true);
         break;
     }
 }
@@ -77,7 +77,7 @@ void lf_set_arguments(int argc, char *argv[], LIST l)
                 }
                 else
                 {
-                    lf_error(ERR_INVALID_OPTION, argv[i]);
+                    lf_error(ERR_INVALID_OPTION, argv[i], true);
                 }
             }
             else
@@ -98,14 +98,9 @@ void lf_set_arguments(int argc, char *argv[], LIST l)
 
 int main(int argc, char *argv[], char *envp[])
 {
-    LIST l;
+    LIST l = LOPEN();
 
-    setbuf(stdout, NULL);
-    path = (char *)lfalloc(sizeof(char) * PATH_MAX);
-    buf = (char *)lfalloc(sizeof(char) * PATH_MAX);
-    memset(&opt, 0, OPTIONSIZ);
-
-    l = LOPEN();
+    lf_init();
     lf_set_arguments(argc, argv, l);
     if (LEMPTY(l))
     {
@@ -129,10 +124,30 @@ int main(int argc, char *argv[], char *envp[])
         {
             opt.f = opt.d = 1;
         }
+        if (opt.l || opt.t)
+        {
+            fl = 1;
+        }
+        if (opt.c)
+        {
+            clr = 1;
+            if (getenv("LS_COLORS"))
+            {
+                lcolor = scan_for_color();
+                // for (ITERATOR i = LAT(lcolor,LFIRST); i ; LINC(&i))
+                // {
+                //     printf("%s\t%s\n", ((lfcolor*)i->data)->a, ((lfcolor*)i->data)->c);
+                // }
+                // exit(EXIT_FAILURE);
+            }
+            else
+            {
+                lf_error(ERR_COLORS_NOT_AVILABLE, NULL, true);
+            }
+        }
         run(l);
     }
+    lf_quit(l);
     LCLOSE(l);
-    free(buf);
-    free(path);
     return 0;
 }
