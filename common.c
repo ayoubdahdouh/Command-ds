@@ -65,7 +65,7 @@ int lf_link(const char *nm)
     readlinksiz = readlink(path, buf, PATH_MAX - 1);
     if (readlinksiz == -1)
     {
-        lf_error(errno, NULL, false);
+        lf_error(errno, NULL, true);
         return 0;
     }
     buf[readlinksiz] = 0;
@@ -77,13 +77,13 @@ int lf_stat(const char *nm, struct stat *s)
 {
     if (lstat(nm, s) == -1)
     {
-        lf_error(errno, NULL, false);
+        lf_error(errno, NULL, true);
         return 0;
     }
     return 1;
 }
 
-void lf_error(int e, char *m, bool is_sys_err)
+void lf_error(int e, const char *m, bool is_sys_err)
 {
     char *s;
     if (is_sys_err)
@@ -111,7 +111,17 @@ void lf_error(int e, char *m, bool is_sys_err)
         }
         else if (e == ERR_COLORS_NOT_AVILABLE)
         {
-            printf("%s : Warning: cannot use \"-c\" enavailable because the environment variable \"LS_COLORS\" is not defined.\n", PROGRAM);
+            printf("%s: Warning: cannot use \"-c\" enavailable because the environment variable \"LS_COLORS\" is not defined.\n", PROGRAM);
+            lf_quit();
+        }
+        else if (e == ERR_DEPTH_WRONG)
+        {
+            printf("%s: Warning: wrong format.\n"
+                   "use the option \"t\" with DEPTH:\n"
+                   "%s -[...]t [DEPTH] [DIR] ...\n"
+                   "or without:\n"
+                   "%s -[...]t[...]  [DIR] ...\n",
+                   PROGRAM, PROGRAM, PROGRAM);
             lf_quit();
         }
         else

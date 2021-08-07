@@ -2,13 +2,14 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <string.h>
+#include <stdbool.h>
 #include "format_tree.h"
 #include "common.h"
 #include "lf.h"
 #include "list.h"
 #include "display.h"
 
-void tree_display(format_tree_t *tree, int last)
+void tree_display(format_tree_t *tree, bool last)
 {
     for (int j = 0; j < tree->level; j++)
     {
@@ -39,6 +40,11 @@ void tree_main(LIST l, int index, format_tree_t *tree)
     lftype t;
     int j = 0;
     int n = l->count;
+
+    if (opt.tdeep && tree->level >= opt.tdeep)
+    {
+        return;
+    }
 
     if_a = opt.a ? 3 : 1;
     // for files.

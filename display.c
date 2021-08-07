@@ -115,7 +115,6 @@ void lf_show(char *nm, mode_t *m, bool nl)
             printf("\n");
         }
     }
-
     if (clr)
     {
         lf_show_with_color(nm, m, nl);

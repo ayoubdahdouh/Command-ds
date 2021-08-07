@@ -12,7 +12,7 @@ typedef struct format_tree_t
 
 
 #define LFTREESIZ sizeof(format_tree_t)
-void tree_display(format_tree_t *tree, int last);
+void tree_display(format_tree_t *tree, bool last);
 void tree_main(LIST l, int index, format_tree_t *tree);
 
 #endif
