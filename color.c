@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include "color.h"
 #include "list.h"
@@ -48,11 +49,11 @@ LIST scan_for_color()
                 if (c->a[0] == '*' && c->a[1] == '.')
                 {
                     c->a += 2;
-                    c->e = 1;
+                    c->e = true;
                 }
                 else
                 {
-                    c->e = 0;
+                    c->e = false;
                 }
                 eq = 0;
                 sm = i + 1;
@@ -80,7 +81,7 @@ LIST scan_for_color()
     return l;
 }
 
-char *getcolor(LIST l, const char *nm, int is_ext)
+char *getcolor(LIST l, const char *nm, bool is_ext)
 {
     int ok = 0;
     ITERATOR i;

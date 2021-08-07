@@ -3,7 +3,7 @@
 
 /**
  * standar files type
- * */
+ **/
 // rs (reset to no color)
 // di (directory)
 // ln (symbolic link)
@@ -22,18 +22,19 @@
 // st (sticky directory)
 // ex (executable file)
 
+#include <stdbool.h>
 #include "list.h"
 
 typedef struct lfcolor
 {
     char *a;
     char *c;
-    int e;
+    bool e;
 } lfcolor;
 
 #define LFCOLORSIZ sizeof(lfcolor)
 
-char *getcolor(LIST l, const char *nm, int is_ext);
+char *getcolor(LIST l, const char *nm, bool is_ext);
 LIST scan_for_color();
 
 #endif
