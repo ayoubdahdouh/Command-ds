@@ -53,7 +53,7 @@ void lf_quit();
 
 int has_space(const char *nm);
 int is_absolute_path(const char *pth);
-char *lfext(char *pth);
+char *lfext(const char *pth);
 
 #define ERR_INVALID_OPTION 1
 #define ERR_COLORS_NOT_AVILABLE 2

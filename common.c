@@ -158,18 +158,18 @@ int is_absolute_path(const char *pth)
     return 0;
 }
 
-char *lfext(char *pth)
+char *lfext(const char *tmp)
 {
-    if (pth)
+    if (!tmp)
     {
         return NULL;
     }
-    int n = strlen(pth) - 1, i = n, ok = 1;
+    int n = strlen(tmp) - 1, i = n, ok = 1;
     while (ok &&
            (i > 0) &&
-           (pth[i] != '.'))
+           (tmp[i] != '.'))
     {
-        if (pth[i] == '/')
+        if (tmp[i] == '/')
         {
             ok = 0;
         }
@@ -180,7 +180,7 @@ char *lfext(char *pth)
     }
     if (ok && i != n)
     {
-        return &pth[i + 1];
+        return (char *)&tmp[i + 1];
     }
     return NULL;
 }

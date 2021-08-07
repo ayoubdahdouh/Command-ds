@@ -9,15 +9,15 @@ void lf_show_with_color(const char *nm, mode_t *m, bool nl)
 {
     struct stat s;
     int lk = 0; // is file link?
-    char *color, *color2, *rs;
-    rs = getcolor(lcolor, "rs", 0);
+    char *color, *color2, *reset;
+    reset = getcolor(lcolor, "rs", 0);
 
     switch (*m & S_IFMT)
     {
     case S_IFDIR:
         // if directory, blue colour
         color = getcolor(lcolor, "di", 0);
-        color2 = rs;
+        color2 = reset;
         break;
     case S_IFLNK:
         if (fl)
@@ -46,55 +46,65 @@ void lf_show_with_color(const char *nm, mode_t *m, bool nl)
                     else if (S_IXUSR & *m)
                     { // if link executable, green colour
                         color = getcolor(lcolor, "ln", 0);
-                        color2 = rs;
+                        color2 = reset;
                     }
                     strcpy(buf, &path[pathsiz]);
                 }
                 else
                 {
                     color = getcolor(lcolor, "ln", 0);
-                    color2 = rs;
+                    color2 = reset;
                 }
             }
         }
         else
         {
             color = getcolor(lcolor, "ln", 0);
-            color2 = rs;
+            color2 = reset;
         }
         break;
     case S_IFREG:
         if (*m & S_IXUSR)
         { // if executable, green colour
             color = getcolor(lcolor, "ex", 0);
-            color2 = rs;
+            color2 = reset;
         }
         else
         {
-            color = color2 = rs;
+            char *ext = lfext(nm);
+            if (ext)
+            {
+                color = getcolor(lcolor, ext, true);
+            }
+            else
+            {
+                color = reset;
+            }
+
+            color2 = reset;
         }
         break;
     default:
-        color = color2 = rs;
+        color = color2 = reset;
         break;
     }
     if (has_space(nm))
     {
-        printf("\033[%sm\"%s\"\033[%sm", color, nm, rs);
+        printf("\033[%sm\"%s\"\033[%sm", color, nm, reset);
     }
     else
     {
-        printf("\033[%sm%s\033[%sm", color, nm, rs);
+        printf("\033[%sm%s\033[%sm", color, nm, reset);
     }
     if (lk)
     {
         if (has_space(buf))
         {
-            printf(" -> \033[%sm\"%s\"\033[%sm", color2, buf, rs);
+            printf(" -> \033[%sm\"%s\"\033[%sm", color2, buf, reset);
         }
         else
         {
-            printf(" -> \033[%sm%s\033[%sm", color2, buf, rs);
+            printf(" -> \033[%sm%s\033[%sm", color2, buf, reset);
         }
     }
     if (nl)
