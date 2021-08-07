@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <limits.h>
 #include "list.h"
 #include "lf.h"
 #include "common.h"
@@ -11,82 +12,139 @@ char *path, *buf;
 int pathsiz, clr = 0, fl = 0;
 LIST lcolor;
 
-void lf_set_option(char c)
+bool is_digit(const char *nm, int n)
 {
-    switch (c)
+    if (!nm || n <= 0)
     {
-    case 'a':
-        opt.a = 1;
-        break;
-    case 'c':
-        opt.c = 1;
-        break;
-    case 'd':
-        opt.d = 1;
-        break;
-    case 'f':
-        opt.f = 1;
-        break;
-    case 'g':
-        opt.g = 1;
-        break;
-    case 'h':
-        opt.h = 1;
-        break;
-    case 'l':
-        opt.l = 1;
-        break;
-    case 'm':
-        opt.m = 1;
-        break;
-    case 'p':
-        opt.p = 1;
-        break;
-    case 's':
-        opt.s = 1;
-        break;
-    case 't':
-        opt.t = 1;
-        break;
-    case 'u':
-        opt.u = 1;
-        break;
-    default:
-        lf_error(ERR_INVALID_OPTION, &c, true);
-        break;
+        return false;
+    }
+    while (n)
+    {
+        if (*nm < '0' || *nm > '9')
+        {
+            break;
+        }
+        --n;
+    }
+    return (n) ? false : true;
+}
+
+void small_options(int argc, char **argv, int *i)
+{
+    int tmp;
+    char c;
+
+    tmp = strlen(argv[*i]);
+    for (int j = 1; j < tmp; j++)
+    {
+        c = argv[*i][j];
+        if (c == 't')
+        {
+            opt.t = 1;
+            if (j == tmp - 1)
+            {
+                if (*i < argc - 1)
+                {
+                    if (is_digit(argv[*i + 1], strlen(argv[*i + 1])))
+                    {
+                        opt.tdeep = strtol(argv[*i + 1], NULL, 10);
+                        ++(*i);
+                    }
+                    else
+                    {
+                        opt.tdeep = 0;
+                    }
+                }
+                else
+                {
+                    opt.tdeep = 0;
+                }
+            }
+            else
+            {
+                opt.tdeep = 0;
+            }
+        }
+        else if (c == 'a')
+        {
+            opt.a = 1;
+        }
+        else if (c == 'l')
+        {
+            opt.l = 1;
+        }
+        else if (c == 'c')
+        {
+            opt.c = 1;
+        }
+        else if (c == 'd')
+        {
+            opt.d = 1;
+        }
+        else if (c == 'f')
+        {
+            opt.f = 1;
+        }
+        else if (c == 'p')
+        {
+            opt.p = 1;
+        }
+        else if (c == 'm')
+        {
+            opt.m = 1;
+        }
+        else if (c == 's')
+        {
+            opt.s = 1;
+        }
+        else if (c == 'g')
+        {
+            opt.g = 1;
+        }
+        else if (c == 'u')
+        {
+            opt.u = 1;
+        }
+        else if (c == 'h')
+        {
+            opt.h = 1;
+        }
+        else
+        {
+            lf_error(ERR_INVALID_OPTION, &c, 0);
+        }
     }
 }
 
-void lf_set_arguments(int argc, char *argv[], LIST l)
+void long_options(const char *arg)
 {
-    int tmp;
+    if (!strcmp(arg, "--help"))
+    {
+        opt.help = 1;
+    }
+    else if (!strcmp(arg, "--version"))
+    {
+        opt.version = 1;
+    }
+    else
+    {
+        lf_error(ERR_INVALID_OPTION, arg, true);
+    }
+}
 
+void set_arguments(int argc, char *argv[], LIST l)
+{
     for (int i = 1; i < argc; i++)
     {
         if (argv[i][0] == '-')
         {
             if (argv[i][1] == '-')
             {
-                if (!strcmp(argv[i], "--help"))
-                {
-                    opt.help = 1;
-                }
-                else if (!strcmp(argv[i], "--version"))
-                {
-                    opt.version = 1;
-                }
-                else
-                {
-                    lf_error(ERR_INVALID_OPTION, argv[i], true);
-                }
+                long_options(argv[i]);
             }
             else
             {
-                tmp = strlen(argv[i]);
-                for (int j = 1; j < tmp; j++)
-                {
-                    lf_set_option(argv[i][j]);
-                }
+                small_options(argc, argv, &i);
             }
         }
         else
@@ -101,7 +159,7 @@ int main(int argc, char *argv[], char *envp[])
     LIST l = LOPEN();
 
     lf_init();
-    lf_set_arguments(argc, argv, l);
+    set_arguments(argc, argv, l);
     if (LEMPTY(l))
     {
         LADD(l, LFIRST, "./");
@@ -131,16 +189,8 @@ int main(int argc, char *argv[], char *envp[])
         if (opt.c)
         {
             clr = 1;
-            if (getenv("LS_COLORS"))
-            {
-                lcolor = scan_for_color();
-                // for (ITERATOR i = LAT(lcolor,LFIRST); i ; LINC(&i))
-                // {
-                //     printf("%s\t%s\n", ((lfcolor*)i->data)->a, ((lfcolor*)i->data)->c);
-                // }
-                // exit(EXIT_FAILURE);
-            }
-            else
+            setbuf(stdout, NULL);
+            if (!(lcolor = scan_for_color()))
             {
                 lf_error(ERR_COLORS_NOT_AVILABLE, NULL, true);
             }
