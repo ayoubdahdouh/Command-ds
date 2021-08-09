@@ -1,0 +1,11 @@
+#error in print of "lf -m"
+#if DIR is false argument
+
+
+#ToBeDeveloped long_size(), long_user(), long_group().
+
+###################
+#   FUTURE VERSION
+###################
+
+#add -o option, to print with specific char (newline, semi-column, ...)

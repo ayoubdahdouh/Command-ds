@@ -99,16 +99,14 @@ void long_display(LIST l, format_long_t *fl, int max_user, int max_group, int ma
 
 void long_main(LIST l)
 {
-    struct stat s;
     format_long_t fl;
     lftype t;
-    int max_user = 0, max_group = 0, max_size = 0, max_perm = 0;
-    int tmp;
-    int multcol = 0;
+    int max_user = 0, max_group = 0, max_size = 0, max_perm = 0, j = 0, tmp, multcol = 0;
     char **secondcol = NULL;
+    ITERATOR it;
 
     if (!opt.l && (opt.s ^ opt.p ^ opt.m ^ opt.u ^ opt.g))
-    { // if only one of the optit = (lf_t)LGET(l, i);ons s, p, u, g, m  is setted
+    { // if only one of the options s, p, m, u, g is set
         multcol = 1;
     }
     memset(&fl, 0, FORMATLONGSIZ);
@@ -120,10 +118,6 @@ void long_main(LIST l)
     {
         fl.perm = (char **)lf_alloc(sizeof(char *) * l->count);
     }
-    if (multcol && opt.m)
-    { // allocate memory in case where multcol is set.
-        fl.mtime = (char **)lf_alloc(sizeof(char *) * l->count);
-    }
     if (opt.l || opt.u)
     {
         fl.user = (char **)lf_alloc(sizeof(char *) * l->count);
@@ -132,9 +126,12 @@ void long_main(LIST l)
     {
         fl.group = (char **)lf_alloc(sizeof(char *) * l->count);
     }
+    if (multcol && opt.m)
+    { // allocate memory in case where multcol is set.
+        fl.mtime = (char **)lf_alloc(sizeof(char *) * l->count);
+    }
 
-    int j = 0;
-    ITERATOR it = LAT(l, LFIRST);
+    it = LAT(l, LFIRST);
     while (it)
     {
         t = (lftype)it->data;
@@ -180,40 +177,41 @@ void long_main(LIST l)
         }
         if (multcol && opt.m)
         { // modification time; max_mtime = 16 (doesn't change)
-            fl.mtime[j] = long_mtime(NULL, &(s.st_mtime));
+            fl.mtime[j] = long_mtime(NULL, &t->st.st_mtime);
         }
         LINC(&it);
         ++j;
     }
-    if (multcol && opt.s)
-    {
-        secondcol = fl.size;
-    }
-    if (multcol && opt.p)
-    {
-        secondcol = fl.perm;
-    }
-    if (multcol && opt.m)
-    {
-        secondcol = fl.mtime;
-    }
-    if (multcol && opt.u)
-    {
-        secondcol = fl.user;
-    }
-    if (multcol && opt.g)
-    {
-        secondcol = fl.group;
-    }
+
     if (multcol)
     { // display multiple columns
+        if (opt.s)
+        {
+            secondcol = fl.size;
+        }
+        else if (opt.p)
+        {
+            secondcol = fl.perm;
+        }
+        else if (opt.m)
+        {
+            secondcol = fl.mtime;
+        }
+        else if (opt.u)
+        {
+            secondcol = fl.user;
+        }
+        else
+        { // if (opt.g)
+            secondcol = fl.group;
+        }
         column_main(l, secondcol);
     }
     else
     { // display one column
         long_display(l, &fl, max_user, max_group, max_size, max_perm);
     }
-    // desallocate memory
+    // free memory
     if (fl.user)
     {
         for (int i = 0; i < l->count; i++)
@@ -339,14 +337,14 @@ char *long_group(char *group, gid_t gid)
 
 char *long_mtime(char *buf, const time_t *atm)
 {
-    struct tm tm;
+    struct tm *tm;
 
     if (!buf)
     {
         buf = (char *)lf_alloc(sizeof(char) * 17);
     }
-    tm = *localtime(atm);
-    sprintf(buf, "%d-%02d-%02d %02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min);
+    tm = localtime(atm);
+    sprintf(buf, "%d-%02d-%02d %02d:%02d", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min);
     return buf;
 }
 

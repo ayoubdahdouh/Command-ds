@@ -248,7 +248,7 @@ void core(format_tree_t *tree)
              *  #case where link is dir
              *  # allocate strlen(f->d_name) + 2 // +2 is for the "/"
              * 
-             */
+             **/
             t = (lftype)lf_alloc(LFSIZ);
             t->st = s;
             t->name = (char *)lf_alloc(sizeof(char) * (strlen(f->d_name) + 1));
@@ -306,6 +306,5 @@ void core(format_tree_t *tree)
             LINC(&i);
         }
     }
-
     LCLOSE(l);
 }
