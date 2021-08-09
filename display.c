@@ -52,7 +52,7 @@ void lf_show_with_color(const char *nm, mode_t *m, bool nl)
                 }
                 else
                 {
-                    color = getcolor(lcolor, "ln", 0);
+                    color = getcolor(lcolor, "or", 0);
                     color2 = reset;
                 }
             }

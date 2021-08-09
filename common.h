@@ -45,9 +45,8 @@ void help();
 void version();
 
 void *lf_alloc(long int size);
-int lf_stat(const char *nm, struct stat *s);
-int lf_link(const char *nm);
-void lf_error(int e, const char *m, bool is_sys_err);
+bool lf_stat(const char *nm, struct stat *s);
+bool lf_link(const char *nm);
 void lf_init();
 void lf_quit();
 
@@ -55,8 +54,8 @@ int has_space(const char *nm);
 int is_absolute_path(const char *pth);
 char *lfext(const char *pth);
 
-#define ERR_INVALID_OPTION 1
-#define ERR_COLORS_NOT_AVILABLE 2
-#define ERR_DEPTH_WRONG 3
+#define ERR_INVALID_OPTION -1001
+#define ERR_COLORS_NOT_AVILABLE -1002
+#define ERR_DEPTH_WRONG -1003
 
 #endif

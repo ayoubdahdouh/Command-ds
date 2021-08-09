@@ -9,29 +9,6 @@
 #include "common.h"
 #include "list.h"
 
-int has_space(const char *name)
-{
-    int i, tmp;
-
-    tmp = strlen(name);
-    for (i = 0; (i < tmp) && (name[i] != ' '); i++)
-    {
-    }
-    return i != tmp;
-}
-
-void *lf_alloc(long int size)
-{
-    void *b = NULL;
-
-    b = malloc(size);
-    if (!b)
-    {
-        lf_error(errno, NULL, false);
-    }
-    return b;
-}
-
 void help()
 {
     printf("USAGE:\n");
@@ -48,6 +25,10 @@ void help()
     printf("    -r  used with -s, makes the size readable as 4K, 13M, 2G, etc.\n");
     printf("    -s  show sizes of files.\n");
     printf("    -t  show the contents of the subdirectories.\n");
+    printf("        use the option \"t\" with DEPTH:\n");
+    printf("            %s -[...]t [DEPTH] [DIR] ...\n", PROGRAM);
+    printf("        or without:\n");
+    printf("            %s -[...]t[...]  [DIR] ...\n", PROGRAM);
     printf("    -u  show the owners of files.\n");
     printf("    -v  version of lf command.\n\n");
 }
@@ -57,78 +38,42 @@ void version()
     printf("Version: %s %s.\n", PROGRAM, VERSION);
 }
 
+void *lf_alloc(long int size)
+{
+    void *b;
+
+    b = malloc(size);
+    if (!b)
+    {
+        printf("%s: %s\n", PROGRAM, strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+    return b;
+}
+
 // places the contents of the symbolic link pathname in the buffer "buf" (global variable).
 // if failed, also print error in the buffer "buf"
-int lf_link(const char *nm)
+bool lf_link(const char *nm)
 {
-    int readlinksiz;
-    readlinksiz = readlink(path, buf, PATH_MAX - 1);
-    if (readlinksiz == -1)
+    int cnt;
+    cnt = readlink(path, buf, PATH_MAX - 1);
+    if (cnt == -1)
     {
-        lf_error(errno, NULL, true);
-        return 0;
+        strcpy(buf, strerror(errno));
+        return false;
     }
-    buf[readlinksiz] = 0;
-    return 1;
+    return true;
 }
 
 // if failed, also print error in the buffer "buf"
-int lf_stat(const char *nm, struct stat *s)
+bool lf_stat(const char *nm, struct stat *s)
 {
     if (lstat(nm, s) == -1)
     {
-        lf_error(errno, NULL, true);
-        return 0;
+        strcpy(buf, strerror(errno));
+        return false;
     }
-    return 1;
-}
-
-void lf_error(int e, const char *m, bool is_sys_err)
-{
-    char *s;
-    if (is_sys_err)
-    {
-        s = strerror(e);
-        if (s)
-        {
-            strcpy(buf, s);
-        }
-        else
-        {
-            buf[0] = 0;
-        }
-        if ((e == ENOMEM))
-        {
-            exit(EXIT_FAILURE);
-        }
-    }
-    else
-    {
-        if (e == ERR_INVALID_OPTION)
-        {
-            printf("%s: Invalid option \"%s\"\n", PROGRAM, m);
-            lf_quit();
-        }
-        else if (e == ERR_COLORS_NOT_AVILABLE)
-        {
-            printf("%s: Warning: cannot use \"-c\" enavailable because the environment variable \"LS_COLORS\" is not defined.\n", PROGRAM);
-            lf_quit();
-        }
-        else if (e == ERR_DEPTH_WRONG)
-        {
-            printf("%s: Warning: wrong format.\n"
-                   "use the option \"t\" with DEPTH:\n"
-                   "%s -[...]t [DEPTH] [DIR] ...\n"
-                   "or without:\n"
-                   "%s -[...]t[...]  [DIR] ...\n",
-                   PROGRAM, PROGRAM, PROGRAM);
-            lf_quit();
-        }
-        else
-        {
-            strcpy(buf, m);
-        }
-    }
+    return true;
 }
 
 void lf_init()
@@ -147,6 +92,17 @@ void lf_quit()
     free(path);
     free(buf);
     exit(EXIT_SUCCESS);
+}
+
+int has_space(const char *name)
+{
+    int i, tmp;
+
+    tmp = strlen(name);
+    for (i = 0; (i < tmp) && (name[i] != ' '); i++)
+    {
+    }
+    return i != tmp;
 }
 
 int is_absolute_path(const char *pth)

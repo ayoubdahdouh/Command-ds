@@ -36,71 +36,72 @@ void run(LIST a)
         // initialise 'path' and 'pathsiz'
         path[0] = 0;
         nm = (char *)it->data;
-        lf_stat(nm, &s);
-        /**
-         * 
-         *  case where link is dir...
-         * 
-         */
-        if (S_ISDIR(s.st_mode))
+        if (!lf_stat(nm, &s))
         {
-            // init global variable "path" and "pathsiz"
-            strcpy(path, nm);
-            pathsiz = strlen(nm);
-            // if tree
-            if (opt.t)
-            { // if first time then allocate memory for "parent_has_next".
-                tree.level = 0;
-                if (!tree.parent_has_next)
-                {
-                    tree.parent_has_next = (char *)lf_alloc(sizeof(char) * PATH_MAX);
-                }
-                if (path[pathsiz - 1] == '/')
-                {
-                    pathsiz--;
-                    path[pathsiz] = 0;
-                }
-                lf_show(path, &s.st_mode, 1);
-            }
-            // add slash if doesn't have it.
-            if (path[pathsiz - 1] != '/')
-            {
-                path[pathsiz] = '/';
-                pathsiz++;
-                path[pathsiz] = 0;
-            }
-            // if multiple arguments then print name of each argument.
-            if (mularg)
-            {
-                printf("%s:\n", path);
-            }
-            // engine :)
-            core(&tree);
+            printf("%s: \"%s\" %s\n", PROGRAM, nm, buf);
         }
         else
         {
-            LRESET(b);
-            t = (lftype)lf_alloc(LFSIZ);
-            t->st = s;
-            t->name = nm;
-            LADD(b, LFIRST, t);
-            if (mularg)
+            if (S_ISDIR(s.st_mode))
             {
-                printf("%s:\n", nm);
-            }
-            if (opt.l || opt.p || opt.s || opt.u || opt.g || opt.m)
-            {
-                long_main(b);
+                // init global variable "path" and "pathsiz"
+                strcpy(path, nm);
+                pathsiz = strlen(nm);
+                // if tree
+                if (opt.t)
+                { // if first time then allocate memory for "parent_has_next".
+                    tree.level = 0;
+                    if (!tree.parent_has_next)
+                    {
+                        tree.parent_has_next = (char *)lf_alloc(sizeof(char) * PATH_MAX);
+                    }
+                    if (path[pathsiz - 1] == '/')
+                    {
+                        pathsiz--;
+                        path[pathsiz] = 0;
+                    }
+                    lf_show(path, &s.st_mode, 1);
+                }
+                // add slash if doesn't have it.
+                if (path[pathsiz - 1] != '/')
+                {
+                    path[pathsiz] = '/';
+                    pathsiz++;
+                    path[pathsiz] = 0;
+                }
+                // if multiple arguments then print name of each argument.
+                if (mularg)
+                {
+                    printf("%s:\n", path);
+                }
+                // engine :)
+                core(&tree);
             }
             else
             {
-                lf_show(nm, &s.st_mode, 1);
+                LRESET(b);
+                t = (lftype)lf_alloc(LFSIZ);
+                t->st = s;
+                t->name = nm;
+                LADD(b, LFIRST, t);
+                if (mularg)
+                {
+                    printf("%s:\n", nm);
+                }
+                if (opt.l || opt.p || opt.s || opt.u || opt.g || opt.m)
+                {
+                    long_main(b);
+                }
+                else
+                {
+                    lf_show(nm, &s.st_mode, 1);
+                    printf("\n");
+                }
+            }
+            if (i != a->count - 1)
+            {
                 printf("\n");
             }
-        }
-        if (i != a->count - 1)
-        {
-            printf("\n");
         }
         LINC(&it);
         ++i;
@@ -231,7 +232,7 @@ void core(format_tree_t *tree)
         }
         else
         {
-            printf("%s: access denied to \"%s\"\n", PROGRAM, path);
+            printf("%s: access denied to \"%s\": %s\n", PROGRAM, path, buf);
         }
         return;
     }
@@ -242,30 +243,37 @@ void core(format_tree_t *tree)
         if (opt.a || (f->d_name[0] != '.'))
         {
             strcpy(&path[pathsiz], f->d_name);
-            lf_stat(path, &s);
-            /**
-             * 
-             *  #case where link is dir
-             *  # allocate strlen(f->d_name) + 2 // +2 is for the "/"
-             * 
-             **/
-            t = (lftype)lf_alloc(LFSIZ);
-            t->st = s;
-            t->name = (char *)lf_alloc(sizeof(char) * (strlen(f->d_name) + 1));
-            strcpy(t->name, f->d_name);
-            if (S_ISDIR(s.st_mode))
+            if (!lf_stat(path, &s))
             {
-                if (opt.d)
-                {
-                    LADD(l, LLAST, t);
-                }
+                printf("%s: %s: %s", PROGRAM, path, buf);
+                lf_quit();
             }
             else
             {
-                if (opt.f)
+                /**
+                 * 
+                 *  case where link is dir
+                 *  allocate strlen(f->d_name) + 2 // +2 is for the "/"
+                 * 
+                 **/
+                t = (lftype)lf_alloc(LFSIZ);
+                t->st = s;
+                t->name = (char *)lf_alloc(sizeof(char) * (strlen(f->d_name) + 1));
+                strcpy(t->name, f->d_name);
+                if (S_ISDIR(s.st_mode))
                 {
-                    LADD(l, LFIRST, t);
-                    ++index;
+                    if (opt.d)
+                    {
+                        LADD(l, LLAST, t);
+                    }
+                }
+                else
+                {
+                    if (opt.f)
+                    {
+                        LADD(l, LFIRST, t);
+                        ++index;
+                    }
                 }
             }
         }
