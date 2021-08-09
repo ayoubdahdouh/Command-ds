@@ -48,7 +48,8 @@ void column_display(LIST l, int *ls, int *lm, char **tb, int *ts, int *tm, int c
 void column_main(LIST l, char **tb)
 {
     struct winsize w;
-    int cl = l->count, ln = 1, winsiz, ok = 0, cnt;
+    int cl = l->count, ln = 1, winsiz, ok = 0;
+    unsigned long int cnt;
     int *ls;        // list sizes
     int *lm;        // list max sizes
     int *ts = NULL; // array sizes of "tb"
@@ -69,7 +70,7 @@ void column_main(LIST l, char **tb)
     }
     // length of each name.
     it = LAT(l, LFIRST);
-    for (int i = 0; i < l->count; i++)
+    for (int i = 0; i < l->count; i++, LINC(&it))
     {
         t = (lftype)it->data;
         if (has_space(t->name))
@@ -88,7 +89,6 @@ void column_main(LIST l, char **tb)
         {
             ts[i] = strlen(tb[i]) + 1; // +1 for space between "tb" and "l"
         }
-        LINC(&it);
     }
     while (!ok)
     {
@@ -117,8 +117,8 @@ void column_main(LIST l, char **tb)
             }
             if (tb)
             {
-                tm[i] = y;
                 cnt += x + y;
+                tm[i] = y;
             }
             else
             {
