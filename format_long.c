@@ -32,12 +32,12 @@ void long_print(char *fn, int m, int f)
     }
 }
 
-void long_display(LIST l, format_long_t *fl, int max_user, int max_group, int max_size, int max_perm)
+void long_display(linklist l, format_long_t *fl, int max_user, int max_group, int max_size, int max_perm)
 {
     char buf[20];
     lftype t;
     int j = 0;
-    for (ITERATOR i = LAT(l, LFIRST); i; LINC(&i))
+    for (iterator i = lat(l, LFIRST); i; linc(&i))
     {
         t = (lftype)i->data;
         // type of file.
@@ -97,13 +97,13 @@ void long_display(LIST l, format_long_t *fl, int max_user, int max_group, int ma
     }
 }
 
-void long_main(LIST l)
+void long_main(linklist l)
 {
     format_long_t fl;
     lftype t;
     int max_user = 0, max_group = 0, max_size = 0, max_perm = 0, j = 0, tmp, multcol = 0;
     char **secondcol = NULL;
-    ITERATOR it;
+    iterator it;
 
     if (!opt.l && (opt.s ^ opt.p ^ opt.m ^ opt.u ^ opt.g))
     { // if only one of the options s, p, m, u, g is set
@@ -131,7 +131,7 @@ void long_main(LIST l)
         fl.mtime = (char **)lf_alloc(sizeof(char *) * l->count);
     }
 
-    it = LAT(l, LFIRST);
+    it = lat(l, LFIRST);
     while (it)
     {
         t = (lftype)it->data;
@@ -179,7 +179,7 @@ void long_main(LIST l)
         { // modification time; max_mtime = 16 (doesn't change)
             fl.mtime[j] = long_mtime(NULL, &t->st.st_mtime);
         }
-        LINC(&it);
+        linc(&it);
         ++j;
     }
 

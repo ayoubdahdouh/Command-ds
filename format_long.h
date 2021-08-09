@@ -20,8 +20,8 @@ typedef struct format_long_t
 
 // S_ISVTX
 void long_print(char *fname, int max, int flag);
-void long_display(LIST l, format_long_t *lf_tb, int max_user, int max_group, int max_size, int max_perm);
-void long_main(LIST l);
+void long_display(linklist l, format_long_t *lf_tb, int max_user, int max_group, int max_size, int max_perm);
+void long_main(linklist l);
 char *long_permission(char *perm, __mode_t *mode);
 char *long_size(char *buf, long int size2);
 char *long_user(char *user, uid_t uid);

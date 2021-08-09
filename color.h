@@ -34,7 +34,7 @@ typedef struct lfcolor
 
 #define LFCOLORSIZ sizeof(lfcolor)
 
-char *getcolor(LIST l, const char *nm, bool is_ext);
-LIST scan_for_color();
+char *getcolor(linklist l, const char *nm, bool is_ext);
+linklist scan_for_color();
 
 #endif

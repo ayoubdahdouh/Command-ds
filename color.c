@@ -4,9 +4,9 @@
 #include "color.h"
 #include "list.h"
 
-LIST scan_for_color()
+linklist scan_for_color()
 {
-    LIST l = LOPEN();
+    linklist l = lopen();
     lfcolor *c;
     char *b, *v;
     int n, i, eq = 0, sm = 0;
@@ -58,7 +58,7 @@ LIST scan_for_color()
                 eq = 0;
                 sm = i + 1;
 
-                LADD(l, LFIRST, c);
+                ladd(l, LFIRST, c);
             }
             else
             {
@@ -76,22 +76,22 @@ LIST scan_for_color()
         c = (lfcolor *)malloc(LFCOLORSIZ);
         c->a = &v[sm];
         c->c = &v[eq] + 1;
-        LADD(l, LFIRST, c);
+        ladd(l, LFIRST, c);
     }
     return l;
 }
 
-char *getcolor(LIST l, const char *nm, bool is_ext)
+char *getcolor(linklist l, const char *nm, bool is_ext)
 {
     int ok = 0;
-    ITERATOR i;
+    iterator i;
     lfcolor *tmp;
 
-    if (LEMPTY(l))
+    if (lempty(l))
     {
         return NULL;
     }
-    for (i = LAT(l, LFIRST); i && !ok; LINC(&i))
+    for (i = lat(l, LFIRST); i && !ok; linc(&i))
     {
         tmp = (lfcolor *)i->data;
         if ((is_ext == tmp->e) &&

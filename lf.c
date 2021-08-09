@@ -17,20 +17,20 @@
 #include "color.h"
 #include "display.h"
 
-void run(LIST a)
+void run(linklist a)
 {
     char *nm;
     int i = 0;
     struct stat s;
     format_tree_t tree;
     lftype t;
-    LIST b;
-    ITERATOR it;
+    linklist b;
+    iterator it;
     int mularg = (a->count != 1);
 
     memset(&tree, 0, LFTREESIZ);
-    it = LAT(a, LFIRST);
-    b = LOPEN();
+    it = lat(a, LFIRST);
+    b = lopen();
     while (it)
     {
         // initialise 'path' and 'pathsiz'
@@ -79,11 +79,11 @@ void run(LIST a)
             }
             else
             {
-                LRESET(b);
+                lreset(b);
                 t = (lftype)lf_alloc(LFSIZ);
                 t->st = s;
                 t->name = nm;
-                LADD(b, LFIRST, t);
+                ladd(b, LFIRST, t);
                 if (mularg)
                 {
                     printf("%s:\n", nm);
@@ -103,10 +103,10 @@ void run(LIST a)
                 printf("\n");
             }
         }
-        LINC(&it);
+        linc(&it);
         ++i;
     }
-    LCLOSE(b);
+    lclose(b);
 }
 
 int lf_count_dir_items(DIR *d)
@@ -204,7 +204,7 @@ void core(format_tree_t *tree)
     DIR *d;
     struct dirent *f;
     struct stat s;
-    LIST l;
+    linklist l;
     lftype t;
     int index;
 
@@ -236,7 +236,7 @@ void core(format_tree_t *tree)
         }
         return;
     }
-    l = LOPEN();
+    l = lopen();
     index = 0;
     while ((f = readdir(d)))
     {
@@ -264,14 +264,14 @@ void core(format_tree_t *tree)
                 {
                     if (opt.d)
                     {
-                        LADD(l, LLAST, t);
+                        ladd(l, LLAST, t);
                     }
                 }
                 else
                 {
                     if (opt.f)
                     {
-                        LADD(l, LFIRST, t);
+                        ladd(l, LFIRST, t);
                         ++index;
                     }
                 }
@@ -279,17 +279,17 @@ void core(format_tree_t *tree)
         }
     }
     closedir(d);
-    if (LEMPTY(l))
+    if (lempty(l))
     {
         return;
     }
     if (index > 0)
     { // if there's files
-        LSORT(l, LFIRST, index - 1, (int (*)(void *, void *))cmp);
+        lquicksort(l, LFIRST, index - 1, (int (*)(void *, void *))cmp);
     }
     if (index != l->count)
     { // if there's folders
-        LSORT(l, index, LLAST, (int (*)(void *, void *))cmp);
+        lquicksort(l, index, LLAST, (int (*)(void *, void *))cmp);
     }
     if (opt.t)
     { // format tree
@@ -303,16 +303,16 @@ void core(format_tree_t *tree)
     { // format column
         column_main(l, NULL);
     }
-    if (!LEMPTY(l))
+    if (!lempty(l))
     {
-        ITERATOR i = LAT(l, LFIRST);
+        iterator i = lat(l, LFIRST);
         while (i)
         {
             t = (lftype)i->data;
             free(t->name);
             free(t);
-            LINC(&i);
+            linc(&i);
         }
     }
-    LCLOSE(l);
+    lclose(l);
 }

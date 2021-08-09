@@ -32,7 +32,7 @@ void tree_display(format_tree_t *tree, bool last)
     }
 }
 
-void tree_main(LIST l, int index, format_tree_t *tree)
+void tree_main(linklist l, int index, format_tree_t *tree)
 {
     int last;
     int psiz;
@@ -50,20 +50,20 @@ void tree_main(LIST l, int index, format_tree_t *tree)
     // for files.
     while (j < index)
     {
-        t = (lftype)(LAT(l, LFIRST))->data;
+        t = (lftype)(lat(l, LFIRST))->data;
         last = (j == n - if_a) ? 1 : 0;
         tree_display(tree, last);
         lf_show(t->name, &t->st.st_mode, true);
         free(t->name);
         free(t);
-        LDEL(l, LFIRST);
+        ldel(l, LFIRST);
         ++j;
     }
     // for folders.
     psiz = pathsiz;
     while (j < n)
     {
-        t = (lftype)(LAT(l, LFIRST))->data;
+        t = (lftype)(lat(l, LFIRST))->data;
         if (strcmp(t->name, ".") && strcmp(t->name, ".."))
         {
             pathsiz = psiz;
@@ -91,7 +91,7 @@ void tree_main(LIST l, int index, format_tree_t *tree)
         }
         free(t->name);
         free(t);
-        LDEL(l, LFIRST);
+        ldel(l, LFIRST);
         ++j;
     }
 }

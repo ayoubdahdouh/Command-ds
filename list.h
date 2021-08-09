@@ -3,45 +3,45 @@
 
 #include <limits.h>
 
-typedef struct NODE
+typedef struct node
 {
     void *data;
-    struct NODE *next;
-} * NODE, *ITERATOR;
+    struct node *next;
+} * node, *iterator;
 
-typedef struct LIST
+typedef struct linklist
 {
     int count; // number of elements in LIST
-    NODE first;
-    NODE last;
-} * LIST;
+    node first;
+    node last;
+} * linklist;
 
-#define LISTSIZ sizeof(struct LIST)
-#define NODESIZ sizeof(struct NODE)
+#define LINKLISTSIZ sizeof(struct linklist)
+#define NODESIZ sizeof(struct node)
 #define ITERATORSIZ NODESIZ
 #define LLAST -1
 #define LFIRST -2
 
 // list operations
-LIST LOPEN();
-void LCLOSE(LIST l);
+linklist lopen();
+void lclose(linklist l);
 
-int LEMPTY(LIST l);  // if it's empty
-void LRESET(LIST l); // empty listI
+int lempty(linklist l);  // if it's empty
+void lreset(linklist l); // empty listI
 
-void LADD(LIST l, long int at, void *data);
-void LDEL(LIST l, long int at);
+void ladd(linklist l, long int at, void *data);
+void ldel(linklist l, long int at);
 
-void *LGET(LIST l, long int at);
-void *LSET(LIST l, long int at, void *data);
+void *lget(linklist l, long int at);
+void *lset(linklist l, long int at, void *data);
 
-void LSORT(LIST l, long int from, long int to, int selector(void *, void *));
+void lquicksort(linklist l, long int from, long int to, int selector(void *, void *));
 
 // show list
-void LSHOW(LIST l);
+void lshow(linklist l);
 
 //  iterator functions
-ITERATOR LAT(LIST l, int at);
-void LINC(ITERATOR *i);
+iterator lat(linklist l, int at);
+void linc(iterator *i);
 
 #endif

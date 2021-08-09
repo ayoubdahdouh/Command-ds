@@ -10,7 +10,7 @@
 #include "list.h"
 #include "display.h"
 
-void column_display(LIST l, int *ls, int *lm, char **tb, int *ts, int *tm, int cl, int ln)
+void column_display(linklist l, int *ls, int *lm, char **tb, int *ts, int *tm, int cl, int ln)
 {
     int x;
     lftype t;
@@ -24,7 +24,7 @@ void column_display(LIST l, int *ls, int *lm, char **tb, int *ts, int *tm, int c
             {
                 // if options -s, -p, -m, -u or -g is set
                 // then call "func" to printout the size, the permissions, the modification time, etc...
-                t = (lftype)LGET(l, x);
+                t = (lftype)lget(l, x);
                 if (tb)
                 {
                     long_print(tb[x], tm[j] - 1, 1);
@@ -45,7 +45,7 @@ void column_display(LIST l, int *ls, int *lm, char **tb, int *ts, int *tm, int c
     }
 }
 
-void column_main(LIST l, char **tb)
+void column_main(linklist l, char **tb)
 {
     struct winsize w;
     int cl = l->count, ln = 1, winsiz, ok = 0;
@@ -55,7 +55,7 @@ void column_main(LIST l, char **tb)
     int *ts = NULL; // array sizes of "tb"
     int *tm = NULL; // array max sizes of "tb"
     int x, y = 0;
-    ITERATOR it;
+    iterator it;
     lftype t;
     int k;
 
@@ -69,8 +69,8 @@ void column_main(LIST l, char **tb)
         tm = (int *)lf_alloc(sizeof(int) * l->count);
     }
     // length of each name.
-    it = LAT(l, LFIRST);
-    for (int i = 0; i < l->count; i++, LINC(&it))
+    it = lat(l, LFIRST);
+    for (int i = 0; i < l->count; i++, linc(&it))
     {
         t = (lftype)it->data;
         if (has_space(t->name))

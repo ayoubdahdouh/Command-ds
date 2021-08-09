@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include "list.h"
 
-void column_main(LIST l, char **tb);
-void column_display(LIST l, int *ls, int *lm, char **tb, int *ts, int *tm, int cl, int ln);
+void column_main(linklist l, char **tb);
+void column_display(linklist l, int *ls, int *lm, char **tb, int *ts, int *tm, int cl, int ln);
 
 #endif

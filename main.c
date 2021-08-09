@@ -10,7 +10,7 @@
 lfoptions opt;
 char *path, *buf;
 int pathsiz, clr = 0, fl = 0;
-LIST lcolor;
+linklist lcolor;
 
 bool is_digit(const char *nm, int n)
 {
@@ -132,7 +132,7 @@ void long_options(const char *arg)
     }
 }
 
-void set_arguments(int argc, char *argv[], LIST l)
+void set_arguments(int argc, char *argv[], linklist l)
 {
     for (int i = 1; i < argc; i++)
     {
@@ -149,20 +149,20 @@ void set_arguments(int argc, char *argv[], LIST l)
         }
         else
         {
-            LADD(l, LLAST, argv[i]);
+            ladd(l, LLAST, argv[i]);
         }
     }
 }
 
 int main(int argc, char *argv[], char *envp[])
 {
-    LIST l = LOPEN();
+    linklist l = lopen();
 
     lf_init();
     set_arguments(argc, argv, l);
-    if (LEMPTY(l))
+    if (lempty(l))
     {
-        LADD(l, LFIRST, "./");
+        ladd(l, LFIRST, "./");
     }
     if (opt.help)
     {
@@ -200,6 +200,6 @@ int main(int argc, char *argv[], char *envp[])
         run(l);
     }
     lf_quit(l);
-    LCLOSE(l);
+    lclose(l);
     return 0;
 }

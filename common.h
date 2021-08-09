@@ -39,7 +39,7 @@ typedef struct lftype
 extern lfoptions opt;
 extern char *path, *buf;
 extern int pathsiz, clr, fl;
-extern LIST lcolor;
+extern linklist lcolor;
 
 void help();
 void version();

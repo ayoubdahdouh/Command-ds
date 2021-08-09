@@ -3,8 +3,8 @@
 #include <string.h>
 #include "list.h"
 
-void quicksort(LIST l, int from, int to, int compare(void *, void *));
-int partition(LIST l, int from, int to, int compare(void *, void *));
+void quicksort(linklist l, int from, int to, int compare(void *, void *));
+int partition(linklist l, int from, int to, int compare(void *, void *));
 
 void LERR(const char *msg)
 {
@@ -14,11 +14,11 @@ void LERR(const char *msg)
     }
 }
 
-LIST LOPEN()
+linklist lopen()
 {
-    LIST l;
+    linklist l;
 
-    l = (LIST)malloc(LISTSIZ);
+    l = (linklist)malloc(LINKLISTSIZ);
     if (!l)
     {
         LERR("[LOPEN] Memory allocation failed");
@@ -30,14 +30,14 @@ LIST LOPEN()
     return l;
 }
 
-void LCLOSE(LIST l)
+void lclose(linklist l)
 {
     if (!l)
     {
         LERR("[LCLOSE] Memory allocation failed");
         return;
     }
-    NODE x, y = l->first;
+    node x, y = l->first;
     while (l->count)
     {
         --l->count;
@@ -48,7 +48,7 @@ void LCLOSE(LIST l)
     free(l);
 }
 
-int LEMPTY(LIST l)
+int lempty(linklist l)
 {
     if (l)
     {
@@ -57,22 +57,22 @@ int LEMPTY(LIST l)
     return 1;
 }
 
-void LRESET(LIST l)
+void lreset(linklist l)
 {
     if (!l)
     {
         LERR("[LRESET] No list is given");
         return;
     }
-    while (!LEMPTY(l))
+    while (!lempty(l))
     {
-        LDEL(l, LFIRST);
+        ldel(l, LFIRST);
     }
 }
 
-void LADD(LIST l, long int at, void *data)
+void ladd(linklist l, long int at, void *data)
 {
-    NODE n, x, y;
+    node n, x, y;
 
     if (!l)
     {
@@ -97,7 +97,7 @@ void LADD(LIST l, long int at, void *data)
     {
         at = l->count;
     }
-    n = (NODE)malloc(NODESIZ);
+    n = (node)malloc(NODESIZ);
     n->data = data;
     n->next = NULL;
 
@@ -147,9 +147,9 @@ void LADD(LIST l, long int at, void *data)
     l->count++;
 }
 
-void LDEL(LIST l, long int at)
+void ldel(linklist l, long int at)
 {
-    NODE x, y;
+    node x, y;
 
     if (!l)
     {
@@ -216,9 +216,9 @@ void LDEL(LIST l, long int at)
     --l->count;
 }
 
-void *LGET(LIST l, long int at)
+void *lget(linklist l, long int at)
 {
-    NODE y;
+    node y;
 
     if (!l)
     {
@@ -230,7 +230,7 @@ void *LGET(LIST l, long int at)
         LERR("[LGET] Out of bounds");
         return NULL;
     }
-    if (LEMPTY(l))
+    if (lempty(l))
     {
         LERR("[LGET] The list is empty");
         return NULL;
@@ -252,9 +252,9 @@ void *LGET(LIST l, long int at)
     return y->data;
 }
 
-void *LSET(LIST l, long int at, void *data)
+void *lset(linklist l, long int at, void *data)
 {
-    NODE n;
+    node n;
     void *tmp;
 
     if (!l)
@@ -267,7 +267,7 @@ void *LSET(LIST l, long int at, void *data)
         LERR("[LSET] Out of bounds");
         return NULL;
     }
-    if (LEMPTY(l))
+    if (lempty(l))
     {
         LERR("[LSET] The list is empty");
         return NULL;
@@ -291,7 +291,7 @@ void *LSET(LIST l, long int at, void *data)
     return tmp;
 }
 
-void LSORT(LIST l, long int from, long int to, int compare(void *, void *))
+void lquicksort(linklist l, long int from, long int to, int compare(void *, void *))
 {
     if (!l)
     {
@@ -327,11 +327,11 @@ void LSORT(LIST l, long int from, long int to, int compare(void *, void *))
     quicksort(l, from, to, compare);
 }
 
-int partition(LIST l, int from, int to, int compare(void *, void *))
+int partition(linklist l, int from, int to, int compare(void *, void *))
 {
-    ITERATOR p = LAT(l, to);
-    ITERATOR j = LAT(l, from);
-    ITERATOR i = NULL;
+    iterator p = lat(l, to);
+    iterator j = lat(l, from);
+    iterator i = NULL;
     void *x;
     int k = from;
 
@@ -341,27 +341,27 @@ int partition(LIST l, int from, int to, int compare(void *, void *))
         {
             if (i)
             {
-                LINC(&i);
+                linc(&i);
             }
             else
             {
-                i = LAT(l, from);
+                i = lat(l, from);
             }
             x = j->data;
             j->data = i->data;
             i->data = x;
             ++k;
         }
-        LINC(&j);
+        linc(&j);
         --to;
     }
     if (i)
     {
-        LINC(&i);
+        linc(&i);
     }
     else
     {
-        i = LAT(l, from);
+        i = lat(l, from);
     }
     x = p->data;
     p->data = i->data;
@@ -369,7 +369,7 @@ int partition(LIST l, int from, int to, int compare(void *, void *))
     return k;
 }
 
-void quicksort(LIST l, int from, int to, int compare(void *, void *))
+void quicksort(linklist l, int from, int to, int compare(void *, void *))
 {
     if (from < to)
     {
@@ -379,7 +379,7 @@ void quicksort(LIST l, int from, int to, int compare(void *, void *))
     }
 }
 
-void LINC(ITERATOR *i)
+void linc(iterator *i)
 {
     if (i)
     {
@@ -387,9 +387,9 @@ void LINC(ITERATOR *i)
     }
 }
 
-ITERATOR LAT(LIST l, int at)
+iterator lat(linklist l, int at)
 {
-    ITERATOR i;
+    iterator i;
 
     if (!l)
     {
@@ -401,7 +401,7 @@ ITERATOR LAT(LIST l, int at)
         LERR("[LAT] Out of bounds");
         return NULL;
     }
-    if (LEMPTY(l))
+    if (lempty(l))
     {
         LERR("[LAT] The list is empty");
         return NULL;
