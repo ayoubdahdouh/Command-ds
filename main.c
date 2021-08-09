@@ -111,7 +111,7 @@ void small_options(int argc, char **argv, int *i)
         }
         else
         {
-            lf_error(ERR_INVALID_OPTION, &c, 0);
+        printf("%s: Invalid option \"%c\"\n", PROGRAM, c);
         }
     }
 }
@@ -128,7 +128,7 @@ void long_options(const char *arg)
     }
     else
     {
-        lf_error(ERR_INVALID_OPTION, arg, true);
+        printf("%s: Invalid option \"%s\"\n", PROGRAM, arg);
     }
 }
 
@@ -174,7 +174,8 @@ int main(int argc, char *argv[], char *envp[])
     }
     else if (opt.t && (opt.f || opt.d || opt.l || opt.p || opt.s || opt.u || opt.g || opt.m))
     {
-        printf("Warning: The option 't' cannot be used with 'f', 'd', 'l', 'p', 's', 'u', 'g' or 'm'.\n");
+        printf("%s: the option 't' cannot be used with 'f', 'd', 'l', 'p', 's', 'u', 'g' or 'm'.\n", PROGRAM);
+        lf_quit();
     }
     else
     {
@@ -192,7 +193,8 @@ int main(int argc, char *argv[], char *envp[])
             setbuf(stdout, NULL);
             if (!(lcolor = scan_for_color()))
             {
-                lf_error(ERR_COLORS_NOT_AVILABLE, NULL, true);
+                printf("%s: cannot use \"-c\" enavailable because the environment variable \"LS_COLORS\" is not defined.\n", PROGRAM);
+                lf_quit();
             }
         }
         run(l);
