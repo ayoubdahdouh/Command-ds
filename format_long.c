@@ -40,11 +40,6 @@ void long_display(linklist l, format_long_t *fl, int max_user, int max_group, in
     for (iterator i = lat(l, LFIRST); i; linc(&i))
     {
         t = (lftype)i->data;
-        // type of file.
-        if (LF_opt.l)
-        {
-            printf("%c", filetype(&t->st.st_mode));
-        }
         if (LF_opt.l || LF_opt.p)
         {
             long_print(fl->perm[j], max_perm, 0);
@@ -322,73 +317,74 @@ char *long_mtime(char *buf, const time_t *atm)
     return buf;
 }
 
-char *long_permission(char *buf, __mode_t *mode)
+char *long_permission(char *b, __mode_t *m)
 {
     int i = 0;
-    __mode_t modes[9] = {S_IRUSR, S_IWUSR, S_IXUSR, S_IRGRP, S_IWGRP, S_IXGRP, S_IROTH, S_IWOTH, S_IXOTH};
-    if (!buf)
-    {
-        buf = (char *)lf_alloc(sizeof(char) * 11);
-    }
+    mode_t modes[9] = {S_IRUSR, S_IWUSR, S_IXUSR, S_IRGRP, S_IWGRP, S_IXGRP, S_IROTH, S_IWOTH, S_IXOTH};
 
-    for (i = 0; i < 9; i += 3)
+    if (!b)
     {
-        if (*mode & modes[i])
+        b = (char *)lf_alloc(sizeof(char) * 12);
+    }
+    b[0] = filetype(m);
+    for (i = 1; i < 10; i += 3)
+    {
+        if (*m & modes[i - 1])
         {
-            buf[i] = 'r';
+            b[i] = 'r';
         }
         else
         {
-            buf[i] = '-';
+            b[i] = '-';
         }
-        if (*mode & modes[i + 1])
+        if (*m & modes[i])
         {
-            buf[i + 1] = 'w';
-        }
-        else
-        {
-            buf[i + 1] = '-';
-        }
-        if (*mode & modes[i + 2])
-        {
-            buf[i + 2] = 'x';
+            b[i + 1] = 'w';
         }
         else
         {
-            buf[i + 2] = '-';
+            b[i + 1] = '-';
+        }
+        if (*m & modes[i + 1])
+        {
+            b[i + 2] = 'x';
+        }
+        else
+        {
+            b[i + 2] = '-';
         }
     }
-    if (*mode & S_ISUID)
+    if (*m & S_ISUID)
     {
-        if (buf[2] == '-')
+        if (b[3] == '-')
         {
-            buf[2] = 'S';
+            b[3] = 'S';
         }
         else
         {
-            buf[2] = 's';
+            b[3] = 's';
         }
     }
-    if (*mode & S_ISGID)
+    if (*m & S_ISGID)
     {
-        if (buf[5] == '-')
+        if (b[6] == '-')
         {
-            buf[5] = 'S';
+            b[6] = 'S';
         }
         else
         {
-            buf[5] = 's';
+            b[6] = 's';
         }
     }
-    if (*mode & S_ISVTX)
+    if (*m & S_ISVTX)
     {
-        buf[9] = 't';
-        buf[10] = 0;
+        b[10] = 't';
+        b[11] = 0;
     }
     else
     {
-        buf[9] = 0;
+        b[10] = 0;
     }
 
-    return buf;
+    return b;
 }
