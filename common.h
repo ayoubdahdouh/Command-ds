@@ -14,6 +14,8 @@ typedef struct lfoptions
     bool d; // show only directories.
     bool f; // show only files.
     bool g; // show groups of files.
+    bool i; // show inodes of files.
+    bool n; // show nlinks of files.
     bool l; // show file's informations(permissions and size).
     bool m; // show modification time of each file.
     bool p; // show permissions of files.

@@ -295,7 +295,7 @@ void core(format_tree_t *tree)
     { // format tree
         tree_main(l, index, tree);
     }
-    else if (LF_opt.l || LF_opt.p || LF_opt.s || LF_opt.u || LF_opt.g || LF_opt.m)
+    else if (LF_opt.l || LF_opt.p || LF_opt.s || LF_opt.u || LF_opt.g || LF_opt.m || LF_opt.i || LF_opt.n)
     { // format long
         long_main(l);
     }

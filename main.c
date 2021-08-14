@@ -70,10 +70,6 @@ void small_options(int argc, char **argv, int *i)
         {
             LF_opt.a = true;
         }
-        else if (c == 'l')
-        {
-            LF_opt.l = true;
-        }
         else if (c == 'c')
         {
             LF_opt.c = true;
@@ -86,21 +82,33 @@ void small_options(int argc, char **argv, int *i)
         {
             LF_opt.f = true;
         }
-        else if (c == 'p')
+        else if (c == 'g')
         {
-            LF_opt.p = true;
+            LF_opt.g = true;
+        }
+        else if (c == 'i')
+        {
+            LF_opt.i = true;
+        }
+        else if (c == 'n')
+        {
+            LF_opt.n = true;
+        }
+        else if (c == 'l')
+        {
+            LF_opt.l = true;
         }
         else if (c == 'm')
         {
             LF_opt.m = true;
         }
+        else if (c == 'p')
+        {
+            LF_opt.p = true;
+        }
         else if (c == 's')
         {
             LF_opt.s = true;
-        }
-        else if (c == 'g')
-        {
-            LF_opt.g = true;
         }
         else if (c == 'u')
         {
@@ -173,9 +181,9 @@ int main(int argc, char *argv[], char *envp[])
     {
         version();
     }
-    else if (LF_opt.t && (LF_opt.f || LF_opt.d || LF_opt.l || LF_opt.p || LF_opt.s || LF_opt.u || LF_opt.g || LF_opt.m))
+    else if (LF_opt.t && (LF_opt.f || LF_opt.d || LF_opt.i || LF_opt.n || LF_opt.u || LF_opt.g || LF_opt.l || LF_opt.m || LF_opt.p || LF_opt.s))
     {
-        printf("%s: the option 't' cannot be used with 'f', 'd', 'l', 'p', 's', 'u', 'g' or 'm'.\n", PROGRAM);
+        printf("%s: the option 't' cannot be used with 'f', 'd', 'i', 'n', 'l', 'p', 's', 'u', 'g' or 'm'.\n", PROGRAM);
         lf_quit();
     }
     else
@@ -190,7 +198,6 @@ int main(int argc, char *argv[], char *envp[])
         }
         if (LF_opt.c)
         {
-            setbuf(stdout, NULL);
             if (!(LF_lcolor = scan_for_color()))
             {
                 printf("%s: warning: \"-c\" not available because the \"LS_COLORS\" environment variable is not set.\n", PROGRAM);

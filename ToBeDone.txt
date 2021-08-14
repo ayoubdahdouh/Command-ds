@@ -6,8 +6,7 @@
 #add inode column in long_format
 #ToBeDeveloped long_size(), long_user(), long_group().
 
-###################
-#   FUTURE VERSION
-###################
-
+###########################
+#####  FUTURE VERSION #####
 #add -o option, to print with specific char (newline, semi-column, ...)
+#add -b option, to sort BY column, (-b s/m/p/i/n/u/g) by default sort by name (already done).
