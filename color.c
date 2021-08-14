@@ -3,6 +3,7 @@
 #include <string.h>
 #include "color.h"
 #include "list.h"
+#include "common.h"
 
 linklist scan_for_color()
 {
@@ -12,20 +13,16 @@ linklist scan_for_color()
     int n, i, eq = 0, sm = 0;
 
     v = getenv("LS_COLORS");
-    if (v)
-    {
-        n = strlen(v);
-        b = (char *)malloc(sizeof(char) * n);
-        if (b)
-        {
-            strncpy(b, v, n);
-        }
-    }
-    else
+    if (!v)
     {
         return NULL;
     }
-
+    n = strlen(v);
+    b = (char *)malloc(sizeof(char) * n);
+    if (b)
+    {
+        strncpy(b, v, n);
+    }
     for (i = 0; i < n; i++)
     {
         if (v[i] == '=')
@@ -85,7 +82,7 @@ char *getcolor(linklist l, const char *nm, bool is_ext)
 {
     int ok = 0;
     iterator i;
-    lfcolor *tmp;
+    lfcolor *tmp = NULL;
 
     if (lempty(l))
     {
@@ -100,5 +97,20 @@ char *getcolor(linklist l, const char *nm, bool is_ext)
             ok = 1;
         }
     }
-    return tmp->c;
+    if (ok)
+    {
+        return tmp->c;
+    }
+    else
+    {
+        if (strcmp(nm, "rs") == 0)
+        {
+            return NULL;
+        }
+        else
+        {
+            return getcolor(l,"rs",false);
+        }
+        
+    }
 }

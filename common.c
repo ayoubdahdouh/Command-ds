@@ -56,12 +56,17 @@ void *lf_alloc(long int size)
 bool lf_link(const char *nm)
 {
     int cnt;
-    cnt = readlink(path, buf, PATH_MAX - 1);
-    if (cnt == -1)
+    if (!nm)
     {
-        strcpy(buf, strerror(errno));
         return false;
     }
+    cnt = readlink(nm, LF_buf, PATH_MAX - 1);
+    if (cnt == -1)
+    {
+        strcpy(LF_buf, strerror(errno));
+        return false;
+    }
+    LF_buf[cnt] = 0;
     return true;
 }
 
@@ -70,7 +75,7 @@ bool lf_stat(const char *nm, struct stat *s)
 {
     if (lstat(nm, s) == -1)
     {
-        strcpy(buf, strerror(errno));
+        // strcpy(buf, strerror(errno));
         return false;
     }
     return true;
@@ -80,17 +85,17 @@ void lf_init()
 {
     setbuf(stdout, NULL);
     // init PATH
-    path = (char *)lf_alloc(sizeof(char) * PATH_MAX);
+    LF_path = (char *)lf_alloc(sizeof(char) * PATH_MAX);
     // init BUF
-    buf = (char *)lf_alloc(sizeof(char) * PATH_MAX);
+    LF_buf = (char *)lf_alloc(sizeof(char) * PATH_MAX);
     // init OPT
-    memset(&opt, 0, OPTIONSIZ);
+    memset(&LF_opt, 0, OPTIONSIZ);
 }
 
 void lf_quit()
 {
-    free(path);
-    free(buf);
+    free(LF_path);
+    free(LF_buf);
     exit(EXIT_SUCCESS);
 }
 
@@ -105,13 +110,13 @@ int has_space(const char *name)
     return i != tmp;
 }
 
-int is_absolute_path(const char *pth)
+bool is_absolute_path(const char *p)
 {
-    if (pth)
+    if (p)
     {
-        return (path[0] == '/');
+        return (p[0] == '/');
     }
-    return 0;
+    return false;
 }
 
 char *lfext(const char *tmp)
@@ -139,4 +144,37 @@ char *lfext(const char *tmp)
         return (char *)&tmp[i + 1];
     }
     return NULL;
+}
+
+char filetype(mode_t *m)
+{
+    char c;
+    switch (*m & S_IFMT)
+    {
+    case S_IFBLK:
+        c = 'b';
+        break;
+    case S_IFCHR:
+        c = 'c';
+        break;
+    case S_IFDIR:
+        c = 'd';
+        break;
+    case S_IFIFO:
+        c = 'p';
+        break;
+    case S_IFLNK:
+        c = 'l';
+        break;
+    case S_IFREG:
+        c = '~';
+        break;
+    case S_IFSOCK:
+        c = 's';
+        break;
+    default:
+        c = 0;
+        break;
+    }
+    return c;
 }

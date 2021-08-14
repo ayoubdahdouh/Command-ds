@@ -5,106 +5,114 @@
 #include "common.h"
 #include "color.h"
 
-void lf_show_with_color(const char *nm, mode_t *m, bool nl)
+void lfprint_colored(const char *nm, mode_t *m, bool nl, bool fl)
 {
     struct stat s;
-    int lk = 0; // is file link?
-    char *color, *color2, *reset;
-    reset = getcolor(lcolor, "rs", 0);
+    char *rs = getcolor(LF_lcolor, "rs", false);
+    char *o = getcolor(LF_lcolor, "or", false);
+    char *c = NULL;
+    char r = filetype(m);
+    bool lnk = false; // is file link?
 
-    switch (*m & S_IFMT)
+    switch (r)
     {
-    case S_IFDIR:
-        // if directory, blue colour
-        color = getcolor(lcolor, "di", 0);
-        color2 = reset;
+    case 'b':
+        c = getcolor(LF_lcolor, "bd", false);
         break;
-    case S_IFLNK:
-        if (fl)
+    case 'c':
+        c = getcolor(LF_lcolor, "cd", false);
+        break;
+    case 'p':
+        c = getcolor(LF_lcolor, "pi", false);
+        break;
+    case 's':
+        c = getcolor(LF_lcolor, "so", false);
+        break;
+    case 'd':
+        c = getcolor(LF_lcolor, "di", false);
+        break;
+    case 'l':
+        lnk = true;
+        strcpy(&LF_path[LF_pathsiz], nm);
+        if (lf_link(LF_path))
         {
-            lk = 1;
-            strcpy(&path[pathsiz], nm);
-            if (lf_link(path))
+            if (!is_absolute_path(LF_buf))
             {
-                if (!is_absolute_path(buf))
+                strcpy(&LF_path[LF_pathsiz], LF_buf);
+                if (!lf_stat(LF_path, &s))
                 {
-                    strcpy(&path[pathsiz], buf);
-                    strcpy(buf, path);
-                }
-                if (lf_stat(buf, &s))
-                {
-                    if (S_ISDIR(s.st_mode))
-                    { // if link and readpath are directories, blue colour
-                        color = getcolor(lcolor, "ln", 0);
-                        color2 = getcolor(lcolor, "di", 0);
-                    }
-                    else if (S_IXUSR & s.st_mode)
-                    {
-                        color = getcolor(lcolor, "ln", 0);
-                        color2 = getcolor(lcolor, "ex", 0);
-                    }
-                    else if (S_IXUSR & *m)
-                    { // if link executable, green colour
-                        color = getcolor(lcolor, "ln", 0);
-                        color2 = reset;
-                    }
-                    strcpy(buf, &path[pathsiz]);
-                }
-                else
-                {
-                    color = getcolor(lcolor, "or", 0);
-                    color2 = reset;
+                    c = o;
                 }
             }
+            else if (!lf_stat(LF_buf, &s))
+            {
+                c = o;
+            }
         }
-        else
+        if (!c)
         {
-            color = getcolor(lcolor, "ln", 0);
-            color2 = reset;
+            c = getcolor(LF_lcolor, "ln", false);
         }
         break;
-    case S_IFREG:
-        if (*m & S_IXUSR)
+    case '~':
+        if (*m & S_ISUID)
         { // if executable, green colour
-            color = getcolor(lcolor, "ex", 0);
-            color2 = reset;
+            c = getcolor(LF_lcolor, "su", false);
+        }
+        else if (*m & S_ISGID)
+        { // if executable, green colour
+            c = getcolor(LF_lcolor, "sg", false);
+        }
+        else if (*m & S_ISVTX)
+        { // if executable, green colour
+            c = getcolor(LF_lcolor, "tw", false);
+        }
+        else if (*m & S_IXUSR)
+        { // if executable, green colour
+            c = getcolor(LF_lcolor, "ex", false);
         }
         else
         {
             char *ext = lfext(nm);
             if (ext)
             {
-                color = getcolor(lcolor, ext, true);
+                c = getcolor(LF_lcolor, ext, true);
             }
             else
             {
-                color = reset;
+                c = rs;
             }
-
-            color2 = reset;
         }
         break;
     default:
-        color = color2 = reset;
+        c = rs;
         break;
     }
     if (has_space(nm))
     {
-        printf("\033[%sm\"%s\"\033[%sm", color, nm, reset);
+        printf("\033[%sm\"%s\"\033[%sm", c, nm, rs);
     }
     else
     {
-        printf("\033[%sm%s\033[%sm", color, nm, reset);
+        printf("\033[%sm%s\033[%sm", c, nm, rs);
     }
-    if (lk)
+    if (lnk && fl)
     {
-        if (has_space(buf))
+        if (c == o)
         {
-            printf(" -> \033[%sm\"%s\"\033[%sm", color2, buf, reset);
+            if (has_space(LF_buf))
+            {
+                printf(" -> \033[%sm\"%s\"\033[%sm", c, LF_buf, rs);
+            }
+            else
+            {
+                printf(" -> \033[%sm%s\033[%sm", c, LF_buf, rs);
+            }
         }
         else
         {
-            printf(" -> \033[%sm%s\033[%sm", color2, buf, reset);
+            printf(" -> ");
+            lfprint_colored(LF_buf, &s.st_mode, false, false);
         }
     }
     if (nl)
@@ -113,7 +121,7 @@ void lf_show_with_color(const char *nm, mode_t *m, bool nl)
     }
 }
 
-void lf_show(char *nm, mode_t *m, bool nl)
+void lfprint(char *nm, mode_t *m, bool nl, bool fl)
 {
     struct stat s;
     int lk; // link
@@ -125,26 +133,26 @@ void lf_show(char *nm, mode_t *m, bool nl)
             printf("\n");
         }
     }
-    if (clr)
+    if (LF_clr)
     {
-        lf_show_with_color(nm, m, nl);
+        lfprint_colored(nm, m, nl, fl);
         return;
     }
     lk = 0;
     if (fl && ((*m & S_IFMT) == S_IFLNK))
     {
         lk = 1;
-        strcpy(&path[pathsiz], nm);
-        if (lf_link(path))
+        strcpy(&LF_path[LF_pathsiz], nm);
+        if (lf_link(LF_path))
         {
-            if (!is_absolute_path(buf))
+            if (!is_absolute_path(LF_buf))
             {
-                strcpy(&path[pathsiz], buf);
-                strcpy(buf, path);
+                strcpy(&LF_path[LF_pathsiz], LF_buf);
+                strcpy(LF_buf, LF_path);
             }
-            if (lf_stat(buf, &s))
+            if (lf_stat(LF_buf, &s))
             {
-                strcpy(buf, &path[pathsiz]);
+                strcpy(LF_buf, &LF_path[LF_pathsiz]);
             }
         }
     }
@@ -172,26 +180,26 @@ void lf_show(char *nm, mode_t *m, bool nl)
     }
     if (lk)
     {
-        if (has_space(buf))
+        if (has_space(LF_buf))
         {
             if (S_ISDIR(s.st_mode))
             {
-                printf(" -> \"%s\"/", buf);
+                printf(" -> \"%s\"/", LF_buf);
             }
             else
             {
-                printf(" -> \"%s\"", buf);
+                printf(" -> \"%s\"", LF_buf);
             }
         }
         else
         {
             if (S_ISDIR(s.st_mode))
             {
-                printf(" -> %s/", buf);
+                printf(" -> %s/", LF_buf);
             }
             else
             {
-                printf(" -> %s", buf);
+                printf(" -> %s", LF_buf);
             }
         }
     }

@@ -7,10 +7,11 @@
 #include "common.h"
 #include "color.h"
 
-lfoptions opt;
-char *path, *buf;
-int pathsiz, clr = 0, fl = 0;
-linklist lcolor;
+lfoptions LF_opt;
+char *LF_path, *LF_buf;
+int LF_pathsiz;
+bool LF_clr = false, LF_fl = false;
+linklist LF_lcolor;
 
 bool is_digit(const char *nm, int n)
 {
@@ -40,91 +41,91 @@ void small_options(int argc, char **argv, int *i)
         c = argv[*i][j];
         if (c == 't')
         {
-            opt.t = 1;
+            LF_opt.t = true;
             if (j == tmp - 1)
             {
                 if (*i < argc - 1)
                 {
                     if (is_digit(argv[*i + 1], strlen(argv[*i + 1])))
                     {
-                        opt.tdeep = strtol(argv[*i + 1], NULL, 10);
+                        LF_opt.tdeep = strtol(argv[*i + 1], NULL, 10);
                         ++(*i);
                     }
                     else
                     {
-                        opt.tdeep = 0;
+                        LF_opt.tdeep = 0;
                     }
                 }
                 else
                 {
-                    opt.tdeep = 0;
+                    LF_opt.tdeep = 0;
                 }
             }
             else
             {
-                opt.tdeep = 0;
+                LF_opt.tdeep = 0;
             }
         }
         else if (c == 'a')
         {
-            opt.a = 1;
+            LF_opt.a = true;
         }
         else if (c == 'l')
         {
-            opt.l = 1;
+            LF_opt.l = true;
         }
         else if (c == 'c')
         {
-            opt.c = 1;
+            LF_opt.c = true;
         }
         else if (c == 'd')
         {
-            opt.d = 1;
+            LF_opt.d = true;
         }
         else if (c == 'f')
         {
-            opt.f = 1;
+            LF_opt.f = true;
         }
         else if (c == 'p')
         {
-            opt.p = 1;
+            LF_opt.p = true;
         }
         else if (c == 'm')
         {
-            opt.m = 1;
+            LF_opt.m = true;
         }
         else if (c == 's')
         {
-            opt.s = 1;
+            LF_opt.s = true;
         }
         else if (c == 'g')
         {
-            opt.g = 1;
+            LF_opt.g = true;
         }
         else if (c == 'u')
         {
-            opt.u = 1;
+            LF_opt.u = true;
         }
         else if (c == 'h')
         {
-            opt.h = 1;
+            LF_opt.h = true;
         }
         else
         {
-        printf("%s: Invalid option \"%c\"\n", PROGRAM, c);
+            printf("%s: Invalid option \"%c\"\n", PROGRAM, c);
         }
     }
 }
 
 void long_options(const char *arg)
 {
-    if (!strcmp(arg, "--help"))
+    if (strcmp(arg, "--help") == 0)
     {
-        opt.help = 1;
+        LF_opt.help = true;
     }
-    else if (!strcmp(arg, "--version"))
+    else if (strcmp(arg, "--version") == 0)
     {
-        opt.version = 1;
+        LF_opt.version = true;
     }
     else
     {
@@ -164,37 +165,45 @@ int main(int argc, char *argv[], char *envp[])
     {
         ladd(l, LFIRST, "./");
     }
-    if (opt.help)
+    if (LF_opt.help)
     {
         help();
     }
-    else if (opt.version)
+    else if (LF_opt.version)
     {
         version();
     }
-    else if (opt.t && (opt.f || opt.d || opt.l || opt.p || opt.s || opt.u || opt.g || opt.m))
+    else if (LF_opt.t && (LF_opt.f || LF_opt.d || LF_opt.l || LF_opt.p || LF_opt.s || LF_opt.u || LF_opt.g || LF_opt.m))
     {
         printf("%s: the option 't' cannot be used with 'f', 'd', 'l', 'p', 's', 'u', 'g' or 'm'.\n", PROGRAM);
         lf_quit();
     }
     else
     {
-        if (!opt.f && !opt.d)
+        if (!LF_opt.f && !LF_opt.d)
         {
-            opt.f = opt.d = 1;
+            LF_opt.f = LF_opt.d = true;
         }
-        if (opt.l || opt.t)
+        if (LF_opt.l || LF_opt.t)
         {
-            fl = 1;
+            LF_fl = true;
         }
-        if (opt.c)
+        if (LF_opt.c)
         {
-            clr = 1;
             setbuf(stdout, NULL);
-            if (!(lcolor = scan_for_color()))
+            if (!(LF_lcolor = scan_for_color()))
             {
-                printf("%s: cannot use \"-c\" enavailable because the environment variable \"LS_COLORS\" is not defined.\n", PROGRAM);
-                lf_quit();
+                printf("%s: warning: \"-c\" not available because the \"LS_COLORS\" environment variable is not set.\n", PROGRAM);
+                LF_clr = false;
+            }
+            else if (!getcolor(LF_lcolor, "rs", false))
+            { // at least LS_COLORS must have value for "rs"
+                printf("%s: warning: \"-c\" not available because the environment variable \"LS_COLORS\" has no value \"rs\".\n", PROGRAM);
+                LF_clr = false;
+            }
+            else
+            {
+                LF_clr = true;
             }
         }
         run(l);

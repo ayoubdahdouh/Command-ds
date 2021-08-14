@@ -9,21 +9,21 @@
 
 typedef struct lfoptions
 {
-    int a; // all, by default lf doesn't show hidden file.
-    int c; // for a colorful output.
-    int d; // show only directories.
-    int f; // show only files.
-    int g; // show groups of files.
-    int l; // show file's informations(permissions and size).
-    int m; // show modification time of each file.
-    int p; // show permissions of files.
-    int h; // used with -s, make the size readable like 4K, 13M, 2G, etc
-    int s; // show sizes of files.
-    int t; // recursive(tree), by default lf shows current folder.
+    bool a; // all, by default lf doesn't show hidden file.
+    bool c; // for a colorful output.
+    bool d; // show only directories.
+    bool f; // show only files.
+    bool g; // show groups of files.
+    bool l; // show file's informations(permissions and size).
+    bool m; // show modification time of each file.
+    bool p; // show permissions of files.
+    bool h; // used with -s, make the size readable like 4K, 13M, 2G, etc
+    bool s; // show sizes of files.
+    bool t; // recursive(tree), by default lf shows current folder.
     long tdeep;
-    int u; // show the owners of files.
-    int version;
-    int help;
+    bool u; // show the owners of files.
+    bool version;
+    bool help;
 } lfoptions;
 
 typedef struct lftype
@@ -36,10 +36,11 @@ typedef struct lftype
 #define OPTIONSIZ sizeof(struct lfoptions)
 #define LFSIZ sizeof(struct lftype)
 
-extern lfoptions opt;
-extern char *path, *buf;
-extern int pathsiz, clr, fl;
-extern linklist lcolor;
+extern lfoptions LF_opt;
+extern char *LF_path, *LF_buf;
+extern int LF_pathsiz;
+extern bool LF_clr, LF_fl;
+extern linklist LF_lcolor;
 
 void help();
 void version();
@@ -51,8 +52,10 @@ void lf_init();
 void lf_quit();
 
 int has_space(const char *nm);
-int is_absolute_path(const char *pth);
+bool is_absolute_path(const char *pth);
 char *lfext(const char *pth);
+
+char filetype(mode_t *m);
 
 #define ERR_INVALID_OPTION -1001
 #define ERR_COLORS_NOT_AVILABLE -1002

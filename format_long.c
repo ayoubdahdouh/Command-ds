@@ -41,58 +41,32 @@ void long_display(linklist l, format_long_t *fl, int max_user, int max_group, in
     {
         t = (lftype)i->data;
         // type of file.
-        if (opt.l)
+        if (LF_opt.l)
         {
-            switch (t->st.st_mode & S_IFMT)
-            {
-            case S_IFBLK:
-                printf("b");
-                break;
-            case S_IFCHR:
-                printf("c");
-                break;
-            case S_IFDIR:
-                printf("d");
-                break;
-            case S_IFIFO:
-                printf("p");
-                break;
-            case S_IFLNK:
-                printf("l");
-                break;
-            case S_IFREG:
-                printf("-");
-                break;
-            case S_IFSOCK:
-                printf("s");
-                break;
-            default:
-                printf("?");
-                break;
-            }
+            printf("%c", filetype(&t->st.st_mode));
         }
-        if (opt.l || opt.p)
+        if (LF_opt.l || LF_opt.p)
         {
             long_print(fl->perm[j], max_perm, 0);
         }
-        if (opt.l || opt.u)
+        if (LF_opt.l || LF_opt.u)
         {
             long_print(fl->user[j], max_user, 0);
         }
-        if (opt.l || opt.g)
+        if (LF_opt.l || LF_opt.g)
         {
             long_print(fl->group[j], max_group, 0);
         }
-        if (opt.l || opt.m)
+        if (LF_opt.l || LF_opt.m)
         {
             long_mtime(buf, &t->st.st_mtime);
             printf("%s ", buf);
         }
-        if (opt.l || opt.s)
+        if (LF_opt.l || LF_opt.s)
         {
             long_print(fl->size[j], max_size, 1);
         }
-        lf_show(t->name, &t->st.st_mode, true);
+        lfprint(t->name, &t->st.st_mode, true, true);
         j++;
     }
 }
@@ -105,28 +79,28 @@ void long_main(linklist l)
     char **secondcol = NULL;
     iterator it;
 
-    if (!opt.l && (opt.s ^ opt.p ^ opt.m ^ opt.u ^ opt.g))
+    if (!LF_opt.l && (LF_opt.s ^ LF_opt.p ^ LF_opt.m ^ LF_opt.u ^ LF_opt.g))
     { // if only one of the options s, p, m, u, g is set
         multcol = 1;
     }
     memset(&fl, 0, FORMATLONGSIZ);
-    if (opt.l || opt.s)
+    if (LF_opt.l || LF_opt.s)
     {
         fl.size = (char **)lf_alloc(sizeof(char *) * l->count);
     }
-    if (opt.l || opt.p)
+    if (LF_opt.l || LF_opt.p)
     {
         fl.perm = (char **)lf_alloc(sizeof(char *) * l->count);
     }
-    if (opt.l || opt.u)
+    if (LF_opt.l || LF_opt.u)
     {
         fl.user = (char **)lf_alloc(sizeof(char *) * l->count);
     }
-    if (opt.l || opt.g)
+    if (LF_opt.l || LF_opt.g)
     {
         fl.group = (char **)lf_alloc(sizeof(char *) * l->count);
     }
-    if (multcol && opt.m)
+    if (multcol && LF_opt.m)
     { // allocate memory in case where multcol is set.
         fl.mtime = (char **)lf_alloc(sizeof(char *) * l->count);
     }
@@ -136,7 +110,7 @@ void long_main(linklist l)
     {
         t = (lftype)it->data;
         // user
-        if (opt.l || opt.u)
+        if (LF_opt.l || LF_opt.u)
         {
             fl.user[j] = long_user(NULL, t->st.st_uid);
             tmp = strlen(fl.user[j]);
@@ -146,7 +120,7 @@ void long_main(linklist l)
             }
         }
         // group
-        if (opt.l || opt.g)
+        if (LF_opt.l || LF_opt.g)
         {
             fl.group[j] = long_group(NULL, t->st.st_gid);
             tmp = strlen(fl.group[j]);
@@ -156,7 +130,7 @@ void long_main(linklist l)
             }
         }
         // size
-        if (opt.l || opt.s)
+        if (LF_opt.l || LF_opt.s)
         {
             fl.size[j] = long_size(NULL, t->st.st_size);
             tmp = strlen(fl.size[j]);
@@ -166,7 +140,7 @@ void long_main(linklist l)
             }
         }
         // permissions
-        if (opt.l || opt.p)
+        if (LF_opt.l || LF_opt.p)
         {
             fl.perm[j] = long_permission(NULL, &t->st.st_mode);
             tmp = strlen(fl.perm[j]);
@@ -175,7 +149,7 @@ void long_main(linklist l)
                 max_perm = tmp;
             }
         }
-        if (multcol && opt.m)
+        if (multcol && LF_opt.m)
         { // modification time; max_mtime = 16 (doesn't change)
             fl.mtime[j] = long_mtime(NULL, &t->st.st_mtime);
         }
@@ -185,19 +159,19 @@ void long_main(linklist l)
 
     if (multcol)
     { // display multiple columns
-        if (opt.s)
+        if (LF_opt.s)
         {
             secondcol = fl.size;
         }
-        else if (opt.p)
+        else if (LF_opt.p)
         {
             secondcol = fl.perm;
         }
-        else if (opt.m)
+        else if (LF_opt.m)
         {
             secondcol = fl.mtime;
         }
-        else if (opt.u)
+        else if (LF_opt.u)
         {
             secondcol = fl.user;
         }
@@ -271,7 +245,7 @@ char *long_size(char *buf, long int size2)
         buf = (char *)lf_alloc(sizeof(char) * (i + 1));
         i = 0;
     }
-    if (opt.h)
+    if (LF_opt.h)
     {
         while (size > 1024)
         {
@@ -386,15 +360,29 @@ char *long_permission(char *buf, __mode_t *mode)
     }
     if (*mode & S_ISUID)
     {
-        buf[2] = 's';
+        if (buf[2] == '-')
+        {
+            buf[2] = 'S';
+        }
+        else
+        {
+            buf[2] = 's';
+        }
     }
     if (*mode & S_ISGID)
     {
-        buf[5] = 's';
+        if (buf[5] == '-')
+        {
+            buf[5] = 'S';
+        }
+        else
+        {
+            buf[5] = 's';
+        }
     }
     if (*mode & S_ISVTX)
     {
-        buf[9] = '-';
+        buf[9] = 't';
         buf[10] = 0;
     }
     else

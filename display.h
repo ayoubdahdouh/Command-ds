@@ -4,8 +4,8 @@
 #include <sys/stat.h>
 #include <stdbool.h>
 
-void lf_show_with_color(const char *nm, mode_t *m, bool nl);
-void lf_show(char *nm, mode_t *m, bool nl);
+void lfprint_colored(const char *nm, mode_t *m, bool nl, bool fl);
+void lfprint(char *nm, mode_t *m, bool nl, bool fl);
 
 
 #endif

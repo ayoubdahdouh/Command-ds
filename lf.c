@@ -34,45 +34,45 @@ void run(linklist a)
     while (it)
     {
         // initialise 'path' and 'pathsiz'
-        path[0] = 0;
+        LF_path[0] = 0;
         nm = (char *)it->data;
         if (!lf_stat(nm, &s))
         {
-            printf("%s: \"%s\" %s\n", PROGRAM, nm, buf);
+            printf("%s: \"%s\" %s\n", PROGRAM, nm, LF_buf);
         }
         else
         {
             if (S_ISDIR(s.st_mode))
             {
                 // init global variable "path" and "pathsiz"
-                strcpy(path, nm);
-                pathsiz = strlen(nm);
+                strcpy(LF_path, nm);
+                LF_pathsiz = strlen(nm);
                 // if tree
-                if (opt.t)
+                if (LF_opt.t)
                 { // if first time then allocate memory for "parent_has_next".
                     tree.level = 0;
                     if (!tree.parent_has_next)
                     {
                         tree.parent_has_next = (char *)lf_alloc(sizeof(char) * PATH_MAX);
                     }
-                    if (path[pathsiz - 1] == '/')
+                    if (LF_path[LF_pathsiz - 1] == '/')
                     {
-                        pathsiz--;
-                        path[pathsiz] = 0;
+                        LF_pathsiz--;
+                        LF_path[LF_pathsiz] = 0;
                     }
-                    lf_show(path, &s.st_mode, 1);
+                    lfprint(LF_path, &s.st_mode, true, false);
                 }
                 // add slash if doesn't have it.
-                if (path[pathsiz - 1] != '/')
+                if (LF_path[LF_pathsiz - 1] != '/')
                 {
-                    path[pathsiz] = '/';
-                    pathsiz++;
-                    path[pathsiz] = 0;
+                    LF_path[LF_pathsiz] = '/';
+                    LF_pathsiz++;
+                    LF_path[LF_pathsiz] = 0;
                 }
                 // if multiple arguments then print name of each argument.
                 if (mularg)
                 {
-                    printf("%s:\n", path);
+                    printf("%s:\n", LF_path);
                 }
                 // engine :)
                 core(&tree);
@@ -88,13 +88,13 @@ void run(linklist a)
                 {
                     printf("%s:\n", nm);
                 }
-                if (opt.l || opt.p || opt.s || opt.u || opt.g || opt.m)
+                if (LF_opt.l || LF_opt.p || LF_opt.s || LF_opt.u || LF_opt.g || LF_opt.m)
                 {
                     long_main(b);
                 }
                 else
                 {
-                    lf_show(nm, &s.st_mode, 1);
+                    lfprint(nm, &s.st_mode, true, true);
                     printf("\n");
                 }
             }
@@ -215,11 +215,11 @@ void core(format_tree_t *tree)
     }
 
     // keep value of "path" and "path_z"
-    d = opendir(path);
+    d = opendir(LF_path);
     if (!d)
     {
-        strcpy(buf, strerror(errno));
-        if (opt.t)
+        strcpy(LF_buf, strerror(errno));
+        if (LF_opt.t)
         {
             tree_display(tree, 1);
             /**
@@ -227,12 +227,12 @@ void core(format_tree_t *tree)
              * Modify the error inst.
              * 
              * */
-            printf("\033[%saccess denied: %s\033[%s\n", getcolor(lcolor, "rs", 0), buf, getcolor(lcolor, "rs", 0));
-            buf[0] = 0;
+            printf("\033[%saccess denied: %s\033[%s\n", getcolor(LF_lcolor, "rs", 0), LF_buf, getcolor(LF_lcolor, "rs", 0));
+            LF_buf[0] = 0;
         }
         else
         {
-            printf("%s: access denied to \"%s\": %s\n", PROGRAM, path, buf);
+            printf("%s: access denied to \"%s\": %s\n", PROGRAM, LF_path, LF_buf);
         }
         return;
     }
@@ -240,12 +240,12 @@ void core(format_tree_t *tree)
     index = 0;
     while ((f = readdir(d)))
     {
-        if (opt.a || (f->d_name[0] != '.'))
+        if (LF_opt.a || (f->d_name[0] != '.'))
         {
-            strcpy(&path[pathsiz], f->d_name);
-            if (!lf_stat(path, &s))
+            strcpy(&LF_path[LF_pathsiz], f->d_name);
+            if (!lf_stat(LF_path, &s))
             {
-                printf("%s: %s: %s", PROGRAM, path, buf);
+                printf("%s: %s: %s", PROGRAM, LF_path, LF_buf);
                 lf_quit();
             }
             else
@@ -262,14 +262,14 @@ void core(format_tree_t *tree)
                 strcpy(t->name, f->d_name);
                 if (S_ISDIR(s.st_mode))
                 {
-                    if (opt.d)
+                    if (LF_opt.d)
                     {
                         ladd(l, LLAST, t);
                     }
                 }
                 else
                 {
-                    if (opt.f)
+                    if (LF_opt.f)
                     {
                         ladd(l, LFIRST, t);
                         ++index;
@@ -291,11 +291,11 @@ void core(format_tree_t *tree)
     { // if there's folders
         lquicksort(l, index, LLAST, (int (*)(void *, void *))cmp);
     }
-    if (opt.t)
+    if (LF_opt.t)
     { // format tree
         tree_main(l, index, tree);
     }
-    else if (opt.l || opt.p || opt.s || opt.u || opt.g || opt.m)
+    else if (LF_opt.l || LF_opt.p || LF_opt.s || LF_opt.u || LF_opt.g || LF_opt.m)
     { // format long
         long_main(l);
     }

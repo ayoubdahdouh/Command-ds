@@ -29,7 +29,7 @@ void column_display(linklist l, int *ls, int *lm, char **tb, int *ts, int *tm, i
                 {
                     long_print(tb[x], tm[j] - 1, 1);
                 }
-                lf_show(t->name, &t->st.st_mode, false);
+                lfprint(t->name, &t->st.st_mode, false, false);
                 x = lm[j] - ls[x];
                 for (int k = 0; k < x; k++)
                 { // the +1 is for the last space between columns.
@@ -81,7 +81,7 @@ void column_main(linklist l, char **tb)
         {
             ls[i] = strlen(t->name);
         }
-        if (S_ISDIR(t->st.st_mode) && !opt.c)
+        if (S_ISDIR(t->st.st_mode) && !LF_opt.c)
         {
             ls[i] += 1;
         }

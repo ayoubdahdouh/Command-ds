@@ -1,7 +1,8 @@
 #error in print of "lf -m"
 #if DIR is false argument
 
-
+#getcolor case where no color available return "reset color"
+#add inode column in long_format
 #ToBeDeveloped long_size(), long_user(), long_group().
 
 ###################
