@@ -47,7 +47,7 @@ void help(char h)
         printf("    -[...]l [inpsugamc]\n");
         printf("          display files's informations\n");
         printf("            i  inode number\n");
-        printf("            n  number of hard links\n");
+        printf("            l  number of hard links\n");
         printf("            p  permissions\n");
         printf("            s  size\n");
         printf("            u  user ID of the owner\n");
@@ -62,7 +62,7 @@ void help(char h)
         printf("    -[...]s [insugamcte]\n");
         printf("          sort the output\n");
         printf("            i  inode number\n");
-        printf("            n  number of hard links\n");
+        printf("            l  number of hard links\n");
         printf("            s  size\n");
         printf("            u  user ID of the owner of the file\n");
         printf("            g  ID of the group owner of the file\n");
@@ -72,6 +72,14 @@ void help(char h)
         printf("            t  file's type\n");
         printf("            e  file's extension\n");
         printf("          by default, sort sort by name if no argument is set.\n");
+    }
+    if (!h || h == 'n')
+    {
+        printf("    -[...]n [fqs]\n");
+        printf("            f  follow link\n");
+        printf("            q  print name between double quotes\n");
+        printf("            s  print folder's name with slash\n");
+        printf("          by default (without STRING), the separator is \", \"\n");
     }
     if (!h || h == 'w')
     {

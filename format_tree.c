@@ -37,7 +37,7 @@ void tree_main(linklist l, format_tree_t *tree)
     int last;
     int psiz;
     int if_all;
-    lftype t;
+    lf_type t;
     int j = 0;
     int n = l->count;
 
@@ -45,7 +45,7 @@ void tree_main(linklist l, format_tree_t *tree)
     psiz = LFpathsiz;
     while (j < n)
     {
-        t = (lftype)(lat(l, LFIRST))->data;
+        t = (lf_type)(lat(l, LFIRST))->data;
         if (S_ISDIR(t->st.st_mode))
         {
             if (strcmp(t->name, ".") && strcmp(t->name, ".."))

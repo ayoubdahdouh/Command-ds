@@ -7,7 +7,7 @@
 #include "common.h"
 #include "color.h"
 
-lfoption LFopt;
+lf_option LFopt;
 char *LFpath;
 char *LFbuf;
 int LFpathsiz;
@@ -63,7 +63,7 @@ char *filter(char *s, int n)
     return tmp;
 }
 
-int option_t(char *s[], int n, int *i, int j)
+int set_t_arg(char *s[], int n, int *i, int j)
 {
     // if 't' is at  the end of string
     // and there's a argument
@@ -80,7 +80,7 @@ int option_t(char *s[], int n, int *i, int j)
     return 0;
 }
 
-char *option_w(char *s[], int n, int *i, int j)
+char *set_w_arg(char *s[], int n, int *i, int j)
 {
     if ((j == strlen(s[*i]) - 1) &&
         (*i < n - 1))
@@ -91,7 +91,7 @@ char *option_w(char *s[], int n, int *i, int j)
     return ", ";
 }
 
-char option_s(char *s[], int n, int *i, int j)
+char set_s_arg(char *s[], int n, int *i, int j)
 {
     // if 's' is at  the end of string
     // and there's a argument
@@ -103,7 +103,7 @@ char option_s(char *s[], int n, int *i, int j)
         {
             char c = s[*i + 1][0];
             if ((c == 'i') ||
-                (c == 'n') ||
+                (c == 'l') ||
                 (c == 'u') ||
                 (c == 'g') ||
                 (c == 's') ||
@@ -122,7 +122,7 @@ char option_s(char *s[], int n, int *i, int j)
     return 0;
 }
 
-m_option *option_m(char *s[], int n, int *i, int j)
+m_arg *set_m_arg(char *s[], int n, int *i, int j)
 {
     bool ok = true;
 
@@ -156,7 +156,7 @@ m_option *option_m(char *s[], int n, int *i, int j)
         if (ok)
         {
             ++(*i);
-            m_option *m = lf_alloc(MOPTIONSIZ);
+            m_arg *m = lf_alloc(MOPTIONSIZ);
             memset(m, 0, MOPTIONSIZ);
             for (int j = 0; j < strlen(s[*i]); ++j)
             {
@@ -211,7 +211,7 @@ m_option *option_m(char *s[], int n, int *i, int j)
     return NULL;
 }
 
-l_option *option_l(char *s[], int n, int *i, int j)
+i_arg *set_i_arg(char *s[], int n, int *i, int j)
 {
     bool ok = true;
 
@@ -222,7 +222,7 @@ l_option *option_l(char *s[], int n, int *i, int j)
         while (*c && ok)
         {
             if ((*c != 'i') &&
-                (*c != 'n') &&
+                (*c != 'l') &&
                 (*c != 'u') &&
                 (*c != 'g') &&
                 (*c != 's') &&
@@ -241,7 +241,7 @@ l_option *option_l(char *s[], int n, int *i, int j)
         if (ok)
         {
             ++(*i);
-            l_option *l = (l_option *)lf_alloc(LOPTIONSIZ);
+            i_arg *l = (i_arg *)lf_alloc(LOPTIONSIZ);
             memset(l, 0, LOPTIONSIZ);
             for (int j = 0; j < strlen(s[*i]); ++j)
             {
@@ -250,8 +250,8 @@ l_option *option_l(char *s[], int n, int *i, int j)
                 case 'i':
                     l->i = true;
                     break;
-                case 'n':
-                    l->n = true;
+                case 'l':
+                    l->l = true;
                     break;
                 case 'u':
                     l->u = true;
@@ -284,7 +284,57 @@ l_option *option_l(char *s[], int n, int *i, int j)
     return NULL;
 }
 
-void set_arguments(int argc, char *argv[], linklist l)
+
+n_arg *set_n_arg(char *s[], int n, int *i, int j)
+{
+    bool ok = true;
+
+    if ((j == strlen(s[*i]) - 1) &&
+        (*i < n - 1))
+    {
+        char *c = s[*i + 1];
+        while (*c && ok)
+        {
+            if ((*c != 'f') &&
+                (*c != 'q') &&
+                (*c != 's'))
+            {
+                ok = false;
+            }
+            else
+            {
+                ++c;
+            }
+        }
+        if (ok)
+        {
+            ++(*i);
+            n_arg *nn = (n_arg *)lf_alloc(NOPTIONSIZ);
+            memset(nn, 0, NOPTIONSIZ);
+            for (int j = 0; j < strlen(s[*i]); ++j)
+            {
+                switch (s[*i][j])
+                {
+                case 'f':
+                    nn->f = true;
+                    break;
+                case 'q':
+                    nn->q = true;
+                    break;
+                case 's':
+                    nn->s = true;
+                    break;
+                default:
+                    break;
+                }
+            }
+            return nn;
+        }
+    }
+    return NULL;
+}
+
+void set_options(int argc, char *argv[], linklist l)
 {
     int tmp;
     bool ok = true;
@@ -315,23 +365,27 @@ void set_arguments(int argc, char *argv[], linklist l)
                     break;
                 case 't':
                     LFopt.t = true;
-                    LFopt.td = option_t(argv, argc, &i, j);
+                    LFopt.td = set_t_arg(argv, argc, &i, j);
                     break;
                 case 'w':
                     LFopt.w = true;
-                    LFopt.ws = option_w(argv, argc, &i, j);
+                    LFopt.ws = set_w_arg(argv, argc, &i, j);
                     break;
                 case 's':
                     LFopt.s = true;
-                    LFopt.sc = option_s(argv, argc, &i, j);
+                    LFopt.sc = set_s_arg(argv, argc, &i, j);
                     break;
                 case 'm':
                     LFopt.m = true;
-                    LFopt.ml = option_m(argv, argc, &i, j);
+                    LFopt.ml = set_m_arg(argv, argc, &i, j);
                     break;
-                case 'l':
-                    LFopt.l = true;
-                    LFopt.ll = option_l(argv, argc, &i, j);
+                case 'i':
+                    LFopt.i = true;
+                    LFopt.il = set_i_arg(argv, argc, &i, j);
+                    break;
+                case 'n':
+                    LFopt.n = true;
+                    LFopt.nl = set_n_arg(argv, argc, &i, j);
                     break;
                 default:
                     ok = false;
@@ -356,7 +410,7 @@ int main(int argc, char *argv[], char *envp[])
     linklist l = lopen();
 
     lf_init();
-    set_arguments(argc, argv, l);
+    set_options(argc, argv, l);
     if (lempty(l))
     {
         ladd(l, LFIRST, "./");
@@ -371,7 +425,7 @@ int main(int argc, char *argv[], char *envp[])
     }
     // next instructions is for commands rules, that user should respect.
 
-    else if (LFopt.t && LFopt.l)
+    else if (LFopt.t && LFopt.i)
     {
         printf("%s: the 't' command cannot be used with 'f' command.\n", PROGRAM);
         lf_quit();
@@ -380,7 +434,7 @@ int main(int argc, char *argv[], char *envp[])
     {
         if (!LFopt.ml)
         {
-            LFopt.ml = (m_option *)lf_alloc(MOPTIONSIZ);
+            LFopt.ml = (m_arg *)lf_alloc(MOPTIONSIZ);
             LFopt.ml->b = true;
             LFopt.ml->c = true;
             LFopt.ml->d = true;
@@ -395,15 +449,15 @@ int main(int argc, char *argv[], char *envp[])
             LFopt.ml->w = true;
             LFopt.ml->x = true;
         }
-        if (LFopt.l && !LFopt.ll)
+        if (LFopt.i && !LFopt.il)
         {
-            LFopt.ll = (l_option *)lf_alloc(LOPTIONSIZ);
-            LFopt.ll->i = LFopt.ll->n =
-                LFopt.ll->p = LFopt.ll->s =
-                    LFopt.ll->m = true;
+            LFopt.il = (i_arg *)lf_alloc(LOPTIONSIZ);
+            LFopt.il->i = LFopt.il->l =
+                LFopt.il->p = LFopt.il->s =
+                    LFopt.il->m = true;
         }
 
-        if (LFopt.l || LFopt.t)
+        if (LFopt.i || LFopt.t)
         {
             LF_follow_link = true;
         }

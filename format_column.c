@@ -13,7 +13,7 @@
 void column_display(linklist l, int *ls, int *lm, char **tb, int *ts, int *tm, int cl, int ln)
 {
     int x;
-    lftype t;
+    lf_type t;
 
     for (int i = 0; i < ln; i++)
     {
@@ -24,7 +24,7 @@ void column_display(linklist l, int *ls, int *lm, char **tb, int *ts, int *tm, i
             {
                 // if options -s, -p, -m, -u or -g is set
                 // then call "func" to printout the size, the permissions, the modification time, etc...
-                t = (lftype)lget(l, x);
+                t = (lf_type)lget(l, x);
                 if (tb)
                 {
                     long_print(tb[x], tm[j] - 1, 1);
@@ -56,7 +56,7 @@ void column_main(linklist l, char **tb)
     int *tm = NULL; // array max sizes of "tb"
     int x, y = 0;
     iterator it;
-    lftype t;
+    lf_type t;
     int k;
 
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
@@ -72,7 +72,7 @@ void column_main(linklist l, char **tb)
     it = lat(l, LFIRST);
     for (int i = 0; i < l->count; i++, linc(&it))
     {
-        t = (lftype)it->data;
+        t = (lf_type)it->data;
         if (has_space(t->name))
         { // if name has space add +2, for the ""
             ls[i] = strlen(t->name) + 2;

@@ -23,7 +23,7 @@ void run(linklist a)
     int i = 0;
     struct stat s;
     format_tree_t tree;
-    lftype t;
+    lf_type t;
     linklist b;
     iterator it;
     int mularg = (a->count != 1);
@@ -80,7 +80,7 @@ void run(linklist a)
             else
             {
                 lreset(b);
-                t = (lftype)lf_alloc(LFSIZ);
+                t = (lf_type)lf_alloc(LFSIZ);
                 t->st = s;
                 t->name = nm;
                 ladd(b, LFIRST, t);
@@ -88,7 +88,7 @@ void run(linklist a)
                 {
                     printf("%s:\n", nm);
                 }
-                if (LFopt.l)
+                if (LFopt.i)
                 {
                     long_main(b);
                 }
@@ -192,60 +192,48 @@ int stringcmp(char *s1, char *s2)
     }
     return ok;
 }
-int sort_name(lftype t1, lftype t2)
+int sort_name(lf_type t1, lf_type t2)
 {
-    if (!t1 || !t2)
-    {
-        return 0;
-    }
     return stringcmp(t1->name, t2->name);
 }
-int sort_i(lftype t1, lftype t2)
+int sort_i(lf_type t1, lf_type t2)
 {
     return (t1->st.st_ino < t2->st.st_ino) ? -1 : 1;
 }
-
-int sort_n(lftype t1, lftype t2)
+int sort_n(lf_type t1, lf_type t2)
 {
     return (t1->st.st_nlink < t2->st.st_nlink) ? -1 : 1;
 }
-
-int sort_u(lftype t1, lftype t2)
+int sort_u(lf_type t1, lf_type t2)
 {
     return (t1->st.st_uid < t2->st.st_uid) ? -1 : 1;
 }
-
-int sort_g(lftype t1, lftype t2)
+int sort_g(lf_type t1, lf_type t2)
 {
     return (t1->st.st_gid < t2->st.st_gid) ? -1 : 1;
 }
-
-int sort_s(lftype t1, lftype t2)
+int sort_s(lf_type t1, lf_type t2)
 {
     return (t1->st.st_size < t2->st.st_size) ? -1 : 1;
 }
-
-int sort_a(lftype t1, lftype t2)
+int sort_a(lf_type t1, lf_type t2)
 {
     return (t1->st.st_atime < t2->st.st_atime) ? -1 : 1;
 }
-
-int sort_m(lftype t1, lftype t2)
+int sort_m(lf_type t1, lf_type t2)
 {
     return (t1->st.st_mtime < t2->st.st_mtime) ? -1 : 1;
 }
-
-int sort_c(lftype t1, lftype t2)
+int sort_c(lf_type t1, lf_type t2)
 {
     return (t1->st.st_ctime < t2->st.st_ctime) ? -1 : 1;
 }
-
-int sort_t(lftype t1, lftype t2)
+int sort_t(lf_type t1, lf_type t2)
 {
     return ((t1->st.st_mode) < (t2->st.st_mode)) ? -1 : 1;
 }
 
-int sort_e(lftype t1, lftype t2)
+int sort_e(lf_type t1, lf_type t2)
 {
     if (!t1 || !t2)
     {
@@ -309,7 +297,7 @@ void core(format_tree_t *tree)
     struct dirent *f;
     struct stat s;
     linklist l;
-    lftype t;
+    lf_type t;
 
     // keep value of "path" and "path_z"
     d = opendir(LFpath);
@@ -350,7 +338,7 @@ void core(format_tree_t *tree)
                  *  case where link is dir
                  *  allocate strlen(f->d_name) + 2 // +2 is for the "/"
                  **/
-                t = (lftype)lf_alloc(LFSIZ);
+                t = (lf_type)lf_alloc(LFSIZ);
                 t->st = s;
                 t->name = (char *)lf_alloc(sizeof(char) * (strlen(f->d_name) + 1));
                 strcpy(t->name, f->d_name);
@@ -383,7 +371,7 @@ void core(format_tree_t *tree)
     { // format tree
         tree_main(l, tree);
     }
-    else if (LFopt.l)
+    else if (LFopt.i)
     { // format long
         long_main(l);
     }
@@ -396,7 +384,7 @@ void core(format_tree_t *tree)
         iterator i = lat(l, LFIRST);
         while (i)
         {
-            t = (lftype)i->data;
+            t = (lf_type)i->data;
             free(t->name);
             free(t);
             linc(&i);

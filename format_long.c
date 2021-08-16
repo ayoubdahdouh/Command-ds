@@ -36,33 +36,33 @@ void long_display(linklist l, format_long_t *fl,
                   int mi, int mn, int mp, int ms,
                   int mu, int mg, int ma, int mm, int mc)
 {
-    lftype t;
+    lf_type t;
     int j = 0;
     for (iterator i = lat(l, LFIRST); i; linc(&i))
     {
-        t = (lftype)i->data;
+        t = (lf_type)i->data;
         // inodes
-        if (LFopt.ll->i)
+        if (LFopt.il->i)
         {
             long_print(fl->i[j], mi, false);
         }
         // nlink
-        if (LFopt.ll->n)
+        if (LFopt.il->l)
         {
-            long_print(fl->n[j], mn, false);
+            long_print(fl->l[j], mn, false);
         }
         // permissions
-        if (LFopt.ll->p)
+        if (LFopt.il->p)
         {
             long_print(fl->p[j], mp, false);
         }
         // user
-        if (LFopt.ll->u)
+        if (LFopt.il->u)
         {
             long_print(fl->u[j], mu, false);
         }
         // group
-        if (LFopt.ll->g)
+        if (LFopt.il->g)
         {
             long_print(fl->g[j], mg, false);
         }
@@ -72,17 +72,17 @@ void long_display(linklist l, format_long_t *fl,
             long_print(fl->s[j], ms, 1);
         }
         // access
-        if (LFopt.ll->a)
+        if (LFopt.il->a)
         {
             long_print(fl->a[j], ma, false);
         }
         // modification
-        if (LFopt.ll->m)
+        if (LFopt.il->m)
         {
             long_print(fl->m[j], mm, false);
         }
         // change
-        if (LFopt.ll->c)
+        if (LFopt.il->c)
         {
             long_print(fl->c[j], mc, false);
         }
@@ -95,7 +95,7 @@ void long_display(linklist l, format_long_t *fl,
 void long_main(linklist l)
 {
     format_long_t fl;
-    lftype t;
+    lf_type t;
     int mi = 0, mn = 0, mu = 0, mg = 0, ms = 0, mp = 0, ma = 0, mm = 0, mc = 0;
     int j = 0, tmp;
     bool mul_cl = false;
@@ -103,48 +103,48 @@ void long_main(linklist l)
     iterator it;
     int siz = sizeof(char *) * l->count;
 
-    if (LFopt.l &&
-        (LFopt.ll->i + LFopt.ll->n + LFopt.ll->s +
-             LFopt.ll->p + LFopt.ll->u + LFopt.ll->g +
-             LFopt.ll->a + LFopt.ll->m + LFopt.ll->c ==
+    if (LFopt.i &&
+        (LFopt.il->i + LFopt.il->l + LFopt.il->s +
+             LFopt.il->p + LFopt.il->u + LFopt.il->g +
+             LFopt.il->a + LFopt.il->m + LFopt.il->c ==
          1))
     { // if only one of the options s, p, m, u, g is set
         mul_cl = true;
     }
     memset(&fl, 0, FORMATLONGSIZ);
-    if (LFopt.ll->i)
+    if (LFopt.il->i)
     {
         cl = fl.i = (char **)lf_alloc(siz);
     }
-    if (LFopt.ll->n)
+    if (LFopt.il->l)
     {
-        cl = fl.n = (char **)lf_alloc(siz);
+        cl = fl.l = (char **)lf_alloc(siz);
     }
-    if (LFopt.ll->s)
+    if (LFopt.il->s)
     {
         cl = fl.s = (char **)lf_alloc(siz);
     }
-    if (LFopt.ll->p)
+    if (LFopt.il->p)
     {
         cl = fl.p = (char **)lf_alloc(siz);
     }
-    if (LFopt.ll->u)
+    if (LFopt.il->u)
     {
         cl = fl.u = (char **)lf_alloc(siz);
     }
-    if (LFopt.ll->g)
+    if (LFopt.il->g)
     {
         cl = fl.g = (char **)lf_alloc(siz);
     }
-    if (LFopt.ll->m)
+    if (LFopt.il->m)
     {
         cl = fl.m = (char **)lf_alloc(siz);
     }
-    if (LFopt.ll->a)
+    if (LFopt.il->a)
     {
         cl = fl.a = (char **)lf_alloc(siz);
     }
-    if (LFopt.ll->c)
+    if (LFopt.il->c)
     {
         cl = fl.c = (char **)lf_alloc(siz);
     }
@@ -152,9 +152,9 @@ void long_main(linklist l)
     it = lat(l, LFIRST);
     while (it)
     {
-        t = (lftype)it->data;
+        t = (lf_type)it->data;
         // inodes
-        if (LFopt.ll->i)
+        if (LFopt.il->i)
         {
             fl.i[j] = long_ino(NULL, t->st.st_ino);
             tmp = strlen(fl.i[j]);
@@ -164,17 +164,17 @@ void long_main(linklist l)
             }
         }
         // nlink
-        if (LFopt.ll->n)
+        if (LFopt.il->l)
         {
-            fl.n[j] = long_nlink(NULL, t->st.st_nlink);
-            tmp = strlen(fl.n[j]);
+            fl.l[j] = long_nlink(NULL, t->st.st_nlink);
+            tmp = strlen(fl.l[j]);
             if (tmp > mn)
             {
                 mn = tmp;
             }
         }
         // user
-        if (LFopt.ll->u)
+        if (LFopt.il->u)
         {
             fl.u[j] = long_user(NULL, t->st.st_uid);
             tmp = strlen(fl.u[j]);
@@ -184,7 +184,7 @@ void long_main(linklist l)
             }
         }
         // group
-        if (LFopt.ll->g)
+        if (LFopt.il->g)
         {
             fl.g[j] = long_group(NULL, t->st.st_gid);
             tmp = strlen(fl.g[j]);
@@ -194,7 +194,7 @@ void long_main(linklist l)
             }
         }
         // size
-        if (LFopt.ll->s)
+        if (LFopt.il->s)
         {
             fl.s[j] = long_size(NULL, t->st.st_size);
             tmp = strlen(fl.s[j]);
@@ -204,7 +204,7 @@ void long_main(linklist l)
             }
         }
         // permissions
-        if (LFopt.ll->p)
+        if (LFopt.il->p)
         {
             fl.p[j] = long_permission(NULL, &t->st.st_mode);
             tmp = strlen(fl.p[j]);
@@ -213,7 +213,7 @@ void long_main(linklist l)
                 mp = tmp;
             }
         }
-        if (LFopt.ll->m)
+        if (LFopt.il->m)
         { // modification time; max_mtime = 16 (doesn't change)
             fl.m[j] = long_time(NULL, &t->st.st_mtime);
             tmp = strlen(fl.m[j]);
@@ -222,7 +222,7 @@ void long_main(linklist l)
                 mm = tmp;
             }
         }
-        if (LFopt.ll->a)
+        if (LFopt.il->a)
         { // modification time; max_mtime = 16 (doesn't change)
             fl.a[j] = long_time(NULL, &t->st.st_atime);
             tmp = strlen(fl.a[j]);
@@ -231,7 +231,7 @@ void long_main(linklist l)
                 ma = tmp;
             }
         }
-        if (LFopt.ll->c)
+        if (LFopt.il->c)
         { // modification time; max_mtime = 16 (doesn't change)
             fl.c[j] = long_time(NULL, &t->st.st_ctime);
             tmp = strlen(fl.c[j]);

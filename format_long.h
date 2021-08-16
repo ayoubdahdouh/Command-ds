@@ -7,7 +7,7 @@
 typedef struct format_long_t
 {
     char **i;
-    char **n;
+    char **l;
     char **u;
     char **g;
     char **s;

@@ -7,17 +7,23 @@
 #define PROGRAM "lf"
 #define VERSION "1.0.0-alpha+pre"
 
-typedef struct m_option
+typedef struct m_arg
 {
     bool b, c, d, p, l, f, s, u, g, t, r, w, x;
-} m_option;
-#define MOPTIONSIZ sizeof(struct m_option)
+} m_arg;
+#define MOPTIONSIZ sizeof(struct m_arg)
 
-typedef struct l_option
+typedef struct i_arg
 {
-    bool i, n, u, g, s, p, a, m, c;
-} l_option;
-#define LOPTIONSIZ sizeof(struct l_option)
+    bool i, l, u, g, s, p, a, m, c;
+} i_arg;
+#define LOPTIONSIZ sizeof(struct i_arg)
+
+typedef struct n_arg
+{
+    bool f,q,s;
+} n_arg;
+#define NOPTIONSIZ sizeof(struct n_arg)
 
 // typedef struct s_option
 // {
@@ -25,17 +31,17 @@ typedef struct l_option
 // } s_option;
 // #define SOPTIONSIZ sizeof(struct s_option)
 
-typedef struct lfoption
+typedef struct lf_option
 {
     bool a; // all, by default lf doesn't show hidden file.
     bool m; // mode.
-    m_option *ml; // mode list
+    m_arg *ml; // mode list
 
-    bool l; // format
-    l_option *ll;
+    bool i; // information
+    i_arg *il;
 
     bool r; // make the size readable like 4K, 13M, 2G, etc
-    bool s; // sort by i/n/u/g/s/a/m/c/d/r/b/type/extension
+    bool s; // sort output
     char sc; // s character
 
     bool t; // tree format
@@ -43,23 +49,27 @@ typedef struct lfoption
 
     bool w;
     char* ws;
+
+    bool n;
+    n_arg* nl;
+
     bool c; // for a colorful output.
 
     bool v;
     bool h;
-} lfoption;
+} lf_option;
 
-typedef struct lftype
+typedef struct lf_type
 {
     char *name;
     struct stat st;
 
-} * lftype;
+} * lf_type;
 
-#define OPTIONSIZ sizeof(struct lfoption)
-#define LFSIZ sizeof(struct lftype)
+#define OPTIONSIZ sizeof(struct lf_option)
+#define LFSIZ sizeof(struct lf_type)
 
-extern lfoption LFopt;
+extern lf_option LFopt;
 extern char *LFpath, *LFbuf;
 extern int LFpathsiz;
 extern bool LF_use_color, LF_follow_link;
