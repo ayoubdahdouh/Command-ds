@@ -76,8 +76,7 @@ void lf_quit();
 
 int has_space(const char *nm);
 bool is_absolute_path(const char *pth);
-char *lfext(const char *pth);
-
+char *fileextension(char *s);
 char filetype(mode_t *m);
 
 #define ERR_INVALID_OPTION -1001

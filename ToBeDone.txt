@@ -38,7 +38,7 @@
 #add "f" command for follow link
     if "f" and "l" are set use multiple column instead one column (change long_main)
 
-
+#fixbug in color
 
 
 ###########################

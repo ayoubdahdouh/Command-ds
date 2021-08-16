@@ -5,7 +5,7 @@
 #include "common.h"
 #include "color.h"
 
-void lfprint_colored(const char *nm, mode_t *m, bool nl, bool fl)
+void lfprint_colored(char *nm, mode_t *m, bool nl, bool fl)
 {
     struct stat s;
     char *rs = getcolor(LFcolorlist, "rs", false);
@@ -73,7 +73,7 @@ void lfprint_colored(const char *nm, mode_t *m, bool nl, bool fl)
         }
         else
         {
-            char *ext = lfext(nm);
+            char *ext = fileextension(nm);
             if (ext)
             {
                 c = getcolor(LFcolorlist, ext, true);

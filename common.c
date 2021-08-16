@@ -189,33 +189,24 @@ bool is_absolute_path(const char *p)
     return false;
 }
 
-char *lfext(const char *tmp)
+char *fileextension(char *s)
 {
-    if (!tmp)
+    // not null and not empty
+    if (s && *s)
     {
-        return NULL;
-    }
-    int n = strlen(tmp) - 1, i = n, ok = 1;
-    while (ok &&
-           (i > 0) &&
-           (tmp[i] != '.'))
-    {
-        if (tmp[i] == '/')
+        char *c = s + strlen(s) - 1;
+
+        while (c >= s && *c != '.' && *c != '/')
         {
-            ok = 0;
+            --c;
         }
-        else
+        if (*c == '.')
         {
-            --i;
+            return c;
         }
-    }
-    if (ok && i != n)
-    {
-        return (char *)&tmp[i + 1];
     }
     return NULL;
 }
-
 char filetype(mode_t *m)
 {
     char c;

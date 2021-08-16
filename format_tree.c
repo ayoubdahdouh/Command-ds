@@ -41,10 +41,6 @@ void tree_main(linklist l, format_tree_t *tree)
     int j = 0;
     int n = l->count;
 
-    if (LFopt.td && tree->level >= LFopt.td)
-    {
-        return;
-    }
     if_all = LFopt.a ? 3 : 1;
     psiz = LFpathsiz;
     while (j < n)
@@ -66,16 +62,19 @@ void tree_main(linklist l, format_tree_t *tree)
                 }
                 tree_display(tree, last);
                 lfprint(t->name, &t->st.st_mode, true, true);
-                tree->level++;
-                // initial "path" and "pathsiz"
-                strcpy(&LFpath[LFpathsiz], t->name);
-                LFpathsiz = strlen(LFpath);
-                // add slash to path
-                LFpath[LFpathsiz] = '/';
-                LFpathsiz++;
-                LFpath[LFpathsiz] = 0;
-                core(tree);
-                tree->level--;
+                if (!LFopt.td || tree->level + 1 < LFopt.td)
+                {
+                    tree->level++;
+                    // initial "path" and "pathsiz"
+                    strcpy(&LFpath[LFpathsiz], t->name);
+                    LFpathsiz = strlen(LFpath);
+                    // add slash to path
+                    LFpath[LFpathsiz] = '/';
+                    LFpathsiz++;
+                    LFpath[LFpathsiz] = 0;
+                    core(tree);
+                    tree->level--;
+                }
             }
         }
         else

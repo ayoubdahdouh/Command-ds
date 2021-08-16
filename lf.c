@@ -251,7 +251,7 @@ int sort_e(lftype t1, lftype t2)
     {
         return 0;
     }
-    return stringcmp(lfext(t1->name), lfext(t2->name));
+    return stringcmp(fileextension(t1->name), fileextension(t2->name));
 }
 
 void sort(linklist l)
@@ -324,7 +324,7 @@ void core(format_tree_t *tree)
              * Modify the error inst.
              * 
              * */
-            printf("\033[%smaccess denied: %s\033[m%s\n", getcolor(LFcolorlist, "rs", 0), LFbuf, getcolor(LFcolorlist, "rs", 0));
+            printf("\033[%smaccess denied: %s\033[%sm\n", getcolor(LFcolorlist, "rs", false), LFbuf, getcolor(LFcolorlist, "rs", false));
             LFbuf[0] = 0;
         }
         else
