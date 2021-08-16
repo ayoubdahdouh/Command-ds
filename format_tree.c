@@ -32,63 +32,59 @@ void tree_display(format_tree_t *tree, bool last)
     }
 }
 
-void tree_main(linklist l, int index, format_tree_t *tree)
+void tree_main(linklist l, format_tree_t *tree)
 {
     int last;
     int psiz;
-    int if_a;
+    int if_all;
     lftype t;
     int j = 0;
     int n = l->count;
 
-    if (LF_opt.tdeep && tree->level >= LF_opt.tdeep)
+    if (LFopt.td && tree->level >= LFopt.td)
     {
         return;
     }
-
-    if_a = LF_opt.a ? 3 : 1;
-    // for files.
-    while (j < index)
-    {
-        t = (lftype)(lat(l, LFIRST))->data;
-        last = (j == n - if_a) ? 1 : 0;
-        tree_display(tree, last);
-        lfprint(t->name, &t->st.st_mode, true, true);
-        free(t->name);
-        free(t);
-        ldel(l, LFIRST);
-        ++j;
-    }
-    // for folders.
-    psiz = LF_pathsiz;
+    if_all = LFopt.a ? 3 : 1;
+    psiz = LFpathsiz;
     while (j < n)
     {
         t = (lftype)(lat(l, LFIRST))->data;
-        if (strcmp(t->name, ".") && strcmp(t->name, ".."))
+        if (S_ISDIR(t->st.st_mode))
         {
-            LF_pathsiz = psiz;
-            last = (j == n - 1) ? 1 : 0;
-            if (last)
+            if (strcmp(t->name, ".") && strcmp(t->name, ".."))
             {
-                tree->parent_has_next[tree->level] = '0';
+                LFpathsiz = psiz;
+                last = (j == n - 1) ? 1 : 0;
+                if (last)
+                {
+                    tree->parent_has_next[tree->level] = '0';
+                }
+                else
+                {
+                    tree->parent_has_next[tree->level] = '1';
+                }
+                tree_display(tree, last);
+                lfprint(t->name, &t->st.st_mode, true, true);
+                tree->level++;
+                // initial "path" and "pathsiz"
+                strcpy(&LFpath[LFpathsiz], t->name);
+                LFpathsiz = strlen(LFpath);
+                // add slash to path
+                LFpath[LFpathsiz] = '/';
+                LFpathsiz++;
+                LFpath[LFpathsiz] = 0;
+                core(tree);
+                tree->level--;
             }
-            else
-            {
-                tree->parent_has_next[tree->level] = '1';
-            }
+        }
+        else
+        {
+            last = (j == n - if_all) ? 1 : 0;
             tree_display(tree, last);
             lfprint(t->name, &t->st.st_mode, true, true);
-            tree->level++;
-            // initial "path" and "pathsiz"
-            strcpy(&LF_path[LF_pathsiz], t->name);
-            LF_pathsiz = strlen(LF_path);
-            // add slash to path
-            LF_path[LF_pathsiz] = '/';
-            LF_pathsiz++;
-            LF_path[LF_pathsiz] = 0;
-            core(tree);
-            tree->level--;
         }
+
         free(t->name);
         free(t);
         ldel(l, LFIRST);

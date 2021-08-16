@@ -1,12 +1,47 @@
 #error in print of "lf -m"
 #if DIR is false argument
 #getcolor case where no color available return "reset color"
-
 #finish implementation of permission
 #add inode column in long_format
+
 #ToBeDeveloped long_size(), long_user(), long_group().
+
+#add -m b,c,d,f,l,r,s,  ,u,g,t,  ,r,w,x
+#add -f i,n,u,g,s,p, ,a,m,c ,d,r,b(blocks, blksize)
+#add -s option, to SORT by column, (-b s/m/p/i/n/u/g/type/extension) by default sort by name (already done).
+#add -l option, to print with specific char (newline, semi-column, ...)
+
+
+-a
+-m b,c,d,p,l,f,s,  ,u,g,t,  ,r,w,x
+    by default, shows all files and folders except hiddens.
+
+-t [DEPTH] (tree format)
+-c
+-r
+
+-l i,n,u,g,s,p ,a,m,c
+    by default, show all info ß(i,n,p,s,m,).
+-s i/n/u/g/s/  /a/m/c / t(type)/e(extension)
+    
+-w "STRING"
+    by default(without STRING), separate output with ", "
+-v
+-h
+
+
+
+#fixbug "-t" command
+#fix "/" (./lf -t /)
+#add sort_t and sort_e
+#add "n" commad for "no option"
+#add "f" command for follow link
+    if "f" and "l" are set use multiple column instead one column (change long_main)
+
+
+
 
 ###########################
 #####  FUTURE VERSION #####
-#add -o option, to print with specific char (newline, semi-column, ...)
-#add -b option, to sort BY column, (-b s/m/p/i/n/u/g) by default sort by name (already done).
+
+#add "e" to  "-m" command

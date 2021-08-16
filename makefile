@@ -1,7 +1,7 @@
 cc=gcc
 coptions=-g -Wall -Werror
 
-all: build clean lf
+all: clean build lf
 
 clean:
 	rm -f build/* lf

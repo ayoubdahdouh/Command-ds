@@ -35,7 +35,7 @@ void ldel(linklist l, long int at);
 void *lget(linklist l, long int at);
 void *lset(linklist l, long int at, void *data);
 
-void lquicksort(linklist l, long int from, long int to, int selector(void *, void *));
+void lsort(linklist l, long int from, long int to, int selector(void *, void *));
 
 // show list
 void lshow(linklist l);

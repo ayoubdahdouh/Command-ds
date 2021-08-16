@@ -7,11 +7,12 @@
 #include "common.h"
 #include "color.h"
 
-lfoptions LF_opt;
-char *LF_path, *LF_buf;
-int LF_pathsiz;
-bool LF_clr = false, LF_fl = false;
-linklist LF_lcolor;
+lfoption LFopt;
+char *LFpath;
+char *LFbuf;
+int LFpathsiz;
+bool LF_use_color = false, LF_follow_link = false;
+linklist LFcolorlist;
 
 bool is_digit(const char *nm, int n)
 {
@@ -29,137 +30,324 @@ bool is_digit(const char *nm, int n)
     }
     return (n) ? false : true;
 }
-
-void small_options(int argc, char **argv, int *i)
+char *filter(char *s, int n)
 {
-    int tmp;
-    char c;
+    int k = 0;
+    bool repeat;
+    char *tmp;
 
-    tmp = strlen(argv[*i]);
-    for (int j = 1; j < tmp; j++)
+    tmp = (char *)malloc(sizeof(char) * n);
+    for (char *c = s; *c && k < n; ++c)
     {
-        c = argv[*i][j];
-        if (c == 't')
+        repeat = false;
+        for (char *d = s; d < c; ++d)
         {
-            LF_opt.t = true;
-            if (j == tmp - 1)
+            if (*d == *c)
             {
-                if (*i < argc - 1)
-                {
-                    if (is_digit(argv[*i + 1], strlen(argv[*i + 1])))
-                    {
-                        LF_opt.tdeep = strtol(argv[*i + 1], NULL, 10);
-                        ++(*i);
-                    }
-                    else
-                    {
-                        LF_opt.tdeep = 0;
-                    }
-                }
-                else
-                {
-                    LF_opt.tdeep = 0;
-                }
+                repeat = true;
+            }
+        }
+        if (!repeat)
+        {
+            tmp[k] = *s;
+            ++k;
+        }
+    }
+    if (k < n)
+    {
+        tmp = (char *)realloc(tmp, sizeof(char) * (k + 1));
+        tmp[k + 1] = 0;
+    }
+    // case k==n nothing to do.
+    // case k>n doesn't exist here.
+    return tmp;
+}
+
+int option_t(char *s[], int n, int *i, int j)
+{
+    // if 't' is at  the end of string
+    // and there's a argument
+    // and it's a number
+    if ((j == strlen(s[*i]) - 1) &&
+        (*i < n - 1))
+    {
+        if (is_digit(s[*i + 1], strlen(s[*i])))
+        {
+            ++(*i);
+            return strtol(s[*i], NULL, 10);
+        }
+    }
+    return 0;
+}
+
+char *option_w(char *s[], int n, int *i, int j)
+{
+    if ((j == strlen(s[*i]) - 1) &&
+        (*i < n - 1))
+    {
+        ++(*i);
+        return s[*i];
+    }
+    return ", ";
+}
+
+char option_s(char *s[], int n, int *i, int j)
+{
+    // if 's' is at  the end of string
+    // and there's a argument
+    if ((j == strlen(s[*i]) - 1) &&
+        (*i < n - 1))
+    {
+        // its length is 1
+        if (strlen(s[*i + 1]) == 1)
+        {
+            char c = s[*i + 1][0];
+            if ((c == 'i') ||
+                (c == 'n') ||
+                (c == 'u') ||
+                (c == 'g') ||
+                (c == 's') ||
+                (c == 'a') ||
+                (c == 'm') ||
+                (c == 'c') ||
+                (c == 't') ||
+                (c == 'e'))
+            {
+                ++(*i);
+                return c;
+            }
+        }
+    }
+    // by default, sort by name
+    return 0;
+}
+
+m_option *option_m(char *s[], int n, int *i, int j)
+{
+    bool ok = true;
+
+    if ((j == strlen(s[*i]) - 1) &&
+        (*i < n - 1))
+    {
+        char *c = s[*i + 1];
+        while (*c && ok)
+        { // verify if all characters are correct.
+            if ((*c != 'b') &&
+                (*c != 'c') &&
+                (*c != 'd') &&
+                (*c != 'p') &&
+                (*c != 'l') &&
+                (*c != 'f') &&
+                (*c != 's') &&
+                (*c != 'u') &&
+                (*c != 'g') &&
+                (*c != 't') &&
+                (*c != 'r') &&
+                (*c != 'w') &&
+                (*c != 'x'))
+            {
+                ok = false;
             }
             else
             {
-                LF_opt.tdeep = 0;
+                ++c;
             }
         }
-        else if (c == 'a')
+        if (ok)
         {
-            LF_opt.a = true;
-        }
-        else if (c == 'c')
-        {
-            LF_opt.c = true;
-        }
-        else if (c == 'd')
-        {
-            LF_opt.d = true;
-        }
-        else if (c == 'f')
-        {
-            LF_opt.f = true;
-        }
-        else if (c == 'g')
-        {
-            LF_opt.g = true;
-        }
-        else if (c == 'i')
-        {
-            LF_opt.i = true;
-        }
-        else if (c == 'n')
-        {
-            LF_opt.n = true;
-        }
-        else if (c == 'l')
-        {
-            LF_opt.l = true;
-        }
-        else if (c == 'm')
-        {
-            LF_opt.m = true;
-        }
-        else if (c == 'p')
-        {
-            LF_opt.p = true;
-        }
-        else if (c == 's')
-        {
-            LF_opt.s = true;
-        }
-        else if (c == 'u')
-        {
-            LF_opt.u = true;
-        }
-        else if (c == 'h')
-        {
-            LF_opt.h = true;
-        }
-        else
-        {
-            printf("%s: Invalid option \"%c\"\n", PROGRAM, c);
+            ++(*i);
+            m_option *m = lf_alloc(MOPTIONSIZ);
+            memset(m, 0, MOPTIONSIZ);
+            for (int j = 0; j < strlen(s[*i]); ++j)
+            {
+                switch (s[*i][j])
+                {
+                case 'b':
+                    m->b = true;
+                    break;
+                case 'c':
+                    m->c = true;
+                    break;
+                case 'd':
+                    m->d = true;
+                    break;
+                case 'p':
+                    m->f = true;
+                    break;
+                case 'l':
+                    m->l = true;
+                    break;
+                case 'f':
+                    m->r = true;
+                    break;
+                case 's':
+                    m->s = true;
+                    break;
+                case 'u':
+                    m->u = true;
+                    break;
+                case 'g':
+                    m->g = true;
+                    break;
+                case 't':
+                    m->t = true;
+                    break;
+                case 'r':
+                    m->r = true;
+                    break;
+                case 'w':
+                    m->w = true;
+                    break;
+                case 'x':
+                    m->x = true;
+                    break;
+                default:
+                    break;
+                }
+            }
+            return m;
         }
     }
+    return NULL;
 }
 
-void long_options(const char *arg)
+l_option *option_l(char *s[], int n, int *i, int j)
 {
-    if (strcmp(arg, "--help") == 0)
+    bool ok = true;
+
+    if ((j == strlen(s[*i]) - 1) &&
+        (*i < n - 1))
     {
-        LF_opt.help = true;
+        char *c = s[*i + 1];
+        while (*c && ok)
+        {
+            if ((*c != 'i') &&
+                (*c != 'n') &&
+                (*c != 'u') &&
+                (*c != 'g') &&
+                (*c != 's') &&
+                (*c != 'p') &&
+                (*c != 'a') &&
+                (*c != 'm') &&
+                (*c != 'c'))
+            {
+                ok = false;
+            }
+            else
+            {
+                ++c;
+            }
+        }
+        if (ok)
+        {
+            ++(*i);
+            l_option *l = (l_option *)lf_alloc(LOPTIONSIZ);
+            memset(l, 0, LOPTIONSIZ);
+            for (int j = 0; j < strlen(s[*i]); ++j)
+            {
+                switch (s[*i][j])
+                {
+                case 'i':
+                    l->i = true;
+                    break;
+                case 'n':
+                    l->n = true;
+                    break;
+                case 'u':
+                    l->u = true;
+                    break;
+                case 'g':
+                    l->g = true;
+                    break;
+                case 's':
+                    l->s = true;
+                    break;
+                case 'p':
+                    l->p = true;
+                    break;
+                case 'a':
+                    l->a = true;
+                    break;
+                case 'm':
+                    l->m = true;
+                    break;
+                case 'c':
+                    l->c = true;
+                    break;
+                default:
+                    break;
+                }
+            }
+            return l;
+        }
     }
-    else if (strcmp(arg, "--version") == 0)
-    {
-        LF_opt.version = true;
-    }
-    else
-    {
-        printf("%s: Invalid option \"%s\"\n", PROGRAM, arg);
-    }
+    return NULL;
 }
 
 void set_arguments(int argc, char *argv[], linklist l)
 {
-    for (int i = 1; i < argc; i++)
+    int tmp;
+    bool ok = true;
+
+    for (int i = 1; i < argc; ++i)
     {
         if (argv[i][0] == '-')
         {
-            if (argv[i][1] == '-')
+            tmp = strlen(argv[i]);
+            for (int j = 1; j < tmp; ++j)
             {
-                long_options(argv[i]);
-            }
-            else
-            {
-                small_options(argc, argv, &i);
+                switch (argv[i][j])
+                {
+                case 'a':
+                    LFopt.a = true;
+                    break;
+                case 'c':
+                    LFopt.c = true;
+                    break;
+                case 'r':
+                    LFopt.r = true;
+                    break;
+                case 'v':
+                    LFopt.v = true;
+                    break;
+                case 'h':
+                    LFopt.h = true;
+                    break;
+                case 't':
+                    LFopt.t = true;
+                    LFopt.td = option_t(argv, argc, &i, j);
+                    break;
+                case 'w':
+                    LFopt.w = true;
+                    LFopt.ws = option_w(argv, argc, &i, j);
+                    break;
+                case 's':
+                    LFopt.s = true;
+                    LFopt.sc = option_s(argv, argc, &i, j);
+                    break;
+                case 'm':
+                    LFopt.m = true;
+                    LFopt.ml = option_m(argv, argc, &i, j);
+                    break;
+                case 'l':
+                    LFopt.l = true;
+                    LFopt.ll = option_l(argv, argc, &i, j);
+                    break;
+                default:
+                    ok = false;
+                    printf("%s: Invalid command \"%c\"\n", PROGRAM, argv[i][0]);
+                    break;
+                }
             }
         }
         else
         {
             ladd(l, LLAST, argv[i]);
         }
+    }
+    if (!ok)
+    {
+        lf_quit();
     }
 }
 
@@ -173,44 +361,67 @@ int main(int argc, char *argv[], char *envp[])
     {
         ladd(l, LFIRST, "./");
     }
-    if (LF_opt.help)
+    if (LFopt.h)
     {
-        help();
+        help(0);
     }
-    else if (LF_opt.version)
+    else if (LFopt.v)
     {
         version();
     }
-    else if (LF_opt.t && (LF_opt.f || LF_opt.d || LF_opt.i || LF_opt.n || LF_opt.u || LF_opt.g || LF_opt.l || LF_opt.m || LF_opt.p || LF_opt.s))
+    // next instructions is for commands rules, that user should respect.
+
+    else if (LFopt.t && LFopt.l)
     {
-        printf("%s: the option 't' cannot be used with 'f', 'd', 'i', 'n', 'l', 'p', 's', 'u', 'g' or 'm'.\n", PROGRAM);
+        printf("%s: the 't' command cannot be used with 'f' command.\n", PROGRAM);
         lf_quit();
     }
     else
     {
-        if (!LF_opt.f && !LF_opt.d)
+        if (!LFopt.ml)
         {
-            LF_opt.f = LF_opt.d = true;
+            LFopt.ml = (m_option *)lf_alloc(MOPTIONSIZ);
+            LFopt.ml->b = true;
+            LFopt.ml->c = true;
+            LFopt.ml->d = true;
+            LFopt.ml->p = true;
+            LFopt.ml->l = true;
+            LFopt.ml->f = true;
+            LFopt.ml->s = true;
+            LFopt.ml->u = true;
+            LFopt.ml->g = true;
+            LFopt.ml->t = true;
+            LFopt.ml->r = true;
+            LFopt.ml->w = true;
+            LFopt.ml->x = true;
         }
-        if (LF_opt.l || LF_opt.t)
+        if (LFopt.l && !LFopt.ll)
         {
-            LF_fl = true;
+            LFopt.ll = (l_option *)lf_alloc(LOPTIONSIZ);
+            LFopt.ll->i = LFopt.ll->n =
+                LFopt.ll->p = LFopt.ll->s =
+                    LFopt.ll->m = true;
         }
-        if (LF_opt.c)
+
+        if (LFopt.l || LFopt.t)
         {
-            if (!(LF_lcolor = scan_for_color()))
+            LF_follow_link = true;
+        }
+        if (LFopt.c)
+        {
+            if (!(LFcolorlist = scan_for_color()))
             {
                 printf("%s: warning: \"-c\" not available because the \"LS_COLORS\" environment variable is not set.\n", PROGRAM);
-                LF_clr = false;
+                LF_use_color = false;
             }
-            else if (!getcolor(LF_lcolor, "rs", false))
+            else if (!getcolor(LFcolorlist, "rs", false))
             { // at least LS_COLORS must have value for "rs"
                 printf("%s: warning: \"-c\" not available because the environment variable \"LS_COLORS\" has no value \"rs\".\n", PROGRAM);
-                LF_clr = false;
+                LF_use_color = false;
             }
             else
             {
-                LF_clr = true;
+                LF_use_color = true;
             }
         }
         run(l);

@@ -8,8 +8,8 @@
 void lfprint_colored(const char *nm, mode_t *m, bool nl, bool fl)
 {
     struct stat s;
-    char *rs = getcolor(LF_lcolor, "rs", false);
-    char *o = getcolor(LF_lcolor, "or", false);
+    char *rs = getcolor(LFcolorlist, "rs", false);
+    char *o = getcolor(LFcolorlist, "or", false);
     char *c = NULL;
     char r = filetype(m);
     bool lnk = false; // is file link?
@@ -17,66 +17,66 @@ void lfprint_colored(const char *nm, mode_t *m, bool nl, bool fl)
     switch (r)
     {
     case 'b':
-        c = getcolor(LF_lcolor, "bd", false);
+        c = getcolor(LFcolorlist, "bd", false);
         break;
     case 'c':
-        c = getcolor(LF_lcolor, "cd", false);
+        c = getcolor(LFcolorlist, "cd", false);
         break;
     case 'p':
-        c = getcolor(LF_lcolor, "pi", false);
+        c = getcolor(LFcolorlist, "pi", false);
         break;
     case 's':
-        c = getcolor(LF_lcolor, "so", false);
+        c = getcolor(LFcolorlist, "so", false);
         break;
     case 'd':
-        c = getcolor(LF_lcolor, "di", false);
+        c = getcolor(LFcolorlist, "di", false);
         break;
     case 'l':
         lnk = true;
-        strcpy(&LF_path[LF_pathsiz], nm);
-        if (lf_link(LF_path))
+        strcpy(&LFpath[LFpathsiz], nm);
+        if (lf_link(LFpath))
         {
-            if (!is_absolute_path(LF_buf))
+            if (!is_absolute_path(LFbuf))
             {
-                strcpy(&LF_path[LF_pathsiz], LF_buf);
-                if (!lf_stat(LF_path, &s))
+                strcpy(&LFpath[LFpathsiz], LFbuf);
+                if (!lf_stat(LFpath, &s))
                 {
                     c = o;
                 }
             }
-            else if (!lf_stat(LF_buf, &s))
+            else if (!lf_stat(LFbuf, &s))
             {
                 c = o;
             }
         }
         if (!c)
         {
-            c = getcolor(LF_lcolor, "ln", false);
+            c = getcolor(LFcolorlist, "ln", false);
         }
         break;
     case '~':
         if (*m & S_ISUID)
         { // if executable, green colour
-            c = getcolor(LF_lcolor, "su", false);
+            c = getcolor(LFcolorlist, "su", false);
         }
         else if (*m & S_ISGID)
         { // if executable, green colour
-            c = getcolor(LF_lcolor, "sg", false);
+            c = getcolor(LFcolorlist, "sg", false);
         }
         else if (*m & S_ISVTX)
         { // if executable, green colour
-            c = getcolor(LF_lcolor, "tw", false);
+            c = getcolor(LFcolorlist, "tw", false);
         }
         else if (*m & S_IXUSR)
         { // if executable, green colour
-            c = getcolor(LF_lcolor, "ex", false);
+            c = getcolor(LFcolorlist, "ex", false);
         }
         else
         {
             char *ext = lfext(nm);
             if (ext)
             {
-                c = getcolor(LF_lcolor, ext, true);
+                c = getcolor(LFcolorlist, ext, true);
             }
             else
             {
@@ -100,19 +100,19 @@ void lfprint_colored(const char *nm, mode_t *m, bool nl, bool fl)
     {
         if (c == o)
         {
-            if (has_space(LF_buf))
+            if (has_space(LFbuf))
             {
-                printf(" -> \033[%sm\"%s\"\033[%sm", c, LF_buf, rs);
+                printf(" -> \033[%sm\"%s\"\033[%sm", c, LFbuf, rs);
             }
             else
             {
-                printf(" -> \033[%sm%s\033[%sm", c, LF_buf, rs);
+                printf(" -> \033[%sm%s\033[%sm", c, LFbuf, rs);
             }
         }
         else
         {
             printf(" -> ");
-            lfprint_colored(LF_buf, &s.st_mode, false, false);
+            lfprint_colored(LFbuf, &s.st_mode, false, false);
         }
     }
     if (nl)
@@ -133,7 +133,7 @@ void lfprint(char *nm, mode_t *m, bool nl, bool fl)
             printf("\n");
         }
     }
-    if (LF_clr)
+    if (LF_use_color)
     {
         lfprint_colored(nm, m, nl, fl);
         return;
@@ -142,17 +142,17 @@ void lfprint(char *nm, mode_t *m, bool nl, bool fl)
     if (fl && ((*m & S_IFMT) == S_IFLNK))
     {
         lk = 1;
-        strcpy(&LF_path[LF_pathsiz], nm);
-        if (lf_link(LF_path))
+        strcpy(&LFpath[LFpathsiz], nm);
+        if (lf_link(LFpath))
         {
-            if (!is_absolute_path(LF_buf))
+            if (!is_absolute_path(LFbuf))
             {
-                strcpy(&LF_path[LF_pathsiz], LF_buf);
-                strcpy(LF_buf, LF_path);
+                strcpy(&LFpath[LFpathsiz], LFbuf);
+                strcpy(LFbuf, LFpath);
             }
-            if (lf_stat(LF_buf, &s))
+            if (lf_stat(LFbuf, &s))
             {
-                strcpy(LF_buf, &LF_path[LF_pathsiz]);
+                strcpy(LFbuf, &LFpath[LFpathsiz]);
             }
         }
     }
@@ -180,26 +180,26 @@ void lfprint(char *nm, mode_t *m, bool nl, bool fl)
     }
     if (lk)
     {
-        if (has_space(LF_buf))
+        if (has_space(LFbuf))
         {
             if (S_ISDIR(s.st_mode))
             {
-                printf(" -> \"%s\"/", LF_buf);
+                printf(" -> \"%s\"/", LFbuf);
             }
             else
             {
-                printf(" -> \"%s\"", LF_buf);
+                printf(" -> \"%s\"", LFbuf);
             }
         }
         else
         {
             if (S_ISDIR(s.st_mode))
             {
-                printf(" -> %s/", LF_buf);
+                printf(" -> %s/", LFbuf);
             }
             else
             {
-                printf(" -> %s", LF_buf);
+                printf(" -> %s", LFbuf);
             }
         }
     }

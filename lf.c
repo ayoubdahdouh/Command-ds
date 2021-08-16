@@ -34,45 +34,45 @@ void run(linklist a)
     while (it)
     {
         // initialise 'path' and 'pathsiz'
-        LF_path[0] = 0;
+        LFpath[0] = 0;
         nm = (char *)it->data;
         if (!lf_stat(nm, &s))
         {
-            printf("%s: \"%s\" %s\n", PROGRAM, nm, LF_buf);
+            printf("%s: \"%s\" %s\n", PROGRAM, nm, strerror(errno));
         }
         else
         {
             if (S_ISDIR(s.st_mode))
             {
                 // init global variable "path" and "pathsiz"
-                strcpy(LF_path, nm);
-                LF_pathsiz = strlen(nm);
+                strcpy(LFpath, nm);
+                LFpathsiz = strlen(nm);
                 // if tree
-                if (LF_opt.t)
+                if (LFopt.t)
                 { // if first time then allocate memory for "parent_has_next".
                     tree.level = 0;
                     if (!tree.parent_has_next)
                     {
                         tree.parent_has_next = (char *)lf_alloc(sizeof(char) * PATH_MAX);
                     }
-                    if (LF_path[LF_pathsiz - 1] == '/')
+                    if (LFpath[LFpathsiz - 1] == '/')
                     {
-                        LF_pathsiz--;
-                        LF_path[LF_pathsiz] = 0;
+                        LFpathsiz--;
+                        LFpath[LFpathsiz] = 0;
                     }
-                    lfprint(LF_path, &s.st_mode, true, false);
+                    lfprint(LFpath, &s.st_mode, true, false);
                 }
                 // add slash if doesn't have it.
-                if (LF_path[LF_pathsiz - 1] != '/')
+                if (LFpath[LFpathsiz - 1] != '/')
                 {
-                    LF_path[LF_pathsiz] = '/';
-                    LF_pathsiz++;
-                    LF_path[LF_pathsiz] = 0;
+                    LFpath[LFpathsiz] = '/';
+                    LFpathsiz++;
+                    LFpath[LFpathsiz] = 0;
                 }
                 // if multiple arguments then print name of each argument.
                 if (mularg)
                 {
-                    printf("%s:\n", LF_path);
+                    printf("%s:\n", LFpath);
                 }
                 // engine :)
                 core(&tree);
@@ -88,7 +88,7 @@ void run(linklist a)
                 {
                     printf("%s:\n", nm);
                 }
-                if (LF_opt.l || LF_opt.p || LF_opt.s || LF_opt.u || LF_opt.g || LF_opt.m)
+                if (LFopt.l)
                 {
                     long_main(b);
                 }
@@ -121,27 +121,21 @@ int lf_count_dir_items(DIR *d)
 }
 
 // compare no case sensative
-int cmp(lftype t1, lftype t2)
+
+int stringcmp(char *s1, char *s2)
 {
-    char *s1, *s2;
     int n, l1, l2, ok;
     char c1, c2;
 
-    if (!t1 || !t2)
-    {
-        return 0;
-    }
-    s1 = t1->name;
-    s2 = t2->name;
     if (!s1 && !s2)
     {
         return 0;
     }
-    if (!s1)
+    else if (!s1)
     {
         return -1;
     }
-    if (!s2)
+    else if (!s2)
     {
         return 1;
     }
@@ -198,7 +192,117 @@ int cmp(lftype t1, lftype t2)
     }
     return ok;
 }
+int sort_name(lftype t1, lftype t2)
+{
+    if (!t1 || !t2)
+    {
+        return 0;
+    }
+    return stringcmp(t1->name, t2->name);
+}
+int sort_i(lftype t1, lftype t2)
+{
+    return (t1->st.st_ino < t2->st.st_ino) ? -1 : 1;
+}
 
+int sort_n(lftype t1, lftype t2)
+{
+    return (t1->st.st_nlink < t2->st.st_nlink) ? -1 : 1;
+}
+
+int sort_u(lftype t1, lftype t2)
+{
+    return (t1->st.st_uid < t2->st.st_uid) ? -1 : 1;
+}
+
+int sort_g(lftype t1, lftype t2)
+{
+    return (t1->st.st_gid < t2->st.st_gid) ? -1 : 1;
+}
+
+int sort_s(lftype t1, lftype t2)
+{
+    return (t1->st.st_size < t2->st.st_size) ? -1 : 1;
+}
+
+int sort_a(lftype t1, lftype t2)
+{
+    return (t1->st.st_atime < t2->st.st_atime) ? -1 : 1;
+}
+
+int sort_m(lftype t1, lftype t2)
+{
+    return (t1->st.st_mtime < t2->st.st_mtime) ? -1 : 1;
+}
+
+int sort_c(lftype t1, lftype t2)
+{
+    return (t1->st.st_ctime < t2->st.st_ctime) ? -1 : 1;
+}
+
+int sort_t(lftype t1, lftype t2)
+{
+    return ((t1->st.st_mode) < (t2->st.st_mode)) ? -1 : 1;
+}
+
+int sort_e(lftype t1, lftype t2)
+{
+    if (!t1 || !t2)
+    {
+        return 0;
+    }
+    return stringcmp(lfext(t1->name), lfext(t2->name));
+}
+
+void sort(linklist l)
+{
+    switch (LFopt.sc)
+    {
+    case 'i':
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_i);
+        break;
+
+    case 'n':
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_n);
+        break;
+
+    case 'u':
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_u);
+        break;
+
+    case 'g':
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_g);
+        break;
+
+    case 's':
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_s);
+        break;
+
+    case 'a':
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_a);
+        break;
+
+    case 'm':
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_m);
+        break;
+
+    case 'c':
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_c);
+        break;
+
+    case 't':
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_t);
+        break;
+
+    case 'e':
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_e);
+        break;
+    default:
+        // sort by name.
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_name);
+        break;
+    }
+}
 void core(format_tree_t *tree)
 {
     DIR *d;
@@ -206,20 +310,13 @@ void core(format_tree_t *tree)
     struct stat s;
     linklist l;
     lftype t;
-    int index;
-
-    if (tree->level == 0)
-    {
-        int ok = 0;
-        ++ok;
-    }
 
     // keep value of "path" and "path_z"
-    d = opendir(LF_path);
+    d = opendir(LFpath);
     if (!d)
     {
-        strcpy(LF_buf, strerror(errno));
-        if (LF_opt.t)
+        strcpy(LFbuf, strerror(errno));
+        if (LFopt.t)
         {
             tree_display(tree, 1);
             /**
@@ -227,53 +324,48 @@ void core(format_tree_t *tree)
              * Modify the error inst.
              * 
              * */
-            printf("\033[%saccess denied: %s\033[%s\n", getcolor(LF_lcolor, "rs", 0), LF_buf, getcolor(LF_lcolor, "rs", 0));
-            LF_buf[0] = 0;
+            printf("\033[%smaccess denied: %s\033[m%s\n", getcolor(LFcolorlist, "rs", 0), LFbuf, getcolor(LFcolorlist, "rs", 0));
+            LFbuf[0] = 0;
         }
         else
         {
-            printf("%s: access denied to \"%s\": %s\n", PROGRAM, LF_path, LF_buf);
+            printf("%s: access denied to \"%s\": %s\n", PROGRAM, LFpath, LFbuf);
         }
         return;
     }
     l = lopen();
-    index = 0;
     while ((f = readdir(d)))
     {
-        if (LF_opt.a || (f->d_name[0] != '.'))
+        if (LFopt.a || (f->d_name[0] != '.'))
         {
-            strcpy(&LF_path[LF_pathsiz], f->d_name);
-            if (!lf_stat(LF_path, &s))
+            strcpy(&LFpath[LFpathsiz], f->d_name);
+            if (!lf_stat(LFpath, &s))
             {
-                printf("%s: %s: %s", PROGRAM, LF_path, LF_buf);
+                printf("%s: %s: %s", PROGRAM, LFpath, strerror(errno));
                 lf_quit();
             }
             else
             {
                 /**
-                 * 
                  *  case where link is dir
                  *  allocate strlen(f->d_name) + 2 // +2 is for the "/"
-                 * 
                  **/
                 t = (lftype)lf_alloc(LFSIZ);
                 t->st = s;
                 t->name = (char *)lf_alloc(sizeof(char) * (strlen(f->d_name) + 1));
                 strcpy(t->name, f->d_name);
-                if (S_ISDIR(s.st_mode))
+                if ((S_ISDIR(s.st_mode) && LFopt.ml->d) ||
+                    (S_ISBLK(s.st_mode) && LFopt.ml->b) ||
+                    (S_ISCHR(s.st_mode) && LFopt.ml->c) ||
+                    (S_ISFIFO(s.st_mode) && LFopt.ml->p) ||
+                    (S_ISLNK(s.st_mode) && LFopt.ml->l) ||
+                    (S_ISSOCK(s.st_mode) && LFopt.ml->s) ||
+                    ((S_IREAD & s.st_mode) && LFopt.ml->r) ||
+                    ((S_IWRITE & s.st_mode) && LFopt.ml->w) ||
+                    ((S_IEXEC & s.st_mode) && LFopt.ml->x) ||
+                    (S_ISREG(s.st_mode) && LFopt.ml->f))
                 {
-                    if (LF_opt.d)
-                    {
-                        ladd(l, LLAST, t);
-                    }
-                }
-                else
-                {
-                    if (LF_opt.f)
-                    {
-                        ladd(l, LFIRST, t);
-                        ++index;
-                    }
+                    ladd(l, LFIRST, t);
                 }
             }
         }
@@ -283,19 +375,15 @@ void core(format_tree_t *tree)
     {
         return;
     }
-    if (index > 0)
-    { // if there's files
-        lquicksort(l, LFIRST, index - 1, (int (*)(void *, void *))cmp);
+    if (LFopt.s)
+    {
+        sort(l);
     }
-    if (index != l->count)
-    { // if there's folders
-        lquicksort(l, index, LLAST, (int (*)(void *, void *))cmp);
-    }
-    if (LF_opt.t)
+    if (LFopt.t)
     { // format tree
-        tree_main(l, index, tree);
+        tree_main(l, tree);
     }
-    else if (LF_opt.l || LF_opt.p || LF_opt.s || LF_opt.u || LF_opt.g || LF_opt.m || LF_opt.i || LF_opt.n)
+    else if (LFopt.l)
     { // format long
         long_main(l);
     }

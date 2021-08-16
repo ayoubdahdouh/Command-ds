@@ -9,28 +9,98 @@
 #include "common.h"
 #include "list.h"
 
-void help()
+void help(char h)
 {
-    printf("USAGE:\n");
-    printf("     %s [OPTIONS] [DIR] ...\n\n", PROGRAM);
-    printf("OPTIONS:\n");
-    printf("    -a  show hidden files.\n");
-    printf("    -d  show only directories.\n");
-    printf("    -f  show only files.\n");
-    printf("    -g  show groups of files.\n");
-    printf("    -h  print help.\n");
-    printf("    -l  show all information about the file (permissions, size,...).\n");
-    printf("    -m  show modification time of each file.\n");
-    printf("    -p  show permissions of files.\n");
-    printf("    -r  used with -s, makes the size readable as 4K, 13M, 2G, etc.\n");
-    printf("    -s  show sizes of files.\n");
-    printf("    -t  show the contents of the subdirectories.\n");
-    printf("        use the option \"t\" with DEPTH:\n");
-    printf("            %s -[...]t [DEPTH] [DIR] ...\n", PROGRAM);
-    printf("        or without:\n");
-    printf("            %s -[...]t[...]  [DIR] ...\n", PROGRAM);
-    printf("    -u  show the owners of files.\n");
-    printf("    -v  version of lf command.\n\n");
+    if (!h)
+    {
+        printf("Usage:\n");
+        printf("     %s -[COMMAND]... [OPTION]... [FILE]...\n\n", PROGRAM);
+        printf("Options:\n");
+        printf("    it's possible to combine those lettre together\n");
+    }
+
+    if (!h || h == 'a')
+    {
+        printf("    -a  show hidden files.\n");
+    }
+    if (!h || h == 'm')
+    {
+        printf("    -[...]m [bcdflrsugtrwx]\n");
+        printf("          file's mode, choose wich files to list from the list bellow\n");
+        printf("            b  block device\n");
+        printf("            c  character device\n");
+        printf("            d  directory\n");
+        printf("            p  FIFO/pipe\n");
+        printf("            l  symlink\n");
+        printf("            f  regular file\n");
+        printf("            s  socket\n");
+        printf("            u  set-user identification (SUID)\n");
+        printf("            g  set-group identification (SGID)\n");
+        printf("            t  sticky bit\n");
+        printf("            r  read by owner\n");
+        printf("            w  write by owner\n");
+        printf("            x  execute by owner\n");
+        printf("          by default, '-m' show all files and folders except hidden ones.\n");
+    }
+    if (!h || h == 'l')
+    {
+        printf("    -[...]l [inpsugamc]\n");
+        printf("          display files's informations\n");
+        printf("            i  inode number\n");
+        printf("            n  number of hard links\n");
+        printf("            p  permissions\n");
+        printf("            s  size\n");
+        printf("            u  user ID of the owner\n");
+        printf("            g  ID of the group owner\n");
+        printf("            a  last access\n");
+        printf("            m  last modification\n");
+        printf("            c  last status change\n");
+        printf("          by default, '-l' show i,n,p,s,m if no argument is set\n");
+    }
+    if (!h || h == 's')
+    {
+        printf("    -[...]s [insugamcte]\n");
+        printf("          sort the output\n");
+        printf("            i  inode number\n");
+        printf("            n  number of hard links\n");
+        printf("            s  size\n");
+        printf("            u  user ID of the owner of the file\n");
+        printf("            g  ID of the group owner of the file\n");
+        printf("            a  last access\n");
+        printf("            m  last modification\n");
+        printf("            c  last status change\n");
+        printf("            t  file's type\n");
+        printf("            e  file's extension\n");
+        printf("          by default, sort sort by name if no argument is set.\n");
+    }
+    if (!h || h == 'w')
+    {
+        printf("    -[...]w [STRING]\n");
+        printf("             STRING  word separate items\n");
+        printf("          by default (without STRING), the separator is \", \"\n");
+    }
+    if (!h || h == 't')
+    {
+        printf("    -[...]t [DEPTH]\n");
+        printf("             DEPTH  tree's depth.\n");
+        printf("          by default (without DEPTH), the depth is unlimited.\n");
+    }
+    if (!h || h == 'r')
+    {
+        printf("    -r  make the size readable like 7K, 423M, 2G etc.\n");
+    }
+    if (!h || h == 'c')
+    {
+        printf("    -c  color the output.\n");
+    }
+    if (!h || h == 'h')
+    {
+        printf("    -h  print help.\n");
+    }
+    if (!h || h == 'v')
+    {
+        printf("    -v  print version information.\n");
+    }
 }
 
 void version()
@@ -60,13 +130,13 @@ bool lf_link(const char *nm)
     {
         return false;
     }
-    cnt = readlink(nm, LF_buf, PATH_MAX - 1);
+    cnt = readlink(nm, LFbuf, PATH_MAX - 1);
     if (cnt == -1)
     {
-        strcpy(LF_buf, strerror(errno));
+        strcpy(LFbuf, strerror(errno));
         return false;
     }
-    LF_buf[cnt] = 0;
+    LFbuf[cnt] = 0;
     return true;
 }
 
@@ -85,17 +155,17 @@ void lf_init()
 {
     setbuf(stdout, NULL);
     // init PATH
-    LF_path = (char *)lf_alloc(sizeof(char) * PATH_MAX);
+    LFpath = (char *)lf_alloc(sizeof(char) * PATH_MAX);
     // init BUF
-    LF_buf = (char *)lf_alloc(sizeof(char) * PATH_MAX);
+    LFbuf = (char *)lf_alloc(sizeof(char) * PATH_MAX);
     // init OPT
-    memset(&LF_opt, 0, OPTIONSIZ);
+    memset(&LFopt, 0, OPTIONSIZ);
 }
 
 void lf_quit()
 {
-    free(LF_path);
-    free(LF_buf);
+    free(LFpath);
+    free(LFbuf);
     exit(EXIT_SUCCESS);
 }
 

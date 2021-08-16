@@ -7,26 +7,47 @@
 #define PROGRAM "lf"
 #define VERSION "1.0.0-alpha+pre"
 
-typedef struct lfoptions
+typedef struct m_option
+{
+    bool b, c, d, p, l, f, s, u, g, t, r, w, x;
+} m_option;
+#define MOPTIONSIZ sizeof(struct m_option)
+
+typedef struct l_option
+{
+    bool i, n, u, g, s, p, a, m, c;
+} l_option;
+#define LOPTIONSIZ sizeof(struct l_option)
+
+// typedef struct s_option
+// {
+//     bool i, n, u, g, s, p, a, m, c, t, e;
+// } s_option;
+// #define SOPTIONSIZ sizeof(struct s_option)
+
+typedef struct lfoption
 {
     bool a; // all, by default lf doesn't show hidden file.
+    bool m; // mode.
+    m_option *ml; // mode list
+
+    bool l; // format
+    l_option *ll;
+
+    bool r; // make the size readable like 4K, 13M, 2G, etc
+    bool s; // sort by i/n/u/g/s/a/m/c/d/r/b/type/extension
+    char sc; // s character
+
+    bool t; // tree format
+    long td; // tree depth
+
+    bool w;
+    char* ws;
     bool c; // for a colorful output.
-    bool d; // show only directories.
-    bool f; // show only files.
-    bool g; // show groups of files.
-    bool i; // show inodes of files.
-    bool n; // show nlinks of files.
-    bool l; // show file's informations(permissions and size).
-    bool m; // show modification time of each file.
-    bool p; // show permissions of files.
-    bool h; // used with -s, make the size readable like 4K, 13M, 2G, etc
-    bool s; // show sizes of files.
-    bool t; // recursive(tree), by default lf shows current folder.
-    long tdeep;
-    bool u; // show the owners of files.
-    bool version;
-    bool help;
-} lfoptions;
+
+    bool v;
+    bool h;
+} lfoption;
 
 typedef struct lftype
 {
@@ -35,16 +56,16 @@ typedef struct lftype
 
 } * lftype;
 
-#define OPTIONSIZ sizeof(struct lfoptions)
+#define OPTIONSIZ sizeof(struct lfoption)
 #define LFSIZ sizeof(struct lftype)
 
-extern lfoptions LF_opt;
-extern char *LF_path, *LF_buf;
-extern int LF_pathsiz;
-extern bool LF_clr, LF_fl;
-extern linklist LF_lcolor;
+extern lfoption LFopt;
+extern char *LFpath, *LFbuf;
+extern int LFpathsiz;
+extern bool LF_use_color, LF_follow_link;
+extern linklist LFcolorlist;
 
-void help();
+void help(char h);
 void version();
 
 void *lf_alloc(long int size);

@@ -81,7 +81,7 @@ void column_main(linklist l, char **tb)
         {
             ls[i] = strlen(t->name);
         }
-        if (S_ISDIR(t->st.st_mode) && !LF_opt.c)
+        if (S_ISDIR(t->st.st_mode) && !LFopt.c)
         {
             ls[i] += 1;
         }
