@@ -14,7 +14,7 @@ void help(char h)
     if (!h)
     {
         printf("Usage:\n");
-        printf("     %s -[COMMAND]... [OPTION]... [FILE]...\n\n", PROGRAM);
+        printf("     %s -[OPTION]... [ARGUMENT]... [FILE]...\n\n", PROGRAM);
         printf("Options:\n");
         printf("    it's possible to combine those lettre together\n");
     }
@@ -26,7 +26,7 @@ void help(char h)
     if (!h || h == 'm')
     {
         printf("    -[...]m [bcdflrsugtrwx]\n");
-        printf("          file's mode, choose wich files to list from the list bellow\n");
+        printf("          File's mode, choose the files to list from the list below:\n");
         printf("            b  block device\n");
         printf("            c  character device\n");
         printf("            d  directory\n");
@@ -40,58 +40,59 @@ void help(char h)
         printf("            r  read by owner\n");
         printf("            w  write by owner\n");
         printf("            x  execute by owner\n");
-        printf("          by default, '-m' show all files and folders except hidden ones.\n");
+        printf("          By default, \"-m\" displays all files and folders except the hidden ones.\n");
     }
-    if (!h || h == 'l')
+    if (!h || h == 'i')
     {
-        printf("    -[...]l [inpsugamc]\n");
-        printf("          display files's informations\n");
+        printf("    -[...]i [inpsugamc]\n");
+        printf("          File's information, choose the information to display from the list below:\n");
         printf("            i  inode number\n");
         printf("            l  number of hard links\n");
         printf("            p  permissions\n");
         printf("            s  size\n");
-        printf("            u  user ID of the owner\n");
-        printf("            g  ID of the group owner\n");
+        printf("            u  file owner\n");
+        printf("            g  file group\n");
         printf("            a  last access\n");
         printf("            m  last modification\n");
         printf("            c  last status change\n");
-        printf("          by default, '-l' show i,n,p,s,m if no argument is set\n");
+        printf("          By default, \"-i\" show i,n,p,s,m if no argument is set\n");
     }
     if (!h || h == 's')
     {
         printf("    -[...]s [insugamcte]\n");
-        printf("          sort the output\n");
+        printf("          Sort the output\n");
         printf("            i  inode number\n");
         printf("            l  number of hard links\n");
         printf("            s  size\n");
-        printf("            u  user ID of the owner of the file\n");
-        printf("            g  ID of the group owner of the file\n");
+        printf("            u  file owner\n");
+        printf("            g  file group\n");
         printf("            a  last access\n");
         printf("            m  last modification\n");
         printf("            c  last status change\n");
-        printf("            t  file's type\n");
-        printf("            e  file's extension\n");
-        printf("          by default, sort sort by name if no argument is set.\n");
+        printf("            t  file type\n");
+        printf("            e  file extension\n");
+        printf("            n  no sorting\n");
+        printf("          By default, %s will sort the output by name,\n", PROGRAM);
+        printf("          But if you invoke \"-s\" without giving any arguments, you disable sorting of the output.\n" );
     }
     if (!h || h == 'n')
     {
         printf("    -[...]n [fqs]\n");
         printf("            f  follow link\n");
-        printf("            q  print name between double quotes\n");
-        printf("            s  print folder's name with slash\n");
-        printf("          by default (without STRING), the separator is \", \"\n");
+        printf("            q  print the name in quotes\n");
+        printf("            s  print the folder name with a slash\n");
     }
     if (!h || h == 'w')
     {
         printf("    -[...]w [STRING]\n");
-        printf("             STRING  word separate items\n");
-        printf("          by default (without STRING), the separator is \", \"\n");
+        printf("             STRING  separating word\n");
+        printf("          by default (without STRING), the separator is \", \".\n");
     }
     if (!h || h == 't')
     {
         printf("    -[...]t [DEPTH]\n");
-        printf("             DEPTH  tree's depth.\n");
-        printf("          by default (without DEPTH), the depth is unlimited.\n");
+        printf("             DEPTH  tree depth\n");
+        printf("          By default (without DEPTH), the depth is unlimited.\n");
     }
     if (!h || h == 'r')
     {

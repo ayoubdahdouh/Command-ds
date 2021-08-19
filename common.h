@@ -11,19 +11,19 @@ typedef struct m_arg
 {
     bool b, c, d, p, l, f, s, u, g, t, r, w, x;
 } m_arg;
-#define MOPTIONSIZ sizeof(struct m_arg)
+#define M_ARG_SIZ sizeof(struct m_arg)
 
 typedef struct i_arg
 {
     bool i, l, u, g, s, p, a, m, c;
 } i_arg;
-#define LOPTIONSIZ sizeof(struct i_arg)
+#define L_ARG_SIZ sizeof(struct i_arg)
 
 typedef struct n_arg
 {
     bool f,q,s;
 } n_arg;
-#define NOPTIONSIZ sizeof(struct n_arg)
+#define N_ARG_SIZ sizeof(struct n_arg)
 
 // typedef struct s_option
 // {
@@ -72,7 +72,6 @@ typedef struct lf_type
 extern lf_option LFopt;
 extern char *LFpath, *LFbuf;
 extern int LFpathsiz;
-extern bool LF_use_color, LF_follow_link;
 extern linklist LFcolorlist;
 
 void help(char h);

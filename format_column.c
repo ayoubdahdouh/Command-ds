@@ -23,13 +23,13 @@ void column_display(linklist l, int *ls, int *lm, char **tb, int *ts, int *tm, i
             if (x < l->count)
             {
                 // if options -s, -p, -m, -u or -g is set
-                // then call "func" to printout the size, the permissions, the modification time, etc...
+                // then calthen calll "func" to printout the size, the permissions, the modification time, etc...
                 t = (lf_type)lget(l, x);
                 if (tb)
                 {
                     long_print(tb[x], tm[j] - 1, 1);
                 }
-                lfprint(t->name, &t->st.st_mode, false, false);
+                display(t->name, &t->st.st_mode, false);
                 x = lm[j] - ls[x];
                 for (int k = 0; k < x; k++)
                 { // the +1 is for the last space between columns.
@@ -73,7 +73,7 @@ void column_main(linklist l, char **tb)
     for (int i = 0; i < l->count; i++, linc(&it))
     {
         t = (lf_type)it->data;
-        if (has_space(t->name))
+        if (has_space(t->name) || LFopt.nl->q)
         { // if name has space add +2, for the ""
             ls[i] = strlen(t->name) + 2;
         }
@@ -81,7 +81,7 @@ void column_main(linklist l, char **tb)
         {
             ls[i] = strlen(t->name);
         }
-        if (S_ISDIR(t->st.st_mode) && !LFopt.c)
+        if (S_ISDIR(t->st.st_mode) && LFopt.nl->s)
         {
             ls[i] += 1;
         }

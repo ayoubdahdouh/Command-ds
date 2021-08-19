@@ -11,9 +11,9 @@
 #include "format_column.h"
 #include "display.h"
 
-void long_print(char *fn, int m, int f)
+void long_print(char *nm, int m, int f)
 { // flag  is used to adjust the data (suffix/prefix)
-    int x = m - strlen(fn);
+    int x = m - strlen(nm);
 
     if (f)
     {
@@ -22,7 +22,7 @@ void long_print(char *fn, int m, int f)
             printf(" ");
         }
     }
-    printf("%s ", fn);
+    printf("%s ", nm);
     if (!f)
     {
         for (int i = 0; i < x; i++)
@@ -87,7 +87,7 @@ void long_display(linklist l, format_long_t *fl,
             long_print(fl->c[j], mc, false);
         }
         // file's name
-        lfprint(t->name, &t->st.st_mode, true, true);
+        display(t->name, &t->st.st_mode, true);
         j++;
     }
 }

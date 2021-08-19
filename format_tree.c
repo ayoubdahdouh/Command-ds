@@ -45,12 +45,12 @@ void tree_main(linklist l, format_tree_t *tree)
     psiz = LFpathsiz;
     while (j < n)
     {
+        LFpathsiz = psiz;
         t = (lf_type)(lat(l, LFIRST))->data;
         if (S_ISDIR(t->st.st_mode))
         {
             if (strcmp(t->name, ".") && strcmp(t->name, ".."))
             {
-                LFpathsiz = psiz;
                 last = (j == n - 1) ? 1 : 0;
                 if (last)
                 {
@@ -61,7 +61,7 @@ void tree_main(linklist l, format_tree_t *tree)
                     tree->parent_has_next[tree->level] = '1';
                 }
                 tree_display(tree, last);
-                lfprint(t->name, &t->st.st_mode, true, true);
+                display(t->name, &t->st.st_mode, true);
                 if (!LFopt.td || tree->level + 1 < LFopt.td)
                 {
                     tree->level++;
@@ -81,7 +81,7 @@ void tree_main(linklist l, format_tree_t *tree)
         {
             last = (j == n - if_all) ? 1 : 0;
             tree_display(tree, last);
-            lfprint(t->name, &t->st.st_mode, true, true);
+            display(t->name, &t->st.st_mode, true);
         }
 
         free(t->name);

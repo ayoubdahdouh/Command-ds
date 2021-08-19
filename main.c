@@ -11,7 +11,6 @@ lf_option LFopt;
 char *LFpath;
 char *LFbuf;
 int LFpathsiz;
-bool LF_use_color = false, LF_follow_link = false;
 linklist LFcolorlist;
 
 bool is_digit(const char *nm, int n)
@@ -156,8 +155,8 @@ m_arg *set_m_arg(char *s[], int n, int *i, int j)
         if (ok)
         {
             ++(*i);
-            m_arg *m = lf_alloc(MOPTIONSIZ);
-            memset(m, 0, MOPTIONSIZ);
+            m_arg *m = lf_alloc(M_ARG_SIZ);
+            memset(m, 0, M_ARG_SIZ);
             for (int j = 0; j < strlen(s[*i]); ++j)
             {
                 switch (s[*i][j])
@@ -241,8 +240,8 @@ i_arg *set_i_arg(char *s[], int n, int *i, int j)
         if (ok)
         {
             ++(*i);
-            i_arg *l = (i_arg *)lf_alloc(LOPTIONSIZ);
-            memset(l, 0, LOPTIONSIZ);
+            i_arg *l = (i_arg *)lf_alloc(L_ARG_SIZ);
+            memset(l, 0, L_ARG_SIZ);
             for (int j = 0; j < strlen(s[*i]); ++j)
             {
                 switch (s[*i][j])
@@ -284,7 +283,6 @@ i_arg *set_i_arg(char *s[], int n, int *i, int j)
     return NULL;
 }
 
-
 n_arg *set_n_arg(char *s[], int n, int *i, int j)
 {
     bool ok = true;
@@ -309,8 +307,8 @@ n_arg *set_n_arg(char *s[], int n, int *i, int j)
         if (ok)
         {
             ++(*i);
-            n_arg *nn = (n_arg *)lf_alloc(NOPTIONSIZ);
-            memset(nn, 0, NOPTIONSIZ);
+            n_arg *nn = (n_arg *)lf_alloc(N_ARG_SIZ);
+            memset(nn, 0, N_ARG_SIZ);
             for (int j = 0; j < strlen(s[*i]); ++j)
             {
                 switch (s[*i][j])
@@ -386,10 +384,11 @@ void set_options(int argc, char *argv[], linklist l)
                 case 'n':
                     LFopt.n = true;
                     LFopt.nl = set_n_arg(argv, argc, &i, j);
+
                     break;
                 default:
                     ok = false;
-                    printf("%s: Invalid command \"%c\"\n", PROGRAM, argv[i][0]);
+                    printf("%s: Invalid command \"%c\"\n", PROGRAM, argv[i][j]);
                     break;
                 }
             }
@@ -432,9 +431,14 @@ int main(int argc, char *argv[], char *envp[])
     }
     else
     {
+        if (!LFopt.nl)
+        {
+            LFopt.nl = (n_arg *)lf_alloc(N_ARG_SIZ);
+            memset(LFopt.nl, 0, N_ARG_SIZ);
+        }
         if (!LFopt.ml)
         {
-            LFopt.ml = (m_arg *)lf_alloc(MOPTIONSIZ);
+            LFopt.ml = (m_arg *)lf_alloc(M_ARG_SIZ);
             LFopt.ml->b = true;
             LFopt.ml->c = true;
             LFopt.ml->d = true;
@@ -449,33 +453,53 @@ int main(int argc, char *argv[], char *envp[])
             LFopt.ml->w = true;
             LFopt.ml->x = true;
         }
-        if (LFopt.i && !LFopt.il)
+        if (LFopt.i)
         {
-            LFopt.il = (i_arg *)lf_alloc(LOPTIONSIZ);
-            LFopt.il->i = LFopt.il->l =
-                LFopt.il->p = LFopt.il->s =
-                    LFopt.il->m = true;
+            if (LFopt.il)
+            {
+                if (LFopt.il->i + LFopt.il->l +
+                        LFopt.il->s + LFopt.il->p +
+                        LFopt.il->u + LFopt.il->g +
+                        LFopt.il->a + LFopt.il->m +
+                        LFopt.il->c ==
+                    true)
+                {
+                    LFopt.nl->f = false;
+                }
+                else
+                {
+                    LFopt.nl->f = true;
+                }
+            }
+            else
+            {
+                LFopt.nl->f = true;
+                LFopt.il = (i_arg *)lf_alloc(L_ARG_SIZ);
+                LFopt.il->i = true;
+                LFopt.il->l = true;
+                LFopt.il->u = true;
+                LFopt.il->g = true;
+                LFopt.il->p = true;
+                LFopt.il->s = true;
+                LFopt.il->m = true;
+            }
         }
-
-        if (LFopt.i || LFopt.t)
+        if (LFopt.t)
         {
-            LF_follow_link = true;
+            LFopt.nl->f = true;
         }
         if (LFopt.c)
         {
-            if (!(LFcolorlist = scan_for_color()))
+            LFcolorlist = scan_for_color();
+            if (lempty(LFcolorlist))
             {
                 printf("%s: warning: \"-c\" not available because the \"LS_COLORS\" environment variable is not set.\n", PROGRAM);
-                LF_use_color = false;
+                LFopt.c = false;
             }
             else if (!getcolor(LFcolorlist, "rs", false))
             { // at least LS_COLORS must have value for "rs"
                 printf("%s: warning: \"-c\" not available because the environment variable \"LS_COLORS\" has no value \"rs\".\n", PROGRAM);
-                LF_use_color = false;
-            }
-            else
-            {
-                LF_use_color = true;
+                LFopt.c = false;
             }
         }
         run(l);

@@ -60,7 +60,7 @@ void run(linklist a)
                         LFpathsiz--;
                         LFpath[LFpathsiz] = 0;
                     }
-                    lfprint(LFpath, &s.st_mode, true, false);
+                    display(LFpath, &s.st_mode, true);
                 }
                 // add slash if doesn't have it.
                 if (LFpath[LFpathsiz - 1] != '/')
@@ -94,7 +94,7 @@ void run(linklist a)
                 }
                 else
                 {
-                    lfprint(nm, &s.st_mode, true, true);
+                    display(nm, &s.st_mode, true);
                     printf("\n");
                 }
             }
@@ -200,7 +200,7 @@ int sort_i(lf_type t1, lf_type t2)
 {
     return (t1->st.st_ino < t2->st.st_ino) ? -1 : 1;
 }
-int sort_n(lf_type t1, lf_type t2)
+int sort_l(lf_type t1, lf_type t2)
 {
     return (t1->st.st_nlink < t2->st.st_nlink) ? -1 : 1;
 }
@@ -250,8 +250,8 @@ void sort(linklist l)
         lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_i);
         break;
 
-    case 'n':
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_n);
+    case 'l':
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_l);
         break;
 
     case 'u':
@@ -286,8 +286,6 @@ void sort(linklist l)
         lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_e);
         break;
     default:
-        // sort by name.
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_name);
         break;
     }
 }
@@ -367,6 +365,12 @@ void core(format_tree_t *tree)
     {
         sort(l);
     }
+    else
+    {
+        // sort by name.
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_name);
+    }
+    
     if (LFopt.t)
     { // format tree
         tree_main(l, tree);

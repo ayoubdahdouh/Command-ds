@@ -30,14 +30,18 @@
 -h
 #fixbug "-t" command
 #add sort_t and sort_e
+#fixbug -s option; set default action
 
-#add"f" command for follow link
-#add "e" to "-m" commad.
+#fixbug  display: in use slash and quote;
+
+
 #fix "/" (./lf -t /)
 #fixbug in color
-
+{
+# utf-8 STRING
+#Unicode in C :https://www.cprogramming.com/tutorial/unicode.html
+https://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+}
 
 ###########################
 #####  FUTURE VERSION #####
-
-#add "e" to  "-m" command

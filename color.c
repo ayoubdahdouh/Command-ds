@@ -15,7 +15,7 @@ linklist scan_for_color()
     v = getenv("LS_COLORS");
     if (!v)
     {
-        return NULL;
+        return l;
     }
     n = strlen(v);
     b = (char *)malloc(sizeof(char) * n);
