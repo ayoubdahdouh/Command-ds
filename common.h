@@ -33,6 +33,10 @@ typedef struct n_arg
 
 typedef struct lf_option
 {
+    bool arg;
+    bool zero;
+    bool one;
+    bool two;
     bool a; // all, by default lf doesn't show hidden file.
     bool m; // mode.
     m_arg *ml; // mode list
@@ -46,9 +50,6 @@ typedef struct lf_option
 
     bool t; // tree format
     long td; // tree depth
-
-    bool w;
-    char* ws;
 
     bool n;
     n_arg* nl;

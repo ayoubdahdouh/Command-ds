@@ -18,7 +18,22 @@ void help(char h)
         printf("Options:\n");
         printf("    it's possible to combine those lettre together\n");
     }
-
+    if (!h || h == '!')
+    {
+        printf("    -!  used to indicate that there is no arguments for the option \"-i\", \"-l\", \"-t\" \"-m\", \"-n\".\n");
+    }
+    if (!h || h == '0')
+    {
+        printf("    -0  separate files with commas.\n");
+    }
+    if (!h || h == '1')
+    {
+        printf("    -1  lists one file per line.\n");
+    }
+    if (!h || h == '2')
+    {
+        printf("    -2  separate files with a semicolon.\n");
+    }
     if (!h || h == 'a')
     {
         printf("    -a  show hidden files.\n");
@@ -41,6 +56,7 @@ void help(char h)
         printf("            w  write by owner\n");
         printf("            x  execute by owner\n");
         printf("          By default, \"-m\" displays all files and folders except the hidden ones.\n");
+        printf("          which has the same effect as not using the \"-m\" option.\n");
     }
     if (!h || h == 'i')
     {
@@ -73,20 +89,20 @@ void help(char h)
         printf("            e  file extension\n");
         printf("            n  no sorting\n");
         printf("          By default, %s will sort the output by name,\n", PROGRAM);
-        printf("          But if you invoke \"-s\" without giving any arguments, you disable sorting of the output.\n" );
+        printf("          But if you invoke \"-s\" without giving any arguments, you disable sorting of the output.\n");
     }
     if (!h || h == 'n')
     {
         printf("    -[...]n [fqs]\n");
         printf("            f  follow link\n");
-        printf("            q  print the name in quotes\n");
+        printf("            q  print tfollow linkhe name in quotes\n");
         printf("            s  print the folder name with a slash\n");
     }
-    if (!h || h == 'w')
+    if (!h || h == 'l')
     {
-        printf("    -[...]w [STRING]\n");
-        printf("             STRING  separating word\n");
-        printf("          by default (without STRING), the separator is \", \".\n");
+        printf("    -[...]l [CHAR]\n");
+        printf("             CHAR  list content separated by a XXX\n");
+        printf("          By default (without CHAR), the separator is \"\\n\".\n");
     }
     if (!h || h == 't')
     {

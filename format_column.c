@@ -23,7 +23,6 @@ void column_display(linklist l, int *ls, int *lm, char **tb, int *ts, int *tm, i
             if (x < l->count)
             {
                 // if options -s, -p, -m, -u or -g is set
-                // then calthen calll "func" to printout the size, the permissions, the modification time, etc...
                 t = (lf_type)lget(l, x);
                 if (tb)
                 {

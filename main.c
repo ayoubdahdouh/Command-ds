@@ -79,15 +79,19 @@ int set_t_arg(char *s[], int n, int *i, int j)
     return 0;
 }
 
-char *set_w_arg(char *s[], int n, int *i, int j)
+char set_l_arg(char *s[], int n, int *i, int j)
 {
     if ((j == strlen(s[*i]) - 1) &&
         (*i < n - 1))
     {
-        ++(*i);
-        return s[*i];
+        // its length is 1
+        if (strlen(s[*i + 1]) == 1)
+        {
+            ++(*i);
+            return s[*i][0];
+        }
     }
-    return ", ";
+    return '\n';
 }
 
 char set_s_arg(char *s[], int n, int *i, int j)
@@ -346,6 +350,18 @@ void set_options(int argc, char *argv[], linklist l)
             {
                 switch (argv[i][j])
                 {
+                case '!':
+                    LFopt.arg = true;
+                    break;
+                case '0':
+                    LFopt.zero = true;
+                    break;
+                case '1':
+                    LFopt.one = true;
+                    break;
+                case '2':
+                    LFopt.two = true;
+                    break;
                 case 'a':
                     LFopt.a = true;
                     break;
@@ -364,10 +380,6 @@ void set_options(int argc, char *argv[], linklist l)
                 case 't':
                     LFopt.t = true;
                     LFopt.td = set_t_arg(argv, argc, &i, j);
-                    break;
-                case 'w':
-                    LFopt.w = true;
-                    LFopt.ws = set_w_arg(argv, argc, &i, j);
                     break;
                 case 's':
                     LFopt.s = true;
@@ -422,11 +434,9 @@ int main(int argc, char *argv[], char *envp[])
     {
         version();
     }
-    // next instructions is for commands rules, that user should respect.
-
-    else if (LFopt.t && LFopt.i)
+    else if (LFopt.t + LFopt.i + LFopt.zero + LFopt.one + LFopt.two > true)
     {
-        printf("%s: the 't' command cannot be used with 'f' command.\n", PROGRAM);
+        printf("%s: The 't', 'i', '0', '1' and '2' options should be used separately.\n", PROGRAM);
         lf_quit();
     }
     else

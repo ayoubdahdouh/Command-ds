@@ -6,10 +6,11 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <string.h>
-#include "format_long.h"
-#include "common.h"
 #include "format_column.h"
+#include "format_long.h"
+#include "format_list.h"
 #include "display.h"
+#include "common.h"
 
 void long_print(char *nm, int m, int f)
 { // flag  is used to adjust the data (suffix/prefix)
@@ -246,7 +247,14 @@ void long_main(linklist l)
 
     if (mul_cl)
     { // display multiple columns
-        column_main(l, cl);
+        if (LFopt.zero || LFopt.one || LFopt.two)
+        {
+            list_main(l, cl);
+        }
+        else
+        {
+            column_main(l, cl);
+        }
     }
     else
     { // display one column

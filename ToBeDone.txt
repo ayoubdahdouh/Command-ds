@@ -21,26 +21,33 @@
 -s i/l/u/g/s/  /a/m/c / t(type)/e(extension)/n
     sort by name
 -w "STRING"
-    by default(without STRING), separate output with ", "
--n f,q,
+    by default(without STRING), separate output with "\n"
+-n f,q,s
     if "f" and "i" are set use multiple column instead one column (change long_main)
 -c
 -r
 -v
 -h
+
 #fixbug "-t" command
 #add sort_t and sort_e
 #fixbug -s option; set default action
-
 #fixbug  display: in use slash and quote;
 
+-0 comma
+-1 newline
+-2 semicolumn
+-3 space
+-! option to say no argument
 
-#fix "/" (./lf -t /)
+#add b(back-slash) to -n
 #fixbug in color
+#fix "/" (./lf -t /)
 {
 # utf-8 STRING
 #Unicode in C :https://www.cprogramming.com/tutorial/unicode.html
 https://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+https://www.gnu.org/software/coreutils/manual/html_node/Formatting-the-file-names.html#Formatting-the-file-names
 }
 
 ###########################

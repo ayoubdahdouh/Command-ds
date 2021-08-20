@@ -13,6 +13,7 @@
 #include "format_column.h"
 #include "format_long.h"
 #include "format_tree.h"
+#include "format_list.h"
 #include "list.h"
 #include "color.h"
 #include "display.h"
@@ -310,7 +311,8 @@ void core(format_tree_t *tree)
              * Modify the error inst.
              * 
              * */
-            printf("\033[%smaccess denied: %s\033[%sm\n", getcolor(LFcolorlist, "rs", false), LFbuf, getcolor(LFcolorlist, "rs", false));
+            printf("access denied: %s\n", LFbuf);
+
             LFbuf[0] = 0;
         }
         else
@@ -351,7 +353,7 @@ void core(format_tree_t *tree)
                     ((S_IEXEC & s.st_mode) && LFopt.ml->x) ||
                     (S_ISREG(s.st_mode) && LFopt.ml->f))
                 {
-                    ladd(l, LFIRST, t);
+                    ladd(l, LLAST, t);
                 }
             }
         }
@@ -370,7 +372,6 @@ void core(format_tree_t *tree)
         // sort by name.
         lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_name);
     }
-    
     if (LFopt.t)
     { // format tree
         tree_main(l, tree);
@@ -378,6 +379,10 @@ void core(format_tree_t *tree)
     else if (LFopt.i)
     { // format long
         long_main(l);
+    }
+    else if (LFopt.zero || LFopt.one || LFopt.two)
+    { // format long
+        list_main(l, NULL);
     }
     else
     { // format column
