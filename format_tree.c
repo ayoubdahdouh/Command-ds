@@ -34,24 +34,26 @@ void tree_display(format_tree_t *tree, bool last)
 
 void tree_main(linklist l, format_tree_t *tree)
 {
-    int last;
+    bool last;
     int psiz;
-    int if_all;
+    int all;
     lf_type t;
-    int j = 0;
-    int n = l->count;
+    int i = 0, n;
 
-    if_all = LFopt.a ? 3 : 1;
+    all = LFopt.a ? 2 : 0;
     psiz = LFpathsiz;
-    while (j < n)
+    n = l->count - all;
+
+    while (i < n)
     {
         LFpathsiz = psiz;
+        last = (i == n - 1) ? true : false;
         t = (lf_type)(lat(l, LFIRST))->data;
         if (S_ISDIR(t->st.st_mode))
         {
             if (strcmp(t->name, ".") && strcmp(t->name, ".."))
             {
-                last = (j == n - 1) ? 1 : 0;
+                ++i;
                 if (last)
                 {
                     tree->parent_has_next[tree->level] = '0';
@@ -79,14 +81,12 @@ void tree_main(linklist l, format_tree_t *tree)
         }
         else
         {
-            last = (j == n - if_all) ? 1 : 0;
+            ++i;
             tree_display(tree, last);
             display(t->name, &t->st.st_mode, true);
         }
-
         free(t->name);
         free(t);
         ldel(l, LFIRST);
-        ++j;
     }
 }

@@ -22,7 +22,7 @@
     sort by name
 -w "STRING"
     by default(without STRING), separate output with "\n"
--n f,q,s
+-n l,f,q,s
     if "f" and "i" are set use multiple column instead one column (change long_main)
 -c
 -r
@@ -39,9 +39,8 @@
 -3 space
 ./lf -m=l,s=s -n= -n=e -q=sdf,;s=sdff
 #handling error in lf option (Try 'lf -h' for help.)
-
-
 #link not colored when follow link is false
+
 #fix "/" (./lf -t /)
 
 
