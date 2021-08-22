@@ -14,7 +14,7 @@ void sort_tb(char **tb, int n);
 void sort(linklist l);
 int sort_name(lf_type t1, lf_type t2);
 int sort_i(lf_type t1, lf_type t2);
-int sort_l(lf_type t1, lf_type t2);
+int sort_n(lf_type t1, lf_type t2);
 int sort_u(lf_type t1, lf_type t2);
 int sort_g(lf_type t1, lf_type t2);
 int sort_s(lf_type t1, lf_type t2);

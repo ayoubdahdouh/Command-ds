@@ -29,141 +29,152 @@ bool is_digit(const char *nm, int n)
     }
     return (n) ? false : true;
 }
-char *filter(char *s, int n)
-{
-    int k = 0;
-    bool repeat;
-    char *tmp;
 
-    tmp = (char *)malloc(sizeof(char) * n);
-    for (char *c = s; *c && k < n; ++c)
-    {
-        repeat = false;
-        for (char *d = s; d < c; ++d)
-        {
-            if (*d == *c)
-            {
-                repeat = true;
-            }
-        }
-        if (!repeat)
-        {
-            tmp[k] = *s;
-            ++k;
-        }
-    }
-    if (k < n)
-    {
-        tmp = (char *)realloc(tmp, sizeof(char) * (k + 1));
-        tmp[k + 1] = 0;
-    }
-    // case k==n nothing to do.
-    // case k>n doesn't exist here.
-    return tmp;
-}
-
-int set_t_arg(char *s[], int n, int *i, int j)
+int set_t_arg(char *s[], int n, int i, int *j)
 {
-    // if 't' is at  the end of string
-    // and there's a argument
-    // and it's a number
-    if ((j == strlen(s[*i]) - 1) &&
-        (*i < n - 1))
-    {
-        if (is_digit(s[*i + 1], strlen(s[*i])))
-        {
-            ++(*i);
-            return strtol(s[*i], NULL, 10);
-        }
-    }
-    return 0;
-}
-
-char set_l_arg(char *s[], int n, int *i, int j)
-{
-    if ((j == strlen(s[*i]) - 1) &&
-        (*i < n - 1))
-    {
-        // its length is 1
-        if (strlen(s[*i + 1]) == 1)
-        {
-            ++(*i);
-            return s[*i][0];
-        }
-    }
-    return '\n';
-}
-
-char set_s_arg(char *s[], int n, int *i, int j)
-{
-    // if 's' is at  the end of string
-    // and there's a argument
-    if ((j == strlen(s[*i]) - 1) &&
-        (*i < n - 1))
-    {
-        // its length is 1
-        if (strlen(s[*i + 1]) == 1)
-        {
-            char c = s[*i + 1][0];
-            if ((c == 'i') ||
-                (c == 'l') ||
-                (c == 'u') ||
-                (c == 'g') ||
-                (c == 's') ||
-                (c == 'a') ||
-                (c == 'm') ||
-                (c == 'c') ||
-                (c == 't') ||
-                (c == 'e'))
-            {
-                ++(*i);
-                return c;
-            }
-        }
-    }
-    // by default, sort by name
-    return 0;
-}
-
-m_arg *set_m_arg(char *s[], int n, int *i, int j)
-{
+    int depth = 0;
     bool ok = true;
-
-    if ((j == strlen(s[*i]) - 1) &&
-        (*i < n - 1))
+    if ((*j < strlen(s[i]) - 1) &&
+        (s[i][*j + 1] == '='))
     {
-        char *c = s[*i + 1];
-        while (*c && ok)
-        { // verify if all characters are correct.
-            if ((*c != 'b') &&
-                (*c != 'c') &&
-                (*c != 'd') &&
-                (*c != 'p') &&
-                (*c != 'l') &&
-                (*c != 'f') &&
-                (*c != 's') &&
-                (*c != 'u') &&
-                (*c != 'g') &&
-                (*c != 't') &&
-                (*c != 'r') &&
-                (*c != 'w') &&
-                (*c != 'x'))
+        *j += 2;
+        int cnt = 0;
+        for (char *k = &s[i][*j]; *k && *k != ','; ++k)
+        {
+            if (*k >= '0' && *k <= '9')
             {
-                ok = false;
+                ++cnt;
             }
             else
             {
-                ++c;
+                ok = false;
+                break;
             }
         }
-        if (ok)
+        if (ok && cnt > 0)
         {
-            ++(*i);
-            m_arg *m = lf_alloc(M_ARG_SIZ);
-            memset(m, 0, M_ARG_SIZ);
-            for (int j = 0; j < strlen(s[*i]); ++j)
+            char *ss = (char *)lf_alloc(cnt * sizeof(char));
+            strncpy(ss, &s[i][*j], cnt);
+            *j += cnt;
+            depth = strtol(ss, NULL, 10);
+            free(ss);
+        }
+        else
+        {
+            if (!ok)
             {
-                switch (s[*i][j])
+                printf("%s: For the \"t\" option, the argument must be a positive number.\n", PROGRAM);
+            }
+            else if (cnt == 0)
+            {
+                printf(PROGRAM ": The \"s\" option needs an argument after \"=\".\n");
+            }
+            else
+            {
+                printf(PROGRAM "Error in the option \"t\".");
+            }
+            printf("Please try \"" PROGRAM " -h\" for help.\n");
+            lf_quit();
+        }
+    }
+    return depth;
+}
+
+char set_s_arg(char *s[], int n, int i, int *j)
+{
+    char attr = 0;
+    bool ok = true, diff = false;
+
+    // if 's' is at  the end of string
+    // and there's a argument
+    if ((*j < strlen(s[i]) - 1) &&
+        (s[i][*j + 1] == '='))
+    {
+        *j += 2;
+        int cnt = 0;
+        char *k, prev = 0;
+
+        for (k = &s[i][*j]; *k && *k != ','; ++k)
+        {
+            if (!strchr("inugsamcte", *k))
+            {
+                ok = false;
+                break;
+            }
+            else
+            {
+                if (prev == 0)
+                {
+                    prev = *k;
+                }
+                if (prev != *k)
+                {
+                    diff = true;
+                    break;
+                }
+                ++cnt;
+            }
+        }
+        if (ok && !diff && cnt > 0)
+        {
+            attr = s[i][*j];
+            ++(*j);
+        }
+        else
+        {
+            if (!ok)
+            {
+                printf("%s: The \"s\" option doesn't recognize the argument \"%c\".\n", PROGRAM, *k);
+            }
+            else if (diff)
+            {
+                printf(PROGRAM ": The \"s\" option accepts only one argument.\n");
+            }
+            else if (cnt == 0)
+            {
+                printf(PROGRAM ": The \"s\" option needs an argument after \"=\".\n");
+            }
+            else
+            {
+                printf(PROGRAM "Error in the option \"s\".");
+            }
+            printf("Please try \"" PROGRAM " -h\" for help.\n");
+            lf_quit();
+        }
+    }
+    return attr;
+}
+
+m_arg *set_m_arg(char *s[], int n, int i, int *j)
+{
+    bool ok = true;
+    m_arg *m = NULL;
+
+    if ((*j < strlen(s[i]) - 1) &&
+        (s[i][*j + 1] == '='))
+    {
+        *j += 2;
+        int cnt = 0;
+        char *k;
+        // verify that data are correct
+        for (k = &s[i][*j]; ok && *k && *k != ','; ++k)
+        {
+            if (!strchr("bcdplfsugtrwx", *k))
+            {
+                ok = false;
+                break;
+            }
+            else
+            {
+                ++cnt;
+            }
+        }
+        if (ok && cnt > 0)
+        {
+            m = (m_arg *)lf_alloc(M_ARG_SIZ);
+            for (char *k = &s[i][*j]; *k && *k != ','; ++k)
+            {
+                switch (*k)
                 {
                 case 'b':
                     m->b = true;
@@ -208,132 +219,178 @@ m_arg *set_m_arg(char *s[], int n, int *i, int j)
                     break;
                 }
             }
-            return m;
+            *j += cnt;
         }
-    }
-    return NULL;
-}
-
-i_arg *set_i_arg(char *s[], int n, int *i, int j)
-{
-    bool ok = true;
-
-    if ((j == strlen(s[*i]) - 1) &&
-        (*i < n - 1))
-    {
-        char *c = s[*i + 1];
-        while (*c && ok)
+        else
         {
-            if ((*c != 'i') &&
-                (*c != 'l') &&
-                (*c != 'u') &&
-                (*c != 'g') &&
-                (*c != 's') &&
-                (*c != 'p') &&
-                (*c != 'a') &&
-                (*c != 'm') &&
-                (*c != 'c'))
+            if (!ok)
             {
-                ok = false;
+                printf("%s: The option \"m\" doesn't recognize the argument \"%c\".\n", PROGRAM, *k);
+            }
+            else if (cnt == 0)
+            {
+                printf(PROGRAM ": The \"m\" option needs an argument after \"=\".\n");
             }
             else
             {
-                ++c;
+                printf(PROGRAM "Error in the option \"m\".");
+            }
+            printf("Please try \"" PROGRAM " -h\" for help.\n");
+            lf_quit();
+        }
+    }
+    return m;
+}
+
+l_arg *set_l_arg(char *s[], int n, int i, int *j)
+{
+    bool ok = true;
+    l_arg *la = NULL;
+
+    if ((*j < strlen(s[i]) - 1) &&
+        (s[i][*j + 1] == '='))
+    {
+        *j += 2;
+        int cnt = 0;
+        char *k;
+        // verify that data are correct
+        for (k = &s[i][*j]; ok && *k && *k != ','; ++k)
+        {
+            if (!strchr("inugspamc", *k))
+            {
+                ok = false;
+                break;
+            }
+            else
+            {
+                ++cnt;
             }
         }
-        if (ok)
+        if (ok && cnt > 0)
         {
-            ++(*i);
-            i_arg *l = (i_arg *)lf_alloc(L_ARG_SIZ);
-            memset(l, 0, L_ARG_SIZ);
-            for (int j = 0; j < strlen(s[*i]); ++j)
+            la = (l_arg *)lf_alloc(L_ARG_SIZ);
+            for (char *k = &s[i][*j]; *k && *k != ','; ++k)
             {
-                switch (s[*i][j])
+                switch (*k)
                 {
                 case 'i':
-                    l->i = true;
+                    la->i = true;
                     break;
-                case 'l':
-                    l->l = true;
+                case 'n':
+                    la->n = true;
                     break;
                 case 'u':
-                    l->u = true;
+                    la->u = true;
                     break;
                 case 'g':
-                    l->g = true;
+                    la->g = true;
                     break;
                 case 's':
-                    l->s = true;
+                    la->s = true;
                     break;
                 case 'p':
-                    l->p = true;
+                    la->p = true;
                     break;
                 case 'a':
-                    l->a = true;
+                    la->a = true;
                     break;
                 case 'm':
-                    l->m = true;
+                    la->m = true;
                     break;
                 case 'c':
-                    l->c = true;
+                    la->c = true;
                     break;
                 default:
                     break;
                 }
             }
-            return l;
+            *j += cnt;
         }
-    }
-    return NULL;
-}
-
-n_arg *set_n_arg(char *s[], int n, int *i, int j)
-{
-    bool ok = true;
-
-    if ((j == strlen(s[*i]) - 1) &&
-        (*i < n - 1))
-    {
-        char *c = s[*i + 1];
-        while (*c && ok)
+        else
         {
-            if ((*c != 'f') &&
-                (*c != 'q') &&
-                (*c != 's'))
+            if (!ok)
             {
-                ok = false;
+                printf("%s: The option \"l\" doesn't recognize the argument \"%c\".\n", PROGRAM, *k);
+            }
+            else if (cnt == 0)
+            {
+                printf(PROGRAM ": The \"l\" option needs an argument after \"=\".\n");
             }
             else
             {
-                ++c;
+                printf(PROGRAM "Error in the option \"l\".");
+            }
+            printf("Please try \"" PROGRAM " -h\" for help.\n");
+            lf_quit();
+        }
+    }
+    return la;
+}
+
+n_arg *set_n_arg(char *s[], int n, int i, int *j)
+{
+    bool ok = true;
+    n_arg *na = NULL;
+
+    if ((*j < strlen(s[i]) - 1) &&
+        (s[i][*j + 1] == '='))
+    {
+        *j += 2;
+        int cnt = 0;
+        char *k;
+        for (k = &s[i][*j]; ok && *k && *k != ','; ++k)
+        {
+            if (!strchr("fqs", *k))
+            {
+                ok = false;
+                break;
+            }
+            else
+            {
+                ++cnt;
             }
         }
-        if (ok)
+        if (ok && cnt > 0)
         {
-            ++(*i);
-            n_arg *nn = (n_arg *)lf_alloc(N_ARG_SIZ);
-            memset(nn, 0, N_ARG_SIZ);
-            for (int j = 0; j < strlen(s[*i]); ++j)
+            na = (n_arg *)lf_alloc(N_ARG_SIZ);
+            for (char *k = &s[i][*j]; *k && *k != ','; ++k)
             {
-                switch (s[*i][j])
+                switch (*k)
                 {
                 case 'f':
-                    nn->f = true;
+                    na->f = true;
                     break;
                 case 'q':
-                    nn->q = true;
+                    na->q = true;
                     break;
                 case 's':
-                    nn->s = true;
+                    na->s = true;
                     break;
                 default:
                     break;
                 }
             }
-            return nn;
+            *j += cnt;
+        }
+        else
+        {
+            if (!ok)
+            {
+                printf("%s: The option \"n\" doesn't recognize the argument \"%c\".\n", PROGRAM, *k);
+            }
+            else if (cnt == 0)
+            {
+                printf(PROGRAM ": The \"n\" option needs an argument after \"=\".\n");
+            }
+            else
+            {
+                printf(PROGRAM "Error in the option \"n\".\n");
+            }
+            printf("Please try \"" PROGRAM " -h\" for help.\n");
+            lf_quit();
         }
     }
-    return NULL;
+    return na;
 }
 
 void set_options(int argc, char *argv[], linklist l)
@@ -350,9 +407,8 @@ void set_options(int argc, char *argv[], linklist l)
             {
                 switch (argv[i][j])
                 {
-                case '!':
-                    LFopt.arg = true;
-                    break;
+                case ',':
+                    continue;
                 case '0':
                     LFopt.zero = true;
                     break;
@@ -361,6 +417,9 @@ void set_options(int argc, char *argv[], linklist l)
                     break;
                 case '2':
                     LFopt.two = true;
+                    break;
+                case '3':
+                    LFopt.three = true;
                     break;
                 case 'a':
                     LFopt.a = true;
@@ -379,28 +438,27 @@ void set_options(int argc, char *argv[], linklist l)
                     break;
                 case 't':
                     LFopt.t = true;
-                    LFopt.td = set_t_arg(argv, argc, &i, j);
+                    LFopt.td = set_t_arg(argv, argc, i, &j);
                     break;
                 case 's':
                     LFopt.s = true;
-                    LFopt.sc = set_s_arg(argv, argc, &i, j);
+                    LFopt.sc = set_s_arg(argv, argc, i, &j);
                     break;
                 case 'm':
                     LFopt.m = true;
-                    LFopt.ml = set_m_arg(argv, argc, &i, j);
+                    LFopt.ml = set_m_arg(argv, argc, i, &j);
                     break;
-                case 'i':
-                    LFopt.i = true;
-                    LFopt.il = set_i_arg(argv, argc, &i, j);
+                case 'l':
+                    LFopt.l = true;
+                    LFopt.ll = set_l_arg(argv, argc, i, &j);
                     break;
                 case 'n':
                     LFopt.n = true;
-                    LFopt.nl = set_n_arg(argv, argc, &i, j);
-
+                    LFopt.nl = set_n_arg(argv, argc, i, &j);
                     break;
                 default:
                     ok = false;
-                    printf("%s: Invalid command \"%c\"\n", PROGRAM, argv[i][j]);
+                    printf("%s: Unknown option \"%c\"\n", PROGRAM, argv[i][j]);
                     break;
                 }
             }
@@ -420,12 +478,9 @@ int main(int argc, char *argv[], char *envp[])
 {
     linklist l = lopen();
 
-    lf_init();
+    // init OPT
+    memset(&LFopt, 0, OPTIONSIZ);
     set_options(argc, argv, l);
-    if (lempty(l))
-    {
-        ladd(l, LFIRST, "./");
-    }
     if (LFopt.h)
     {
         help(0);
@@ -434,13 +489,37 @@ int main(int argc, char *argv[], char *envp[])
     {
         version();
     }
-    else if (LFopt.t + LFopt.i + LFopt.zero + LFopt.one + LFopt.two > true)
-    {
-        printf("%s: The 't', 'i', '0', '1' and '2' options should be used separately.\n", PROGRAM);
-        lf_quit();
-    }
     else
     {
+        if (LFopt.t && (LFopt.l + LFopt.zero + LFopt.one + LFopt.two >= true))
+        {
+            printf(PROGRAM ": The option \"t\" can't be combined with the options \"l\", \"0\", \"1\" and \"2\".\n");
+            lf_quit();
+        }
+        else if (LFopt.l && (LFopt.zero + LFopt.one + LFopt.two >= true))
+        {
+            if (!LFopt.ll ||
+                (LFopt.ll->i + LFopt.ll->n +
+                     LFopt.ll->s + LFopt.ll->p +
+                     LFopt.ll->u + LFopt.ll->g +
+                     LFopt.ll->a + LFopt.ll->m +
+                     LFopt.ll->c >
+                 true))
+            {
+                printf(PROGRAM ": The option \"l\" can't be combined with the options \"0\", \"1\" and \"2\", unless \"l\" has only one argument.\n");
+                lf_quit();
+            }
+        }
+        else if (LFopt.zero + LFopt.one + LFopt.two > true)
+        {
+            printf(PROGRAM ": The options \"0\", \"1\" and \"2\" can't be combined..\n");
+            lf_quit();
+        }
+
+        if (lempty(l))
+        {
+            ladd(l, LFIRST, "./");
+        }
         if (!LFopt.nl)
         {
             LFopt.nl = (n_arg *)lf_alloc(N_ARG_SIZ);
@@ -463,15 +542,17 @@ int main(int argc, char *argv[], char *envp[])
             LFopt.ml->w = true;
             LFopt.ml->x = true;
         }
-        if (LFopt.i)
+        if (LFopt.l)
         {
-            if (LFopt.il)
+            if (LFopt.ll)
             {
-                if (LFopt.il->i + LFopt.il->l +
-                        LFopt.il->s + LFopt.il->p +
-                        LFopt.il->u + LFopt.il->g +
-                        LFopt.il->a + LFopt.il->m +
-                        LFopt.il->c ==
+
+                // follow link if long format
+                if (LFopt.ll->i + LFopt.ll->n +
+                        LFopt.ll->s + LFopt.ll->p +
+                        LFopt.ll->u + LFopt.ll->g +
+                        LFopt.ll->a + LFopt.ll->m +
+                        LFopt.ll->c ==
                     true)
                 {
                     LFopt.nl->f = false;
@@ -484,14 +565,14 @@ int main(int argc, char *argv[], char *envp[])
             else
             {
                 LFopt.nl->f = true;
-                LFopt.il = (i_arg *)lf_alloc(L_ARG_SIZ);
-                LFopt.il->i = true;
-                LFopt.il->l = true;
-                LFopt.il->u = true;
-                LFopt.il->g = true;
-                LFopt.il->p = true;
-                LFopt.il->s = true;
-                LFopt.il->m = true;
+                LFopt.ll = (l_arg *)lf_alloc(L_ARG_SIZ);
+                LFopt.ll->i = true;
+                LFopt.ll->n = true;
+                LFopt.ll->u = true;
+                LFopt.ll->g = true;
+                LFopt.ll->p = true;
+                LFopt.ll->s = true;
+                LFopt.ll->m = true;
             }
         }
         if (LFopt.t)
@@ -503,12 +584,12 @@ int main(int argc, char *argv[], char *envp[])
             LFcolorlist = scan_for_color();
             if (lempty(LFcolorlist))
             {
-                printf("%s: warning: \"-c\" not available because the \"LS_COLORS\" environment variable is not set.\n", PROGRAM);
+                printf(PROGRAM ": warning: \"-c\" not available because the \"LS_COLORS\" environment variable is not set.\n");
                 LFopt.c = false;
             }
             else if (!getcolor(LFcolorlist, "rs", false))
             { // at least LS_COLORS must have value for "rs"
-                printf("%s: warning: \"-c\" not available because the environment variable \"LS_COLORS\" has no value \"rs\".\n", PROGRAM);
+                printf(PROGRAM ": warning: \"-c\" not available because the environment variable \"LS_COLORS\" has no value \"rs\".\n");
                 LFopt.c = false;
             }
         }

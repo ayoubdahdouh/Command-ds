@@ -28,18 +28,23 @@
 -r
 -v
 -h
-
 #fixbug "-t" command
 #add sort_t and sort_e
 #fixbug -s option; set default action
 #fixbug  display: in use slash and quote;
-
+#error in t option (./lf -t=9,ac)
 -0 comma
 -1 newline
 -2 semicolumn
 -3 space
--! option to say no argument
+./lf -m=l,s=s -n= -n=e -q=sdf,;s=sdff
+#handling error in lf option (Try 'lf -h' for help.)
 
+
+#link not colored when follow link is false
+
+
+ToBeDevelopeds
 #add b(back-slash) to -n
 #fixbug in color
 #fix "/" (./lf -t /)
@@ -52,3 +57,10 @@ https://www.gnu.org/software/coreutils/manual/html_node/Formatting-the-file-name
 
 ###########################
 #####  FUTURE VERSION #####
+
+{
+#add -x horizontal list contents.
+~rwxrwxr-x a.out     ~rw-rw-r-- common.h         ~rw-rw-r-- format_column.h  ~rw-rw-r-- format_tree.h  ~rw-rw-r-- list.h     ~rw-rw-r-- ToBeDone.txt
+lrwxrwxrwx bonjour   ~rw-rw-r-- display.c        ~rw-rw-r-- format_list.c    ~rwxrwxr-x lf             ~rw-rw-r-- main.c     
+drwxrwxr-x build     ~rw-rw-r-- display.h        ~rw-rw-r-- format_list.h    ~rw-rw-r-- lf.c           ~rw-rw-r-- makefile   
+}

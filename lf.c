@@ -29,6 +29,7 @@ void run(linklist a)
     iterator it;
     int mularg = (a->count != 1);
 
+    lf_init();
     memset(&tree, 0, LFTREESIZ);
     it = lat(a, LFIRST);
     b = lopen();
@@ -89,7 +90,7 @@ void run(linklist a)
                 {
                     printf("%s:\n", nm);
                 }
-                if (LFopt.i)
+                if (LFopt.l)
                 {
                     long_main(b);
                 }
@@ -201,7 +202,7 @@ int sort_i(lf_type t1, lf_type t2)
 {
     return (t1->st.st_ino < t2->st.st_ino) ? -1 : 1;
 }
-int sort_l(lf_type t1, lf_type t2)
+int sort_n(lf_type t1, lf_type t2)
 {
     return (t1->st.st_nlink < t2->st.st_nlink) ? -1 : 1;
 }
@@ -251,8 +252,8 @@ void sort(linklist l)
         lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_i);
         break;
 
-    case 'l':
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_l);
+    case 'n':
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sort_n);
         break;
 
     case 'u':
@@ -376,11 +377,11 @@ void core(format_tree_t *tree)
     { // format tree
         tree_main(l, tree);
     }
-    else if (LFopt.i)
+    else if (LFopt.l)
     { // format long
         long_main(l);
     }
-    else if (LFopt.zero || LFopt.one || LFopt.two)
+    else if (LFopt.zero || LFopt.one || LFopt.two || LFopt.three)
     { // format long
         list_main(l, NULL);
     }

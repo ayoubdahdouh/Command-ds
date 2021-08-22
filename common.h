@@ -13,11 +13,11 @@ typedef struct m_arg
 } m_arg;
 #define M_ARG_SIZ sizeof(struct m_arg)
 
-typedef struct i_arg
+typedef struct l_arg
 {
-    bool i, l, u, g, s, p, a, m, c;
-} i_arg;
-#define L_ARG_SIZ sizeof(struct i_arg)
+    bool i, n, u, g, s, p, a, m, c;
+} l_arg;
+#define L_ARG_SIZ sizeof(struct l_arg)
 
 typedef struct n_arg
 {
@@ -33,16 +33,17 @@ typedef struct n_arg
 
 typedef struct lf_option
 {
-    bool arg;
+    bool no_arg;
     bool zero;
     bool one;
     bool two;
+    bool three;
     bool a; // all, by default lf doesn't show hidden file.
     bool m; // mode.
     m_arg *ml; // mode list
 
-    bool i; // information
-    i_arg *il;
+    bool l; // information
+    l_arg *ll;
 
     bool r; // make the size readable like 4K, 13M, 2G, etc
     bool s; // sort output

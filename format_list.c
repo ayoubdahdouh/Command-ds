@@ -52,7 +52,15 @@ void list_main(linklist l, char **tb)
     for (int i = 0; i < l->count; i++)
     {
         t = (lf_type)it->data;
-        cnt = ls[i] + 2; // +2 is for CHAR+space
+        if (LFopt.three)
+        {
+            cnt = ls[i] + 1;
+        }
+        else
+        {
+            cnt = ls[i] + 2;
+        }        
+        
         if (tb)
         {
             cnt += strlen(tb[i]) + 1; // +1 for space between "tb" and "l"
@@ -80,9 +88,13 @@ void list_main(linklist l, char **tb)
             {
                 printf("\n");
             }
-            else
+            else if (LFopt.two)
             {
                 printf("; ");
+            }
+            else
+            {
+                printf(" ");
             }
         }
         else
