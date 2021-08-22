@@ -5,6 +5,61 @@
 #include "common.h"
 #include "color.h"
 
+
+void display_name(char *nm, mode_t *m, char *c, char *r)
+{
+    if (LFopt.nl->q || has_space(nm))
+    {
+        if (S_ISDIR(*m) && LFopt.nl->s)
+        {
+            if (LFopt.c && c && r)
+            {
+                printf("\033[%sm\"%s\"/\033[%sm", c, nm, r);
+            }
+            else
+            {
+                printf("\"%s\"/", nm);
+            }
+        }
+        else
+        {
+            if (LFopt.c && c && r)
+            {
+                printf("\033[%sm\"%s\"\033[%sm", c, nm, r);
+            }
+            else
+            {
+                printf("\"%s\"", nm);
+            }
+        }
+    }
+    else
+    {
+        if (S_ISDIR(*m) && LFopt.nl->s)
+        {
+            if (LFopt.c && c && r)
+            {
+                printf("\033[%sm%s/\033[%sm", c, nm, r);
+            }
+            else
+            {
+                printf("%s/", nm);
+            }
+        }
+        else
+        {
+            if (LFopt.c && c && r)
+            {
+                printf("\033[%sm%s\033[%sm", c, nm, r);
+            }
+            else
+            {
+                printf("%s", nm);
+            }
+        }
+    }
+}
+
 void choose_color(char *nm, mode_t *m, char **c)
 {
 
@@ -109,7 +164,7 @@ void display(char *nm, mode_t *m, bool nl)
         rs = getcolor(LFcolorlist, "rs", false);
         choose_color(nm, m, &c1);
     }
-    if (S_ISLNK(*m) && LFopt.nl->f)
+    if (S_ISLNK(*m))
     {
         strcpy(&LFpath[LFpathsiz], nm);
         if (lf_link(LFpath))
@@ -143,59 +198,5 @@ void display(char *nm, mode_t *m, bool nl)
     if (nl)
     {
         printf("\n");
-    }
-}
-
-void display_name(char *nm, mode_t *m, char *c, char *r)
-{
-    if (LFopt.nl->q || has_space(nm))
-    {
-        if (S_ISDIR(*m) && LFopt.nl->s)
-        {
-            if (LFopt.c && c && r)
-            {
-                printf("\033[%sm\"%s\"/\033[%sm", c, nm, r);
-            }
-            else
-            {
-                printf("\"%s\"/", nm);
-            }
-        }
-        else
-        {
-            if (LFopt.c && c && r)
-            {
-                printf("\033[%sm\"%s\"\033[%sm", c, nm, r);
-            }
-            else
-            {
-                printf("\"%s\"", nm);
-            }
-        }
-    }
-    else
-    {
-        if (S_ISDIR(*m) && LFopt.nl->s)
-        {
-            if (LFopt.c && c && r)
-            {
-                printf("\033[%sm%s/\033[%sm", c, nm, r);
-            }
-            else
-            {
-                printf("%s/", nm);
-            }
-        }
-        else
-        {
-            if (LFopt.c && c && r)
-            {
-                printf("\033[%sm%s\033[%sm", c, nm, r);
-            }
-            else
-            {
-                printf("%s", nm);
-            }
-        }
     }
 }

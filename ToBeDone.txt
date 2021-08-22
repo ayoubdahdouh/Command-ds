@@ -42,12 +42,11 @@
 
 
 #link not colored when follow link is false
+#fix "/" (./lf -t /)
 
 
-ToBeDevelopeds
 #add b(back-slash) to -n
 #fixbug in color
-#fix "/" (./lf -t /)
 {
 # utf-8 STRING
 #Unicode in C :https://www.cprogramming.com/tutorial/unicode.html
