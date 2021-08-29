@@ -69,16 +69,26 @@ void column_main(linklist l, char **tb)
     }
     // length of each name.
     it = lat(l, LFIRST);
-    for (int i = 0; i < l->count; i++, linc(&it))
+    int nb_spaces;
+    for (int i = 0; i < l->count; i++)
     {
         t = (lf_type)it->data;
-        if (has_space(t->name) || LFopt.nl->q)
-        { // if name has space add +2, for the ""
-            ls[i] = strlen(t->name) + 2;
-        }
-        else
+        ls[i] = strlen(t->name);
+        nb_spaces = has_space(t->name);
+        if (nb_spaces)
         {
-            ls[i] = strlen(t->name);
+            if (LFopt.nl->b)
+            {
+                ls[i] += nb_spaces;
+            }
+            if (LFopt.nl->q || !LFopt.nl->b)
+            {
+               ls[i] += 2;
+            }
+        }
+        else if (LFopt.nl->q)
+        {
+            ls[i] += 2;
         }
         if (S_ISDIR(t->st.st_mode) && LFopt.nl->s)
         {
@@ -88,6 +98,7 @@ void column_main(linklist l, char **tb)
         {
             ts[i] = strlen(tb[i]) + 1; // +1 for space between "tb" and "l"
         }
+        linc(&it);
     }
     while (!ok)
     {

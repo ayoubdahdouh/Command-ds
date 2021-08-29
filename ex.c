@@ -21,18 +21,26 @@ char *fileextension(char *tmp)
     }
     return NULL;
 }
-
+int has_space(char *name)
+{
+    int i = 0;
+    for (; *name; ++name)
+    {
+        if (*name == ' ')
+        {
+            ++i;
+        }
+    }
+    return i;
+}
 int main()
 {
-    struct stat s;
-    char buf[1000];
-    int n;
-    char *s = fileextension("mlkj.txt");
-    printf("%s\n", s);
-    printf("%s\n", fileextension(".txt"));
-    printf("%s\n", fileextension("txt"));
-    printf("%s\n", fileextension(""));
-    printf("%s\n", fileextension(NULL));
+
+    for (int i = 0; i < 300; i++)
+    {
+        putchar('a');
+    }
+    putchar('\n');
 
     return 0;
 }

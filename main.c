@@ -340,7 +340,7 @@ n_arg *set_n_arg(char *s[], int n, int i, int *j)
         char *k;
         for (k = &s[i][*j]; ok && *k && *k != ','; ++k)
         {
-            if (!strchr("fqs", *k))
+            if (!strchr("bfqs", *k))
             {
                 ok = false;
                 break;
@@ -357,6 +357,9 @@ n_arg *set_n_arg(char *s[], int n, int i, int *j)
             {
                 switch (*k)
                 {
+                case 'b':
+                    na->b = true;
+                    break;
                 case 'f':
                     na->f = true;
                     break;
