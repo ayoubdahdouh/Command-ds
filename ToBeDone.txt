@@ -33,10 +33,10 @@
 #fixbug -s option; set default action
 #fixbug  display: in use slash and quote;
 #error in t option (./lf -t=9,ac)
--0 comma
+-0 space
 -1 newline
--2 semicolumn
--3 space
+-2 comma
+-3 semicolumn
 ./lf -m=l,s=s -n= -n=e -q=sdf,;s=sdff
 #handling error in lf option (Try 'lf -h' for help.)
 #link not colored when follow link is false
