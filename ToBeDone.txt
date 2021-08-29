@@ -40,11 +40,12 @@
 ./lf -m=l,s=s -n= -n=e -q=sdf,;s=sdff
 #handling error in lf option (Try 'lf -h' for help.)
 #link not colored when follow link is false
+#change -0 by -3, and swap -2 and -3 
+#adds b to -n
 
 #fix "/" (./lf -t /)
 
 
-#add b(back-slash) to -n
 #fixbug in color
 {
 # utf-8 STRING

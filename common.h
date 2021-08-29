@@ -21,7 +21,7 @@ typedef struct l_arg
 
 typedef struct n_arg
 {
-    bool f,q,s;
+    bool b,f,q,s;
 } n_arg;
 #define N_ARG_SIZ sizeof(struct n_arg)
 
@@ -85,7 +85,7 @@ bool lf_link(const char *nm);
 void lf_init();
 void lf_quit();
 
-int has_space(const char *nm);
+int has_space(char *nm);
 bool is_absolute_path(const char *pth);
 char *fileextension(char *s);
 char filetype(mode_t *m);

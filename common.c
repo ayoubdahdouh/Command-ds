@@ -17,10 +17,10 @@ void help(char h)
         printf("     %s -[OPTION]=[ARGUMENT],... [FILE]...\n\n", PROGRAM);
         printf("Options:\n");
         printf("    it's possible to combine those lettre together\n\n");
-        printf("    -0  separate files with commas.\n");
+        printf("    -0  separate files with a space.\n");
         printf("    -1  lists one file per line.\n");
-        printf("    -2  separate files with a semicolon.\n");
-        printf("    -3  separate files with a space.\n");
+        printf("    -2  separate files with commas.\n");
+        printf("    -3  separate files with a semicolon.\n");
         printf("    -a  show hidden files.\n");
         printf("    -[...]m=[bcdflrsugtrwx],[...]\n");
         printf("          File's mode, choose the files to list from the list below:\n");
@@ -65,10 +65,11 @@ void help(char h)
         printf("            e  file extension\n");
         printf("          By default, %s will sort the output by name,\n", PROGRAM);
         printf("          But if you invoke \"-s\" without giving any arguments, you disable sorting of the output.\n");
-        printf("    -[...]n=[fqs],[...]\n");
+        printf("    -[...]n=[bfqs],[...]\n");
+        printf("            b  adds a backslash to the string containing spaces\n");
         printf("            f  follow link\n");
-        printf("            q  print tfollow linkhe name in quotes\n");
-        printf("            s  print the folder name with a slash\n");
+        printf("            q  display the name in quotes\n");
+        printf("            s  display the folder name with a slash\n");
         printf("    -[...]t=[DEPTH]\n");
         printf("             DEPTH  tree depth\n");
         printf("          By default (without DEPTH), the depth is unlimited.\n");
@@ -140,14 +141,17 @@ void lf_quit()
     exit(EXIT_SUCCESS);
 }
 
-int has_space(const char *name)
+int has_space(char *nm)
 {
-    int i, tmp;
-    tmp = strlen(name);
-    for (i = 0; (i < tmp) && (name[i] != ' '); i++)
+    int i = 0;
+    for (; *nm; ++nm)
     {
+        if (*nm == ' ')
+        {
+            ++i;
+        }
     }
-    return i != tmp;
+    return i;
 }
 
 bool is_absolute_path(const char *p)

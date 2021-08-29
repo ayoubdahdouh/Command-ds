@@ -9,3 +9,4 @@ build/*
 .gitignore
 README.md
 list
+ex.c

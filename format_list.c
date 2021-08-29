@@ -26,16 +26,26 @@ void list_main(linklist l, char **tb)
     }
     // length of each name.
     it = lat(l, LFIRST);
+    int nb_spaces;
     for (int i = 0; i < l->count; i++)
     {
         t = (lf_type)it->data;
-        if (has_space(t->name) || LFopt.nl->q)
-        { // if name has space add +2, for the ""
-            ls[i] = strlen(t->name) + 2;
-        }
-        else
+        ls[i] = strlen(t->name);
+        nb_spaces = has_space(t->name);
+        if (nb_spaces)
         {
-            ls[i] = strlen(t->name);
+            if (LFopt.nl->b)
+            {
+                ls[i] += nb_spaces;
+            }
+            if (LFopt.nl->q || !LFopt.nl->b)
+            {
+               ls[i] += 2;
+            }
+        }
+        else if (LFopt.nl->q)
+        {
+            ls[i] += 2;
         }
         if (S_ISDIR(t->st.st_mode) && LFopt.nl->s)
         {
@@ -52,15 +62,14 @@ void list_main(linklist l, char **tb)
     for (int i = 0; i < l->count; i++)
     {
         t = (lf_type)it->data;
-        if (LFopt.three)
+        if (LFopt.zero)
         {
             cnt = ls[i] + 1;
         }
         else
         {
             cnt = ls[i] + 2;
-        }        
-        
+        }
         if (tb)
         {
             cnt += strlen(tb[i]) + 1; // +1 for space between "tb" and "l"
@@ -80,15 +89,16 @@ void list_main(linklist l, char **tb)
         display(t->name, &t->st.st_mode, false);
         if (i < l->count - 1)
         {
-            if (LFopt.zero)
-            {
-                printf(", ");
-            }
-            else if (LFopt.one)
+            if (LFopt.one)
             {
                 printf("\n");
             }
             else if (LFopt.two)
+            {
+                printf(", ");
+            }
+
+            else if (LFopt.three)
             {
                 printf("; ");
             }

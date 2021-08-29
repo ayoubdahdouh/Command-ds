@@ -4,65 +4,58 @@
 #include "display.h"
 #include "common.h"
 #include "color.h"
-
-
 void display_name(char *nm, mode_t *m, char *c, char *r)
 {
-    if (LFopt.nl->q || has_space(nm))
+    int i = 0;
+    if (LFopt.c && (!c || !r))
     {
-        if (S_ISDIR(*m) && LFopt.nl->s)
+        // if "c" and "r" aren't set then disable coloring output
+        LFopt.c = false;
+    }
+    if (LFopt.c)
+    {
+        sprintf(LFbuf, "\033[%sm", c);
+        i = strlen(LFbuf);
+    }
+    if (LFopt.nl->q || (!LFopt.nl->b && has_space(nm)))
+    {
+        LFbuf[i++] = '"';
+    }
+    if (LFopt.nl->b)
+    {
+        for (char *c = nm; *c; ++c)
         {
-            if (LFopt.c && c && r)
+            if (*c == ' ')
             {
-                printf("\033[%sm\"%s\"/\033[%sm", c, nm, r);
+                LFbuf[i++] = '\\';
             }
-            else
-            {
-                printf("\"%s\"/", nm);
-            }
-        }
-        else
-        {
-            if (LFopt.c && c && r)
-            {
-                printf("\033[%sm\"%s\"\033[%sm", c, nm, r);
-            }
-            else
-            {
-                printf("\"%s\"", nm);
-            }
+            LFbuf[i++] = *c;
         }
     }
     else
     {
-        if (S_ISDIR(*m) && LFopt.nl->s)
-        {
-            if (LFopt.c && c && r)
-            {
-                printf("\033[%sm%s/\033[%sm", c, nm, r);
-            }
-            else
-            {
-                printf("%s/", nm);
-            }
-        }
-        else
-        {
-            if (LFopt.c && c && r)
-            {
-                printf("\033[%sm%s\033[%sm", c, nm, r);
-            }
-            else
-            {
-                printf("%s", nm);
-            }
-        }
+        strcpy(&LFbuf[i], nm);
+        i = strlen(LFbuf);
     }
+
+    if (LFopt.nl->q || (!LFopt.nl->b && has_space(nm)))
+    {
+        LFbuf[i++] = '"';
+    }
+    if (S_ISDIR(*m) && LFopt.nl->s)
+    {
+        LFbuf[i++] = '/';
+    }
+    LFbuf[i] = 0;
+    if (LFopt.c)
+    {
+        sprintf(&LFbuf[i], "\033[%sm", r);
+    }
+    printf("%s", LFbuf);
 }
 
 void choose_color(char *nm, mode_t *m, char **c)
 {
-
     if (!nm)
     {
         *c = getcolor(LFcolorlist, nm, true);
