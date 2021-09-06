@@ -13,7 +13,7 @@
 void column_display(linklist l, int *ls, int *lm, char **tb, int *ts, int *tm, int cl, int ln)
 {
     int x;
-    lftype t;
+    lf_type t;
 
     for (int i = 0; i < ln; i++)
     {
@@ -23,13 +23,12 @@ void column_display(linklist l, int *ls, int *lm, char **tb, int *ts, int *tm, i
             if (x < l->count)
             {
                 // if options -s, -p, -m, -u or -g is set
-                // then call "func" to printout the size, the permissions, the modification time, etc...
-                t = (lftype)lget(l, x);
+                t = (lf_type)lget(l, x);
                 if (tb)
                 {
                     long_print(tb[x], tm[j] - 1, 1);
                 }
-                lfprint(t->name, &t->st.st_mode, false, false);
+                display(t->name, &t->st.st_mode, false);
                 x = lm[j] - ls[x];
                 for (int k = 0; k < x; k++)
                 { // the +1 is for the last space between columns.
@@ -56,7 +55,7 @@ void column_main(linklist l, char **tb)
     int *tm = NULL; // array max sizes of "tb"
     int x, y = 0;
     iterator it;
-    lftype t;
+    lf_type t;
     int k;
 
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
@@ -70,18 +69,28 @@ void column_main(linklist l, char **tb)
     }
     // length of each name.
     it = lat(l, LFIRST);
-    for (int i = 0; i < l->count; i++, linc(&it))
+    int nb_spaces;
+    for (int i = 0; i < l->count; i++)
     {
-        t = (lftype)it->data;
-        if (has_space(t->name))
-        { // if name has space add +2, for the ""
-            ls[i] = strlen(t->name) + 2;
-        }
-        else
+        t = (lf_type)it->data;
+        ls[i] = strlen(t->name);
+        nb_spaces = has_space(t->name);
+        if (nb_spaces)
         {
-            ls[i] = strlen(t->name);
+            if (LFopt.nl->b)
+            {
+                ls[i] += nb_spaces;
+            }
+            if (LFopt.nl->q || !LFopt.nl->b)
+            {
+               ls[i] += 2;
+            }
         }
-        if (S_ISDIR(t->st.st_mode) && !LF_opt.c)
+        else if (LFopt.nl->q)
+        {
+            ls[i] += 2;
+        }
+        if (S_ISDIR(t->st.st_mode) && LFopt.nl->s)
         {
             ls[i] += 1;
         }
@@ -89,6 +98,7 @@ void column_main(linklist l, char **tb)
         {
             ts[i] = strlen(tb[i]) + 1; // +1 for space between "tb" and "l"
         }
+        linc(&it);
     }
     while (!ok)
     {

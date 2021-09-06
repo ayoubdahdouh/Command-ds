@@ -15,14 +15,11 @@ linklist scan_for_color()
     v = getenv("LS_COLORS");
     if (!v)
     {
-        return NULL;
+        return l;
     }
     n = strlen(v);
-    b = (char *)malloc(sizeof(char) * n);
-    if (b)
-    {
-        strncpy(b, v, n);
-    }
+    b = (char *)lf_alloc(sizeof(char) * n);
+    strncpy(b, v, n);
     for (i = 0; i < n; i++)
     {
         if (v[i] == '=')
@@ -109,8 +106,7 @@ char *getcolor(linklist l, const char *nm, bool is_ext)
         }
         else
         {
-            return getcolor(l,"rs",false);
+            return getcolor(l, "rs", false);
         }
-        
     }
 }

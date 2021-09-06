@@ -291,7 +291,7 @@ void *lset(linklist l, long int at, void *data)
     return tmp;
 }
 
-void lquicksort(linklist l, long int from, long int to, int compare(void *, void *))
+void lsort(linklist l, long int from, long int to, int compare(void *, void *))
 {
     if (!l)
     {

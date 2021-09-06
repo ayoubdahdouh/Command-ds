@@ -1,12 +1,65 @@
 #error in print of "lf -m"
 #if DIR is false argument
 #getcolor case where no color available return "reset color"
-
 #finish implementation of permission
 #add inode column in long_format
+
 #ToBeDeveloped long_size(), long_user(), long_group().
+
+#add -m b,c,d,f,l,r,s,  ,u,g,t,  ,r,w,x
+#add -f i,n,u,g,s,p, ,a,m,c ,d,r,b(blocks, blksize)
+#add -s option, to SORT by column, (-b s/m/p/i/n/u/g/type/extension) by default sort by name (already done).
+#add -l option, to print with specific char (newline, semi-column, ...)
+
+###################################################################################################
+-a
+-m b,c,d,p,l,f,s,  ,u,g,t,  ,r,w,x
+    by default, shows all files and folders except hiddens.
+-t [DEPTH] (tree format)
+-i i,l,u,g,s,p ,a,m,c
+    by default, show all info ß(i,n,u,g,s,m,p,).
+-s i/l/u/g/s/  /a/m/c / t(type)/e(extension)/n
+    sort by name
+-w "STRING"
+    by default(without STRING), separate output with "\n"
+-n l,f,q,s
+    if "f" and "i" are set use multiple column instead one column (change long_main)
+-c
+-r
+-v
+-h
+#fixbug "-t" command
+#add sort_t and sort_e
+#fixbug -s option; set default action
+#fixbug  display: in use slash and quote;
+#error in t option (./lf -t=9,ac)
+-0 space
+-1 newline
+-2 comma
+-3 semicolumn
+./lf -m=l,s=s -n= -n=e -q=sdf,;s=sdff
+#handling error in lf option (Try 'lf -h' for help.)
+#link not colored when follow link is false
+#change -0 by -3, and swap -2 and -3 
+#adds b to -n
+#fix "/" (./lf -t /)
+
+{
+# utf-8 STRING
+#Unicode in C :https://www.cprogramming.com/tutorial/unicode.html
+https://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+https://www.gnu.org/software/coreutils/manual/html_node/Formatting-the-file-names.html#Formatting-the-file-names
+}
+
+#fixbug in color use DIR_COLORS
 
 ###########################
 #####  FUTURE VERSION #####
-#add -o option, to print with specific char (newline, semi-column, ...)
-#add -b option, to sort BY column, (-b s/m/p/i/n/u/g) by default sort by name (already done).
+
+{
+#add -x horizontal list contents.
+~rwxrwxr-x a.out     ~rw-rw-r-- common.h         ~rw-rw-r-- format_column.h  ~rw-rw-r-- format_tree.h  ~rw-rw-r-- list.h     ~rw-rw-r-- ToBeDone.txt
+lrwxrwxrwx bonjour   ~rw-rw-r-- display.c        ~rw-rw-r-- format_list.c    ~rwxrwxr-x lf             ~rw-rw-r-- main.c     
+drwxrwxr-x build     ~rw-rw-r-- display.h        ~rw-rw-r-- format_list.h    ~rw-rw-r-- lf.c           ~rw-rw-r-- makefile   
+}
+

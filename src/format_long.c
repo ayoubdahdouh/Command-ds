@@ -6,14 +6,15 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <string.h>
-#include "format_long.h"
-#include "common.h"
 #include "format_column.h"
+#include "format_long.h"
+#include "format_list.h"
 #include "display.h"
+#include "common.h"
 
-void long_print(char *fn, int m, int f)
+void long_print(char *nm, int m, int f)
 { // flag  is used to adjust the data (suffix/prefix)
-    int x = m - strlen(fn);
+    int x = m - strlen(nm);
 
     if (f)
     {
@@ -22,7 +23,7 @@ void long_print(char *fn, int m, int f)
             printf(" ");
         }
     }
-    printf("%s ", fn);
+    printf("%s ", nm);
     if (!f)
     {
         for (int i = 0; i < x; i++)
@@ -32,44 +33,62 @@ void long_print(char *fn, int m, int f)
     }
 }
 
-void long_display(linklist l, format_long_t *fl, int mp, int ms, int mu, int mg, int mi, int mn)
+void long_display(linklist l, format_long_t *fl,
+                  int mi, int mn, int mp, int ms,
+                  int mu, int mg, int ma, int mm, int mc)
 {
-    char buf[20];
-    lftype t;
+    lf_type t;
     int j = 0;
     for (iterator i = lat(l, LFIRST); i; linc(&i))
     {
-        t = (lftype)i->data;
-        if (LF_opt.l || LF_opt.i)
+        t = (lf_type)i->data;
+        // inodes
+        if (LFopt.ll->i)
         {
             long_print(fl->i[j], mi, false);
         }
-        if (LF_opt.l || LF_opt.n)
+        // nlink
+        if (LFopt.ll->n)
         {
-            long_print(fl->n[j], mn, false);
+            long_print(fl->l[j], mn, false);
         }
-        if (LF_opt.l || LF_opt.p)
+        // permissions
+        if (LFopt.ll->p)
         {
             long_print(fl->p[j], mp, false);
         }
-        if (LF_opt.l || LF_opt.u)
+        // user
+        if (LFopt.ll->u)
         {
             long_print(fl->u[j], mu, false);
         }
-        if (LF_opt.l || LF_opt.g)
+        // group
+        if (LFopt.ll->g)
         {
             long_print(fl->g[j], mg, false);
         }
-        if (LF_opt.l || LF_opt.m)
-        {
-            long_mtime(buf, &t->st.st_mtime);
-            printf("%s ", buf);
-        }
-        if (LF_opt.l || LF_opt.s)
+        // size
+        if (LFopt.s)
         {
             long_print(fl->s[j], ms, 1);
         }
-        lfprint(t->name, &t->st.st_mode, true, true);
+        // access
+        if (LFopt.ll->a)
+        {
+            long_print(fl->a[j], ma, false);
+        }
+        // modification
+        if (LFopt.ll->m)
+        {
+            long_print(fl->m[j], mm, false);
+        }
+        // change
+        if (LFopt.ll->c)
+        {
+            long_print(fl->c[j], mc, false);
+        }
+        // file's name
+        display(t->name, &t->st.st_mode, true);
         j++;
     }
 }
@@ -77,74 +96,66 @@ void long_display(linklist l, format_long_t *fl, int mp, int ms, int mu, int mg,
 void long_main(linklist l)
 {
     format_long_t fl;
-    lftype t;
-    int mu = 0, mg = 0, ms = 0, mp = 0, mi = 0, mn = 0;
+    lf_type t;
+    int mi = 0, mn = 0, mu = 0, mg = 0, ms = 0, mp = 0, ma = 0, mm = 0, mc = 0;
     int j = 0, tmp;
     bool mul_cl = false;
     char **cl = NULL;
     iterator it;
     int siz = sizeof(char *) * l->count;
 
-    if (!LF_opt.l && (LF_opt.s ^ LF_opt.p ^ LF_opt.m ^ LF_opt.u ^ LF_opt.g ^ LF_opt.i ^ LF_opt.n))
+    if (LFopt.l &&
+        (LFopt.ll->i + LFopt.ll->n + LFopt.ll->s +
+             LFopt.ll->p + LFopt.ll->u + LFopt.ll->g +
+             LFopt.ll->a + LFopt.ll->m + LFopt.ll->c ==
+         1))
     { // if only one of the options s, p, m, u, g is set
         mul_cl = true;
     }
     memset(&fl, 0, FORMATLONGSIZ);
-    if (LF_opt.l || LF_opt.s)
+    if (LFopt.ll->i)
     {
-        fl.s = (char **)lf_alloc(siz);
+        cl = fl.i = (char **)lf_alloc(siz);
     }
-    if (LF_opt.l || LF_opt.p)
+    if (LFopt.ll->n)
     {
-        fl.p = (char **)lf_alloc(siz);
+        cl = fl.l = (char **)lf_alloc(siz);
     }
-    if (LF_opt.l || LF_opt.u)
+    if (LFopt.ll->s)
     {
-        fl.u = (char **)lf_alloc(siz);
+        cl = fl.s = (char **)lf_alloc(siz);
     }
-    if (LF_opt.l || LF_opt.g)
+    if (LFopt.ll->p)
     {
-        fl.g = (char **)lf_alloc(siz);
+        cl = fl.p = (char **)lf_alloc(siz);
     }
-    if (LF_opt.l || LF_opt.i)
+    if (LFopt.ll->u)
     {
-        fl.i = (char **)lf_alloc(siz);
+        cl = fl.u = (char **)lf_alloc(siz);
     }
-    if (LF_opt.l || LF_opt.n)
+    if (LFopt.ll->g)
     {
-        fl.n = (char **)lf_alloc(siz);
+        cl = fl.g = (char **)lf_alloc(siz);
     }
-    if (mul_cl && LF_opt.m)
-    { // allocate memory in case where multcol is set.
-        fl.m = (char **)lf_alloc(siz);
+    if (LFopt.ll->m)
+    {
+        cl = fl.m = (char **)lf_alloc(siz);
+    }
+    if (LFopt.ll->a)
+    {
+        cl = fl.a = (char **)lf_alloc(siz);
+    }
+    if (LFopt.ll->c)
+    {
+        cl = fl.c = (char **)lf_alloc(siz);
     }
 
     it = lat(l, LFIRST);
     while (it)
     {
-        t = (lftype)it->data;
-        // user
-        if (LF_opt.l || LF_opt.u)
-        {
-            fl.u[j] = long_user(NULL, t->st.st_uid);
-            tmp = strlen(fl.u[j]);
-            if (tmp > mu)
-            {
-                mu = tmp;
-            }
-        }
-        // group
-        if (LF_opt.l || LF_opt.g)
-        {
-            fl.g[j] = long_group(NULL, t->st.st_gid);
-            tmp = strlen(fl.g[j]);
-            if (tmp > mg)
-            {
-                mg = tmp;
-            }
-        }
+        t = (lf_type)it->data;
         // inodes
-        if (LF_opt.l || LF_opt.i)
+        if (LFopt.ll->i)
         {
             fl.i[j] = long_ino(NULL, t->st.st_ino);
             tmp = strlen(fl.i[j]);
@@ -154,17 +165,37 @@ void long_main(linklist l)
             }
         }
         // nlink
-        if (LF_opt.l || LF_opt.n)
+        if (LFopt.ll->n)
         {
-            fl.n[j] = long_nlink(NULL, t->st.st_nlink);
-            tmp = strlen(fl.n[j]);
+            fl.l[j] = long_nlink(NULL, t->st.st_nlink);
+            tmp = strlen(fl.l[j]);
             if (tmp > mn)
             {
                 mn = tmp;
             }
         }
+        // user
+        if (LFopt.ll->u)
+        {
+            fl.u[j] = long_user(NULL, t->st.st_uid);
+            tmp = strlen(fl.u[j]);
+            if (tmp > mu)
+            {
+                mu = tmp;
+            }
+        }
+        // group
+        if (LFopt.ll->g)
+        {
+            fl.g[j] = long_group(NULL, t->st.st_gid);
+            tmp = strlen(fl.g[j]);
+            if (tmp > mg)
+            {
+                mg = tmp;
+            }
+        }
         // size
-        if (LF_opt.l || LF_opt.s)
+        if (LFopt.ll->s)
         {
             fl.s[j] = long_size(NULL, t->st.st_size);
             tmp = strlen(fl.s[j]);
@@ -174,7 +205,7 @@ void long_main(linklist l)
             }
         }
         // permissions
-        if (LF_opt.l || LF_opt.p)
+        if (LFopt.ll->p)
         {
             fl.p[j] = long_permission(NULL, &t->st.st_mode);
             tmp = strlen(fl.p[j]);
@@ -183,9 +214,32 @@ void long_main(linklist l)
                 mp = tmp;
             }
         }
-        if (mul_cl && LF_opt.m)
+        if (LFopt.ll->m)
         { // modification time; max_mtime = 16 (doesn't change)
-            fl.m[j] = long_mtime(NULL, &t->st.st_mtime);
+            fl.m[j] = long_time(NULL, &t->st.st_mtime);
+            tmp = strlen(fl.m[j]);
+            if (tmp > mm)
+            {
+                mm = tmp;
+            }
+        }
+        if (LFopt.ll->a)
+        { // modification time; max_mtime = 16 (doesn't change)
+            fl.a[j] = long_time(NULL, &t->st.st_atime);
+            tmp = strlen(fl.a[j]);
+            if (tmp > ma)
+            {
+                ma = tmp;
+            }
+        }
+        if (LFopt.ll->c)
+        { // modification time; max_mtime = 16 (doesn't change)
+            fl.c[j] = long_time(NULL, &t->st.st_ctime);
+            tmp = strlen(fl.c[j]);
+            if (tmp > mc)
+            {
+                mc = tmp;
+            }
         }
         linc(&it);
         ++j;
@@ -193,39 +247,18 @@ void long_main(linklist l)
 
     if (mul_cl)
     { // display multiple columns
-        if (LF_opt.s)
+        if (LFopt.zero || LFopt.one || LFopt.two || LFopt.three)
         {
-            cl = fl.s;
-        }
-        else if (LF_opt.p)
-        {
-            cl = fl.p;
-        }
-        else if (LF_opt.m)
-        {
-            cl = fl.m;
-        }
-        else if (LF_opt.i)
-        {
-            cl = fl.i;
-        }
-        else if (LF_opt.n)
-        {
-            cl = fl.n;
-        }
-        else if (LF_opt.u)
-        {
-            cl = fl.u;
+            list_main(l, cl);
         }
         else
-        { // if (opt.g)
-            cl = fl.g;
+        {
+            column_main(l, cl);
         }
-        column_main(l, cl);
     }
     else
     { // display one column
-        long_display(l, &fl, mp, ms, mu, mg, mi, mn);
+        long_display(l, &fl, mi, mn, mp, ms, mu, mg, ma, mm, mc);
     }
     // free memory
     if (fl.u)
@@ -317,7 +350,7 @@ char *long_size(char *buf, long int size2)
         buf = (char *)lf_alloc(sizeof(char) * (i + 1));
         i = 0;
     }
-    if (LF_opt.h)
+    if (LFopt.r)
     {
         while (size > 1024)
         {
@@ -381,7 +414,7 @@ char *long_group(char *group, gid_t gid)
     return group;
 }
 
-char *long_mtime(char *buf, const time_t *atm)
+char *long_time(char *buf, const time_t *atm)
 {
     struct tm *tm;
 
