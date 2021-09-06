@@ -42,17 +42,16 @@
 #link not colored when follow link is false
 #change -0 by -3, and swap -2 and -3 
 #adds b to -n
-
 #fix "/" (./lf -t /)
 
-
-#fixbug in color
 {
 # utf-8 STRING
 #Unicode in C :https://www.cprogramming.com/tutorial/unicode.html
 https://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
 https://www.gnu.org/software/coreutils/manual/html_node/Formatting-the-file-names.html#Formatting-the-file-names
 }
+
+#fixbug in color use DIR_COLORS
 
 ###########################
 #####  FUTURE VERSION #####
@@ -63,3 +62,4 @@ https://www.gnu.org/software/coreutils/manual/html_node/Formatting-the-file-name
 lrwxrwxrwx bonjour   ~rw-rw-r-- display.c        ~rw-rw-r-- format_list.c    ~rwxrwxr-x lf             ~rw-rw-r-- main.c     
 drwxrwxr-x build     ~rw-rw-r-- display.h        ~rw-rw-r-- format_list.h    ~rw-rw-r-- lf.c           ~rw-rw-r-- makefile   
 }
+
