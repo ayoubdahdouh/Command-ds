@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <limits.h>
+#include <locale.h>
 #include "list.h"
 #include "lf.h"
 #include "common.h"
@@ -479,8 +480,10 @@ void set_options(int argc, char *argv[], linklist l)
 
 int main(int argc, char *argv[], char *envp[])
 {
-    linklist l = lopen();
+    linklist l;
 
+    setlocale(LC_ALL, "");
+    l = lopen();
     // init OPT
     memset(&LFopt, 0, OPTIONSIZ);
     set_options(argc, argv, l);

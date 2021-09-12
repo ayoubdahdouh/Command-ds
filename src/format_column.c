@@ -73,7 +73,7 @@ void column_main(linklist l, char **tb)
     for (int i = 0; i < l->count; i++)
     {
         t = (lf_type)it->data;
-        ls[i] = strlen(t->name);
+        ls[i] = strwidth(t->name);
         nb_spaces = has_space(t->name);
         if (nb_spaces)
         {

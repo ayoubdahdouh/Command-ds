@@ -90,6 +90,9 @@ bool is_absolute_path(const char *pth);
 char *fileextension(char *s);
 char filetype(mode_t *m);
 
+// display width of the string, for non-ASCII characters
+int strwidth(char *s);
+
 #define ERR_INVALID_OPTION -1001
 #define ERR_COLORS_NOT_AVILABLE -1002
 #define ERR_DEPTH_WRONG -1003

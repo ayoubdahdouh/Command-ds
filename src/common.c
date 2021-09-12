@@ -1,3 +1,5 @@
+#define _XOPEN_SOURCE 700
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,6 +10,7 @@
 #include <errno.h>
 #include "common.h"
 #include "list.h"
+#include <wchar.h>
 
 void help(char h)
 {
@@ -211,4 +214,18 @@ char filetype(mode_t *m)
         break;
     }
     return c;
+}
+
+int strwidth(char *s)
+{
+    int len;
+    wchar_t *wcs;
+
+    // length of multibyte characters
+    len = mbstowcs(NULL, s, 0) + 1;
+    wcs = malloc(len * sizeof(wchar_t));
+    // convert to wide characters
+    mbstowcs(wcs, s, len);
+    // display width
+    return wcswidth(wcs, len * sizeof(wchar_t));
 }
