@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <string.h>
 #include "display.h"
@@ -6,52 +7,106 @@
 #include "color.h"
 void display_name(char *nm, mode_t *m, char *c, char *r)
 {
-    int i = 0;
+    int n = has_space(nm);
+
     if (LFopt.c && (!c || !r))
     {
         // if "c" and "r" aren't set then disable coloring output
         LFopt.c = false;
     }
+
     if (LFopt.c)
     {
-        sprintf(LFbuf, "\033[%sm", c);
-        i = strlen(LFbuf);
+        printf("\033[%sm", c);
     }
-    if (LFopt.nl->q || (!LFopt.nl->b && has_space(nm)))
+
+    if (LFopt.nl->q || (!LFopt.nl->b && n))
     {
-        LFbuf[i++] = '"';
+        printf("\"");
     }
-    if (LFopt.nl->b)
+    // if name "nm" contains spaces and print bachslash is enabled.
+    if (LFopt.nl->b && n)
     {
         for (char *c = nm; *c; ++c)
         {
             if (*c == ' ')
             {
-                LFbuf[i++] = '\\';
+                printf("\\ ");
             }
-            LFbuf[i++] = *c;
+            else
+            {
+                printf("%c",*c);
+            }
         }
     }
     else
     {
-        strcpy(&LFbuf[i], nm);
-        i = strlen(LFbuf);
+        printf("%s",nm);
     }
 
-    if (LFopt.nl->q || (!LFopt.nl->b && has_space(nm)))
+    if (LFopt.nl->q || (!LFopt.nl->b && n))
     {
-        LFbuf[i++] = '"';
+        printf("\"");
     }
     if (S_ISDIR(*m) && LFopt.nl->s)
     {
-        LFbuf[i++] = '/';
+        printf("/");
     }
-    LFbuf[i] = 0;
     if (LFopt.c)
     {
-        sprintf(&LFbuf[i], "\033[%sm", r);
+        printf("\033[%sm", r);
     }
-    printf("%s", LFbuf);
+}
+
+void display(char *nm, mode_t *m, bool nl)
+{
+    struct stat s;
+    char *c1 = NULL, *c2 = NULL, *rs = NULL;
+
+    if (LFopt.c)
+    {
+        rs = getcolor(LFcolorlist, "rs", false);
+        choose_color(nm, m, &c1);
+    }
+    if (S_ISLNK(*m))
+    {
+        strcpy(&LFpath[LFpathsiz], nm);
+        if (lf_link(LFpath))
+        {
+            if (!is_absolute_path(LFbuf))
+            {
+                strcpy(&LFpath[LFpathsiz], LFbuf);
+                strcpy(LFbuf, LFpath);
+            }
+            if (lf_stat(LFbuf, &s))
+            {
+                if (LFopt.c)
+                {
+                    choose_color(LFbuf, &s.st_mode, &c2);
+                }
+            }
+            else if (LFopt.c)
+            {
+                c1 = c2 = getcolor(LFcolorlist, "or", false);
+            }
+
+            strcpy(LFbuf, &LFpath[LFpathsiz]);
+        }
+        else if (LFopt.c)
+        {
+            c1 = c2 = getcolor(LFcolorlist, "or", false);
+        }
+    }
+    display_name(nm, m, c1, rs);
+    if (S_ISLNK(*m) && LFopt.nl->f)
+    {
+        printf(" -> ");
+        display_name(LFbuf, &s.st_mode, c2, rs);
+    }
+    if (nl)
+    {
+        printf("\n");
+    }
 }
 
 void choose_color(char *nm, mode_t *m, char **c)
@@ -144,52 +199,5 @@ void choose_color(char *nm, mode_t *m, char **c)
     else
     {
         *c = getcolor(LFcolorlist, "rs", false);
-    }
-}
-
-void display(char *nm, mode_t *m, bool nl)
-{
-    struct stat s;
-    char *c1 = NULL, *c2 = NULL, *rs = NULL;
-
-    if (LFopt.c)
-    {
-        rs = getcolor(LFcolorlist, "rs", false);
-        choose_color(nm, m, &c1);
-    }
-    if (S_ISLNK(*m))
-    {
-        strcpy(&LFpath[LFpathsiz], nm);
-        if (lf_link(LFpath))
-        {
-            if (!is_absolute_path(LFbuf))
-            {
-                strcpy(&LFpath[LFpathsiz], LFbuf);
-                strcpy(LFbuf, LFpath);
-            }
-            if (!lf_stat(LFbuf, &s) && LFopt.c)
-            {
-                c1 = c2 = getcolor(LFcolorlist, "or", false);
-            }
-            else if (LFopt.c)
-            {
-                choose_color(LFbuf, &s.st_mode, &c2);
-            }
-            strcpy(LFbuf, &LFpath[LFpathsiz]);
-        }
-        else if (LFopt.c)
-        {
-            c1 = c2 = getcolor(LFcolorlist, "or", false);
-        }
-    }
-    display_name(nm, m, c1, rs);
-    if (S_ISLNK(*m) && LFopt.nl->f)
-    {
-        printf(" -> ");
-        display_name(LFbuf, &s.st_mode, c2, rs);
-    }
-    if (nl)
-    {
-        printf("\n");
     }
 }
