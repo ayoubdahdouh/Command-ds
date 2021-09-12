@@ -57,7 +57,7 @@ void run(linklist a)
                     {
                         tree.parent_has_next = (char *)lf_alloc(sizeof(char) * PATH_MAX);
                     }
-                    if (LFpathsiz != 1 && LFpath[LFpathsiz - 1] == '/')
+                    if (LFpath[LFpathsiz - 1] == '/')
                     {
                         LFpathsiz--;
                         LFpath[LFpathsiz] = 0;
@@ -65,7 +65,7 @@ void run(linklist a)
                     display(LFpath, &s.st_mode, true);
                 }
                 // add slash if doesn't have it.
-                if (LFpathsiz != 1 && LFpath[LFpathsiz - 1] != '/')
+                if (LFpath[LFpathsiz - 1] != '/')
                 {
                     LFpath[LFpathsiz] = '/';
                     LFpathsiz++;
