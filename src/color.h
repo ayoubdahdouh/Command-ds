@@ -22,19 +22,10 @@
 // st (sticky directory)
 // ex (executable file)
 
-#include <stdbool.h>
 #include "list.h"
+#include "types.h"
 
-typedef struct lfcolor
-{
-    char *a;
-    char *c;
-    bool e;
-} lfcolor;
-
-#define LFCOLORSIZ sizeof(lfcolor)
-
-char *getcolor(linklist l, const char *nm, bool is_ext);
-linklist scan_for_color();
+char *getcolor(linklist l, const char *nm, _bool is_ext);
+linklist scan_for_colors();
 
 #endif

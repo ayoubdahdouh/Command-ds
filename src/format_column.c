@@ -13,7 +13,7 @@
 void column_display(linklist l, int *ls, int *lm, char **tb, int *ts, int *tm, int cl, int ln)
 {
     int x;
-    lf_type t;
+    _file t;
 
     for (int i = 0; i < ln; i++)
     {
@@ -23,12 +23,12 @@ void column_display(linklist l, int *ls, int *lm, char **tb, int *ts, int *tm, i
             if (x < l->count)
             {
                 // if options -s, -p, -m, -u or -g is set
-                t = (lf_type)lget(l, x);
+                t = (_file)lget(l, x);
                 if (tb)
                 {
                     long_print(tb[x], tm[j] - 1, 1);
                 }
-                display(t->name, &t->st.st_mode, false);
+                display(t->name, &t->st.st_mode, _false);
                 x = lm[j] - ls[x];
                 for (int k = 0; k < x; k++)
                 { // the +1 is for the last space between columns.
@@ -55,42 +55,43 @@ void column_main(linklist l, char **tb)
     int *tm = NULL; // array max sizes of "tb"
     int x, y = 0;
     iterator it;
-    lf_type t;
+    _file file;
     int k;
 
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     winsiz = w.ws_col;
-    ls = (int *)lf_alloc(sizeof(int) * l->count);
-    lm = (int *)lf_alloc(sizeof(int) * l->count);
+
+    ls = (int *)_alloc(sizeof(int) * l->count);
+    lm = (int *)_alloc(sizeof(int) * l->count);
     if (tb)
     {
-        ts = (int *)lf_alloc(sizeof(int) * l->count);
-        tm = (int *)lf_alloc(sizeof(int) * l->count);
+        ts = (int *)_alloc(sizeof(int) * l->count);
+        tm = (int *)_alloc(sizeof(int) * l->count);
     }
     // length of each name.
     it = lat(l, LFIRST);
     int nb_spaces;
     for (int i = 0; i < l->count; i++)
     {
-        t = (lf_type)it->data;
-        ls[i] = strwidth(t->name);
-        nb_spaces = has_space(t->name);
+        file = (_file)it->data;
+        ls[i] = str_width(file->name);
+        nb_spaces = has_space(file->name);
         if (nb_spaces)
         {
-            if (LFopt.nl->b)
+            if (_opt.nl->b)
             {
                 ls[i] += nb_spaces;
             }
-            if (LFopt.nl->q || !LFopt.nl->b)
+            if (_opt.nl->q)
             {
-               ls[i] += 2;
+                ls[i] += 2;
             }
         }
-        else if (LFopt.nl->q)
-        {
-            ls[i] += 2;
-        }
-        if (S_ISDIR(t->st.st_mode) && LFopt.nl->s)
+        if (_opt.nl->i && (S_ISDIR(file->st.st_mode) ||
+                           S_ISLNK(file->st.st_mode) ||
+                           S_ISSOCK(file->st.st_mode) ||
+                           S_ISFIFO(file->st.st_mode) ||
+                           (S_IEXEC & file->st.st_mode)))
         {
             ls[i] += 1;
         }

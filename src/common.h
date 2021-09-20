@@ -1,97 +1,38 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include <stdbool.h>
 #include <sys/stat.h>
 #include "list.h"
+#include "types.h"
+
 #define PROGRAM "lf"
 #define VERSION "1.0.0-alpha+pre"
 
-typedef struct m_arg
-{
-    bool b, c, d, p, l, f, s, u, g, t, r, w, x;
-} m_arg;
-#define M_ARG_SIZ sizeof(struct m_arg)
+extern _options _opt;
+extern char *_path, *_buffer;
+extern int _path_len;
+extern linklist _colors_list;
+extern char *_time_style;
 
-typedef struct l_arg
-{
-    bool i, n, u, g, s, p, a, m, c;
-} l_arg;
-#define L_ARG_SIZ sizeof(struct l_arg)
+void _print_help();
+void _print_version();
 
-typedef struct n_arg
-{
-    bool b,f,q,s;
-} n_arg;
-#define N_ARG_SIZ sizeof(struct n_arg)
+void *_alloc(long int size);
+_bool _stat(const char *nm, struct stat *s);
+_bool _link(const char *nm);
 
-// typedef struct s_option
-// {
-//     bool i, n, u, g, s, p, a, m, c, t, e;
-// } s_option;
-// #define SOPTIONSIZ sizeof(struct s_option)
-
-typedef struct lf_option
-{
-    bool no_arg;
-    bool zero;
-    bool one;
-    bool two;
-    bool three;
-    bool a; // all, by default lf doesn't show hidden file.
-    bool m; // mode.
-    m_arg *ml; // mode list
-
-    bool l; // information
-    l_arg *ll;
-
-    bool r; // make the size readable like 4K, 13M, 2G, etc
-    bool s; // sort output
-    char sc; // s character
-
-    bool t; // tree format
-    long td; // tree depth
-
-    bool n;
-    n_arg* nl;
-
-    bool c; // for a colorful output.
-
-    bool v;
-    bool h;
-} lf_option;
-
-typedef struct lf_type
-{
-    char *name;
-    struct stat st;
-
-} * lf_type;
-
-#define OPTIONSIZ sizeof(struct lf_option)
-#define LFSIZ sizeof(struct lf_type)
-
-extern lf_option LFopt;
-extern char *LFpath, *LFbuf;
-extern int LFpathsiz;
-extern linklist LFcolorlist;
-
-void help(char h);
-void version();
-
-void *lf_alloc(long int size);
-bool lf_stat(const char *nm, struct stat *s);
-bool lf_link(const char *nm);
-void lf_init();
-void lf_quit();
+void _initial();
+void _quit(char *msg); // free memories + print "msg" if exist and return 0 otherwise return 1
 
 int has_space(char *nm);
-bool is_absolute_path(const char *pth);
-char *fileextension(char *s);
-char filetype(mode_t *m);
+_bool is_absolute_path(const char *pth);
+char *file_ext(char *s);
+char file_type(mode_t *m);
 
 // display width of the string, for non-ASCII characters
-int strwidth(char *s);
+int str_width(char *s);
+
+int _strcmp(char *s1, char *s2);
 
 #define ERR_INVALID_OPTION -1001
 #define ERR_COLORS_NOT_AVILABLE -1002

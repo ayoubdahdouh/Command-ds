@@ -9,23 +9,17 @@ void display_name(char *nm, mode_t *m, char *c, char *r)
 {
     int n = has_space(nm);
 
-    if (LFopt.c && (!c || !r))
-    {
-        // if "c" and "r" aren't set then disable coloring output
-        LFopt.c = false;
-    }
-
-    if (LFopt.c)
+    if (_opt.nl->c)
     {
         printf("\033[%sm", c);
     }
 
-    if (LFopt.nl->q || (!LFopt.nl->b && n))
+    if (_opt.nl->q && n)
     {
         printf("\"");
     }
     // if name "nm" contains spaces and print bachslash is enabled.
-    if (LFopt.nl->b && n)
+    if (_opt.nl->b && n)
     {
         for (char *c = nm; *c; ++c)
         {
@@ -35,74 +29,94 @@ void display_name(char *nm, mode_t *m, char *c, char *r)
             }
             else
             {
-                printf("%c",*c);
+                printf("%c", *c);
             }
         }
     }
     else
     {
-        printf("%s",nm);
+        printf("%s", nm);
     }
 
-    if (LFopt.nl->q || (!LFopt.nl->b && n))
+    if (_opt.nl->q && n)
     {
         printf("\"");
     }
-    if (S_ISDIR(*m) && LFopt.nl->s)
-    {
-        printf("/");
-    }
-    if (LFopt.c)
+    if (_opt.nl->c)
     {
         printf("\033[%sm", r);
     }
+    if (_opt.nl->i)
+    {
+        if (S_ISDIR(*m))
+        {
+            printf("/");
+        }
+        else if (S_ISLNK(*m))
+        {
+            printf("@");
+        }
+        else if (S_IEXEC & *m)
+        {
+            printf("*");
+        }
+        else if (S_ISFIFO(*m))
+        {
+            printf("|");
+        }
+        else if (S_ISSOCK(*m))
+        {
+            printf("=");
+        }
+    }
 }
 
-void display(char *nm, mode_t *m, bool nl)
+void display(char *nm, mode_t *m, _bool nl)
 {
     struct stat s;
     char *c1 = NULL, *c2 = NULL, *rs = NULL;
 
-    if (LFopt.c)
+    if (_opt.nl->c)
     {
-        rs = getcolor(LFcolorlist, "rs", false);
+        rs = getcolor(_colors_list, "rs", _false);
         choose_color(nm, m, &c1);
     }
     if (S_ISLNK(*m))
     {
-        strcpy(&LFpath[LFpathsiz], nm);
-        if (lf_link(LFpath))
+        strcpy(&_path[_path_len], nm);
+        if (_link(_path))
         {
-            if (!is_absolute_path(LFbuf))
+            if (!is_absolute_path(_buffer))
             {
-                strcpy(&LFpath[LFpathsiz], LFbuf);
-                strcpy(LFbuf, LFpath);
+                strcpy(&_path[_path_len], _buffer);
+                strcpy(_buffer, _path);
             }
-            if (lf_stat(LFbuf, &s))
+            if (_stat(_buffer, &s))
             {
-                if (LFopt.c)
+                if (_opt.nl->c)
                 {
-                    choose_color(LFbuf, &s.st_mode, &c2);
+                    choose_color(_buffer, &s.st_mode, &c2);
                 }
             }
-            else if (LFopt.c)
+            else if (_opt.nl->c)
             {
-                c1 = c2 = getcolor(LFcolorlist, "or", false);
+                c1 = c2 = getcolor(_colors_list, "or", _false);
             }
-
-            strcpy(LFbuf, &LFpath[LFpathsiz]);
+            strcpy(_buffer, &_path[_path_len]);
         }
-        else if (LFopt.c)
+        else if (_opt.nl->c)
         {
-            c1 = c2 = getcolor(LFcolorlist, "or", false);
+            c1 = c2 = getcolor(_colors_list, "or", _false);
         }
     }
+
     display_name(nm, m, c1, rs);
-    if (S_ISLNK(*m) && LFopt.nl->f)
+    if (S_ISLNK(*m) && _opt.nl->f)
     {
         printf(" -> ");
-        display_name(LFbuf, &s.st_mode, c2, rs);
+        display_name(_buffer, &s.st_mode, c2, rs);
     }
+
     if (nl)
     {
         printf("\n");
@@ -113,31 +127,31 @@ void choose_color(char *nm, mode_t *m, char **c)
 {
     if (!nm)
     {
-        *c = getcolor(LFcolorlist, nm, true);
+        *c = getcolor(_colors_list, nm, _true);
     }
     if (S_ISBLK(*m))
     {
-        *c = getcolor(LFcolorlist, "bd", false);
+        *c = getcolor(_colors_list, "bd", _false);
     }
     else if (S_ISCHR(*m))
     {
-        *c = getcolor(LFcolorlist, "cd", false);
+        *c = getcolor(_colors_list, "cd", _false);
     }
     else if (S_ISFIFO(*m))
     {
-        *c = getcolor(LFcolorlist, "pi", false);
+        *c = getcolor(_colors_list, "pi", _false);
     }
     else if (S_ISSOCK(*m))
     {
-        *c = getcolor(LFcolorlist, "so", false);
+        *c = getcolor(_colors_list, "so", _false);
     }
     else if (S_ISDIR(*m))
     {
-        *c = getcolor(LFcolorlist, "di", false);
+        *c = getcolor(_colors_list, "di", _false);
     }
     else if (S_ISLNK(*m))
     {
-        *c = getcolor(LFcolorlist, "ln", false);
+        *c = getcolor(_colors_list, "ln", _false);
         // if (follow_lnk)
         // {
 
@@ -154,13 +168,13 @@ void choose_color(char *nm, mode_t *m, char **c)
         //         }
         //         if (!lf_stat(LFbuf, &s))
         //         {
-        //             *c1 = *c2 = getcolor(LFcolorlist, "or", false);
+        //             *c1 = *c2 = getcolor(LFcolorlist, "or", _false);
         //         }
         //         strcpy(LFpath, LFbuf);
         //         if (!*c1)
         //         {
-        //             *c1 = getcolor(LFcolorlist, "ln", false);
-        //             choose_color(LFbuf, &s.st_mode, true, c2, NULL, NULL);
+        //             *c1 = getcolor(LFcolorlist, "ln", _false);
+        //             choose_color(LFbuf, &s.st_mode, _true, c2, NULL, NULL);
         //         }
         //     }
         // }
@@ -169,35 +183,35 @@ void choose_color(char *nm, mode_t *m, char **c)
     {
         if (*m & S_ISUID)
         { // if executable, green colour
-            *c = getcolor(LFcolorlist, "su", false);
+            *c = getcolor(_colors_list, "su", _false);
         }
         else if (*m & S_ISGID)
         { // if executable, green colour
-            *c = getcolor(LFcolorlist, "sg", false);
+            *c = getcolor(_colors_list, "sg", _false);
         }
         else if (*m & S_ISVTX)
         { // if executable, green colour
-            *c = getcolor(LFcolorlist, "tw", false);
+            *c = getcolor(_colors_list, "tw", _false);
         }
         else if (*m & S_IXUSR)
         { // if executable, green colour
-            *c = getcolor(LFcolorlist, "ex", false);
+            *c = getcolor(_colors_list, "ex", _false);
         }
         else
         {
-            char *ext = fileextension(nm);
+            char *ext = file_ext(nm);
             if (ext)
             {
-                *c = getcolor(LFcolorlist, ext, true);
+                *c = getcolor(_colors_list, ext, _true);
             }
             else
             {
-                *c = getcolor(LFcolorlist, "rs", false);
+                *c = getcolor(_colors_list, "rs", _false);
             }
         }
     }
     else
     {
-        *c = getcolor(LFcolorlist, "rs", false);
+        *c = getcolor(_colors_list, "rs", _false);
     }
 }

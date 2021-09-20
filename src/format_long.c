@@ -12,368 +12,430 @@
 #include "display.h"
 #include "common.h"
 
-void long_print(char *nm, int m, int f)
-{ // flag  is used to adjust the data (suffix/prefix)
+void long_print(char *nm, int m, _bool rtl)
+{
+    // rtl: left to right
     int x = m - strlen(nm);
 
-    if (f)
+    if (rtl)
     {
-        for (int i = 0; i < x; i++)
+        while (x)
         {
             printf(" ");
+            --x;
         }
     }
     printf("%s ", nm);
-    if (!f)
+    if (!rtl)
     {
-        for (int i = 0; i < x; i++)
+        while (x)
         {
             printf(" ");
+            --x;
         }
     }
 }
 
-void long_display(linklist l, format_long_t *fl,
-                  int mi, int mn, int mp, int ms,
-                  int mu, int mg, int ma, int mm, int mc)
+void long_display(linklist l, _file_info *files_infos)
 {
-    lf_type t;
-    int j = 0;
-    for (iterator i = lat(l, LFIRST); i; linc(&i))
+    _file file;
+    int i = 0;
+
+    for (iterator it = lat(l, LFIRST); it; linc(&it), ++i)
     {
-        t = (lf_type)i->data;
-        // inodes
-        if (LFopt.ll->i)
-        {
-            long_print(fl->i[j], mi, false);
-        }
-        // nlink
-        if (LFopt.ll->n)
-        {
-            long_print(fl->l[j], mn, false);
-        }
+        file = (_file)it->data;
         // permissions
-        if (LFopt.ll->p)
+        if (_opt.ll->p)
         {
-            long_print(fl->p[j], mp, false);
-        }
-        // user
-        if (LFopt.ll->u)
-        {
-            long_print(fl->u[j], mu, false);
-        }
-        // group
-        if (LFopt.ll->g)
-        {
-            long_print(fl->g[j], mg, false);
+            long_print(files_infos->p[i], files_infos->mp, _false);
         }
         // size
-        if (LFopt.s)
+        if (_opt.ll->s)
         {
-            long_print(fl->s[j], ms, 1);
+            long_print(files_infos->s[i], files_infos->ms, _true);
+        }
+        // inodes
+        if (_opt.ll->i)
+        {
+            long_print(files_infos->i[i], files_infos->mi, _false);
+        }
+        // nlink
+        if (_opt.ll->n)
+        {
+            long_print(files_infos->n[i], files_infos->mn, _false);
+        }
+        // user
+        if (_opt.ll->u)
+        {
+            long_print(files_infos->u[i], files_infos->mu, _false);
+        }
+        // group
+        if (_opt.ll->g)
+        {
+            long_print(files_infos->g[i], files_infos->mg, _false);
         }
         // access
-        if (LFopt.ll->a)
+        if (_opt.ll->a)
         {
-            long_print(fl->a[j], ma, false);
+            long_print(files_infos->a[i], files_infos->ma, _false);
         }
         // modification
-        if (LFopt.ll->m)
+        if (_opt.ll->m)
         {
-            long_print(fl->m[j], mm, false);
+            long_print(files_infos->m[i], files_infos->mm, _false);
         }
         // change
-        if (LFopt.ll->c)
+        if (_opt.ll->c)
         {
-            long_print(fl->c[j], mc, false);
+            long_print(files_infos->c[i], files_infos->mc, _false);
         }
         // file's name
-        display(t->name, &t->st.st_mode, true);
-        j++;
+        display(file->name, &file->st.st_mode, _true);
     }
 }
 
+void _free_tb(char **tb, int n)
+{
+    if (tb)
+    {
+        char **tmp = tb;
+        while (n)
+        {
+            if (tmp[0][0] != '?')
+            {
+                free(*tmp);
+                ++tmp;
+            }
+            --n;
+        }
+        free(tb);
+    }
+}
 void long_main(linklist l)
 {
-    format_long_t fl;
-    lf_type t;
-    int mi = 0, mn = 0, mu = 0, mg = 0, ms = 0, mp = 0, ma = 0, mm = 0, mc = 0;
-    int j = 0, tmp;
-    bool mul_cl = false;
-    char **cl = NULL;
+    _file_info files_infos;
+    _file file;
     iterator it;
+    int i = 0, tmp;
+    _bool onecol = _false; // multiple column
+    char **col = NULL;
     int siz = sizeof(char *) * l->count;
+    char *novalue = "?";
 
-    if (LFopt.l &&
-        (LFopt.ll->i + LFopt.ll->n + LFopt.ll->s +
-             LFopt.ll->p + LFopt.ll->u + LFopt.ll->g +
-             LFopt.ll->a + LFopt.ll->m + LFopt.ll->c ==
-         1))
-    { // if only one of the options s, p, m, u, g is set
-        mul_cl = true;
-    }
-    memset(&fl, 0, FORMATLONGSIZ);
-    if (LFopt.ll->i)
+    onecol = (_opt.ll->i + _opt.ll->n + _opt.ll->s + _opt.ll->r +
+                  _opt.ll->p + _opt.ll->u + _opt.ll->g +
+                  _opt.ll->a + _opt.ll->m + _opt.ll->c ==
+              _true);
+
+    // set default maximums sizes.
+    memset(&files_infos, 0, _FILE_INFO_SIZE);
+    files_infos.ma = 1;
+    files_infos.mc = 1;
+    files_infos.mg = 1;
+    files_infos.mi = 1;
+    files_infos.mm = 1;
+    files_infos.mn = 1;
+    files_infos.mp = 1;
+    files_infos.ms = 1;
+    files_infos.mu = 1;
+
+    if (_opt.ll->i)
     {
-        cl = fl.i = (char **)lf_alloc(siz);
+        col = files_infos.i = (char **)_alloc(siz);
     }
-    if (LFopt.ll->n)
+    if (_opt.ll->n)
     {
-        cl = fl.l = (char **)lf_alloc(siz);
+        col = files_infos.n = (char **)_alloc(siz);
     }
-    if (LFopt.ll->s)
+    if (_opt.ll->s || _opt.ll->r)
     {
-        cl = fl.s = (char **)lf_alloc(siz);
+        col = files_infos.s = (char **)_alloc(siz);
     }
-    if (LFopt.ll->p)
+    if (_opt.ll->p)
     {
-        cl = fl.p = (char **)lf_alloc(siz);
+        col = files_infos.p = (char **)_alloc(siz);
     }
-    if (LFopt.ll->u)
+    if (_opt.ll->u)
     {
-        cl = fl.u = (char **)lf_alloc(siz);
+        col = files_infos.u = (char **)_alloc(siz);
     }
-    if (LFopt.ll->g)
+    if (_opt.ll->g)
     {
-        cl = fl.g = (char **)lf_alloc(siz);
+        col = files_infos.g = (char **)_alloc(siz);
     }
-    if (LFopt.ll->m)
+    if (_opt.ll->m)
     {
-        cl = fl.m = (char **)lf_alloc(siz);
+        col = files_infos.m = (char **)_alloc(siz);
     }
-    if (LFopt.ll->a)
+    if (_opt.ll->a)
     {
-        cl = fl.a = (char **)lf_alloc(siz);
+        col = files_infos.a = (char **)_alloc(siz);
     }
-    if (LFopt.ll->c)
+    if (_opt.ll->c)
     {
-        cl = fl.c = (char **)lf_alloc(siz);
+        col = files_infos.c = (char **)_alloc(siz);
     }
 
-    it = lat(l, LFIRST);
-    while (it)
+    for (it = lat(l, LFIRST); it; linc(&it), ++i)
     {
-        t = (lf_type)it->data;
+        file = (_file)it->data;
         // inodes
-        if (LFopt.ll->i)
+        if (_opt.ll->i)
         {
-            fl.i[j] = long_ino(NULL, t->st.st_ino);
-            tmp = strlen(fl.i[j]);
-            if (tmp > mi)
+            if (file->err)
             {
-                mi = tmp;
+                files_infos.i[i] = novalue;
+            }
+            else
+            {
+                files_infos.i[i] = long_ino(NULL, file->st.st_ino);
+                tmp = strlen(files_infos.i[i]);
+                if (tmp > files_infos.mi)
+                {
+                    files_infos.mi = tmp;
+                }
             }
         }
         // nlink
-        if (LFopt.ll->n)
+        if (_opt.ll->n)
         {
-            fl.l[j] = long_nlink(NULL, t->st.st_nlink);
-            tmp = strlen(fl.l[j]);
-            if (tmp > mn)
+            if (file->err)
             {
-                mn = tmp;
+                files_infos.n[i] = novalue;
+            }
+            else
+            {
+                files_infos.n[i] = long_nlink(NULL, file->st.st_nlink);
+                tmp = strlen(files_infos.n[i]);
+                if (tmp > files_infos.mn)
+                {
+                    files_infos.mn = tmp;
+                }
             }
         }
         // user
-        if (LFopt.ll->u)
+        if (_opt.ll->u)
         {
-            fl.u[j] = long_user(NULL, t->st.st_uid);
-            tmp = strlen(fl.u[j]);
-            if (tmp > mu)
+            if (file->err)
             {
-                mu = tmp;
+                files_infos.u[i] = novalue;
+            }
+            else
+            {
+                files_infos.u[i] = long_user(NULL, file->st.st_uid);
+                tmp = strlen(files_infos.u[i]);
+                if (tmp > files_infos.mu)
+                {
+                    files_infos.mu = tmp;
+                }
             }
         }
         // group
-        if (LFopt.ll->g)
+        if (_opt.ll->g)
         {
-            fl.g[j] = long_group(NULL, t->st.st_gid);
-            tmp = strlen(fl.g[j]);
-            if (tmp > mg)
+            if (file->err)
             {
-                mg = tmp;
+                files_infos.g[i] = novalue;
+            }
+            else
+            {
+                files_infos.g[i] = long_group(NULL, file->st.st_gid);
+                tmp = strlen(files_infos.g[i]);
+                if (tmp > files_infos.mg)
+                {
+                    files_infos.mg = tmp;
+                }
             }
         }
         // size
-        if (LFopt.ll->s)
+        if (_opt.ll->s)
         {
-            fl.s[j] = long_size(NULL, t->st.st_size);
-            tmp = strlen(fl.s[j]);
-            if (tmp > ms)
+            if (file->err)
             {
-                ms = tmp;
+                files_infos.s[i] = novalue;
+            }
+            else
+            {
+                files_infos.s[i] = long_size(NULL, file->st.st_size);
+                tmp = strlen(files_infos.s[i]);
+                if (tmp > files_infos.ms)
+                {
+                    files_infos.ms = tmp;
+                }
+            }
+        }
+        // readable size
+        else if (_opt.ll->r)
+        {
+            if (file->err)
+            {
+                files_infos.s[i] = novalue;
+            }
+            else
+            {
+                files_infos.s[i] = long_size_readable(NULL, file->st.st_size);
+                tmp = strlen(files_infos.s[i]);
+                if (tmp > files_infos.ms)
+                {
+                    files_infos.ms = tmp;
+                }
             }
         }
         // permissions
-        if (LFopt.ll->p)
+        if (_opt.ll->p)
         {
-            fl.p[j] = long_permission(NULL, &t->st.st_mode);
-            tmp = strlen(fl.p[j]);
-            if (tmp > mp)
+            if (file->err)
             {
-                mp = tmp;
+                files_infos.p[i] = novalue;
+            }
+            else
+            {
+                files_infos.p[i] = long_permission(NULL, &file->st.st_mode);
+                tmp = strlen(files_infos.p[i]);
+                if (tmp > files_infos.mp)
+                {
+                    files_infos.mp = tmp;
+                }
             }
         }
-        if (LFopt.ll->m)
+        if (_opt.ll->m)
         { // modification time; max_mtime = 16 (doesn't change)
-            fl.m[j] = long_time(NULL, &t->st.st_mtime);
-            tmp = strlen(fl.m[j]);
-            if (tmp > mm)
+            if (file->err)
             {
-                mm = tmp;
+                files_infos.m[i] = novalue;
+            }
+            else
+            {
+                files_infos.m[i] = long_time(NULL, &file->st.st_mtime);
+                tmp = strlen(files_infos.m[i]);
+                if (tmp > files_infos.mm)
+                {
+                    files_infos.mm = tmp;
+                }
             }
         }
-        if (LFopt.ll->a)
+        if (_opt.ll->a)
         { // modification time; max_mtime = 16 (doesn't change)
-            fl.a[j] = long_time(NULL, &t->st.st_atime);
-            tmp = strlen(fl.a[j]);
-            if (tmp > ma)
+            if (file->err)
             {
-                ma = tmp;
+                files_infos.a[i] = novalue;
+            }
+            else
+            {
+                files_infos.a[i] = long_time(NULL, &file->st.st_atime);
+                tmp = strlen(files_infos.a[i]);
+                if (tmp > files_infos.ma)
+                {
+                    files_infos.ma = tmp;
+                }
             }
         }
-        if (LFopt.ll->c)
+        if (_opt.ll->c)
         { // modification time; max_mtime = 16 (doesn't change)
-            fl.c[j] = long_time(NULL, &t->st.st_ctime);
-            tmp = strlen(fl.c[j]);
-            if (tmp > mc)
+            if (file->err)
             {
-                mc = tmp;
+                files_infos.c[i] = novalue;
+            }
+            else
+            {
+                files_infos.c[i] = long_time(NULL, &file->st.st_ctime);
+                tmp = strlen(files_infos.c[i]);
+                if (tmp > files_infos.mc)
+                {
+                    files_infos.mc = tmp;
+                }
             }
         }
-        linc(&it);
-        ++j;
     }
 
-    if (mul_cl)
+    if (onecol)
     { // display multiple columns
-        if (LFopt.zero || LFopt.one || LFopt.two || LFopt.three)
+        if (_opt._2 || _opt._1 || _opt._3 || _opt._4)
         {
-            list_main(l, cl);
+            list_main(l, col);
         }
         else
         {
-            column_main(l, cl);
+            column_main(l, col);
         }
     }
     else
     { // display one column
-        long_display(l, &fl, mi, mn, mp, ms, mu, mg, ma, mm, mc);
+        long_display(l, &files_infos);
     }
-    // free memory
-    if (fl.u)
-    {
-        for (int i = 0; i < l->count; i++)
-        {
-            free(fl.u[i]);
-        }
-        free(fl.u);
-    }
-    if (fl.g)
-    {
-        for (int i = 0; i < l->count; i++)
-        {
-            free(fl.g[i]);
-        }
-        free(fl.g);
-    }
-    if (fl.s)
-    {
-        for (int i = 0; i < l->count; i++)
-        {
-            free(fl.s[i]);
-        }
-        free(fl.s);
-    }
-    if (fl.p)
-    {
-        for (int i = 0; i < l->count; i++)
-        {
-            free(fl.p[i]);
-        }
-        free(fl.p);
-    }
-    if (fl.m)
-    {
-        for (int i = 0; i < l->count; i++)
-        {
-            free(fl.m[i]);
-        }
-        free(fl.m);
-    }
+    _free_tb(files_infos.i, l->count);
+    _free_tb(files_infos.n, l->count);
+    _free_tb(files_infos.u, l->count);
+    _free_tb(files_infos.g, l->count);
+    _free_tb(files_infos.s, l->count);
+    _free_tb(files_infos.p, l->count);
+    _free_tb(files_infos.m, l->count);
+    _free_tb(files_infos.a, l->count);
+    _free_tb(files_infos.c, l->count);
 }
 
-char *long_ino(char *buf, ino_t data)
+int number_size(long int n)
 {
-    int i = 0;
-    long int n = data;
-
+    int i = 1;
     while (n != 0)
     {
         n /= 10;
         ++i;
     }
-    buf = (char *)lf_alloc(sizeof(char) * (i + 1));
+    return i;
+}
+
+char *long_ino(char *buf, ino_t data)
+{
+    buf = (char *)_alloc(sizeof(char) * number_size(data));
     sprintf(buf, "%ld", data);
     return buf;
 }
 
 char *long_nlink(char *buf, nlink_t data)
 {
-    int i = 0;
-    long int n = data;
-
-    while (n != 0)
-    {
-        n /= 10;
-        ++i;
-    }
-    buf = (char *)lf_alloc(sizeof(char) * (i + 1));
+    buf = (char *)_alloc(sizeof(char) * number_size(data));
     sprintf(buf, "%ld", data);
     return buf;
 }
 
-char *long_size(char *buf, long int size2)
+char *long_size_readable(char *buf, long int data)
 {
-    double size = size2;
+    double cnt = data;
     int i = 0;
-    long int n = size2;
     char units[10] = {'B', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y', '?'};
 
     if (!buf)
     {
-        while (n != 0)
-        {
-            n /= 10; // n = n/10
-            ++i;
-        }
-        buf = (char *)lf_alloc(sizeof(char) * (i + 1));
-        i = 0;
+        buf = (char *)_alloc(sizeof(char) * number_size(data));
     }
-    if (LFopt.r)
+    while (cnt > 1024)
     {
-        while (size > 1024)
-        {
-            size /= 1024;
-            i++;
-        }
-        if (size - (int)size < 0.1)
-        {
-            sprintf(buf, "%d%c", (int)size, units[i]);
-        }
-        else if (size - (int)size > 0.9)
-        {
-            sprintf(buf, "%d%c", (int)size + 1, units[i]);
-        }
-        else
-        {
-            sprintf(buf, "%.1f%c", size, units[i]);
-        }
+        cnt /= 1024;
+        i++;
+    }
+    if (cnt - (int)cnt < 0.1)
+    {
+        sprintf(buf, "%d%c", (int)cnt, units[i]);
+    }
+    else if (cnt - (int)cnt > 0.9)
+    {
+        sprintf(buf, "%d%c", (int)cnt + 1, units[i]);
     }
     else
     {
-        sprintf(buf, "%ld", size2);
+        sprintf(buf, "%.1f%c", cnt, units[i]);
     }
+
+    return buf;
+}
+char *long_size(char *buf, long int data)
+{
+    if (!buf)
+    {
+        buf = (char *)_alloc(sizeof(char) * number_size(data));
+    }
+    sprintf(buf, "%ld", data);
 
     return buf;
 }
@@ -383,14 +445,19 @@ char *long_user(char *user, uid_t uid)
     struct passwd *pw;
 
     pw = getpwuid(uid);
-    /**
-     * 
-     * to be developed, if uncknown user.
-     * 
-     * */
+    if (!pw)
+    {
+        if (!user)
+        {
+            user = (char *)_alloc(sizeof(char) * 2);
+        }
+        user[0] = '?';
+        user[1] = 0;
+        return user;
+    }
     if (!user)
     {
-        user = (char *)lf_alloc(sizeof(char) * (strlen(pw->pw_name) + 1));
+        user = (char *)_alloc(sizeof(char) * (strlen(pw->pw_name) + 1));
     }
     strcpy(user, pw->pw_name);
     return user;
@@ -398,32 +465,51 @@ char *long_user(char *user, uid_t uid)
 
 char *long_group(char *group, gid_t gid)
 {
-    struct group *gr;
+    struct group *grp;
 
-    gr = getgrgid(gid);
+    grp = getgrgid(gid);
+    if (!grp)
+    {
+        if (!group)
+        {
+            group = (char *)_alloc(sizeof(char) * 2);
+        }
+        group[0] = '?';
+        group[1] = 0;
+        return group;
+    }
     if (!group)
     {
-        group = (char *)lf_alloc(sizeof(char) * (strlen(gr->gr_name) + 1));
+        group = (char *)_alloc(sizeof(char) * (strlen(grp->gr_name) + 1));
     }
-    /**
-     * 
-     * to be developed, if uncknown group.
-     * 
-     * */
-    strcpy(group, gr->gr_name);
+    strcpy(group, grp->gr_name);
+
     return group;
 }
 
 char *long_time(char *buf, const time_t *atm)
 {
-    struct tm *tm;
+    struct tm *t;
+    int bufflen = 100;
+    int repeat = 12, result;
+
+    char *tmp = (char *)malloc(sizeof(char) * bufflen);
+    t = localtime(atm);
+    while (!(result = strftime(tmp, bufflen, _time_style, t)) && (tmp[0] == 0) && repeat)
+    {
+        --repeat;
+        bufflen += 100;
+        tmp = realloc(tmp, bufflen);
+    }
+    if (repeat == 0 && result == 0)
+    {
+        _quit("%s: error: can't allocate enough memory to handle the time style");
+    }
 
     if (!buf)
     {
-        buf = (char *)lf_alloc(sizeof(char) * 17);
+        buf = (char *)realloc(tmp, strlen(tmp) + 1);
     }
-    tm = localtime(atm);
-    sprintf(buf, "%d-%02d-%02d %02d:%02d", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min);
     return buf;
 }
 
@@ -434,9 +520,9 @@ char *long_permission(char *b, __mode_t *m)
 
     if (!b)
     {
-        b = (char *)lf_alloc(sizeof(char) * 12);
+        b = (char *)_alloc(sizeof(char) * 12);
     }
-    b[0] = filetype(m);
+    b[0] = file_type(m);
     for (i = 1; i < 10; i += 3)
     {
         if (*m & modes[i - 1])

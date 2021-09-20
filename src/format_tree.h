@@ -1,18 +1,10 @@
 #ifndef FORMAT_TREE
 #define FORMAT_TREE 1
 
-#include <stdbool.h>
 #include "list.h"
+#include "types.h"
 
-typedef struct format_tree_t
-{
-    int level;
-    char *parent_has_next;
-} format_tree_t;
-
-
-#define LFTREESIZ sizeof(format_tree_t)
-void tree_display(format_tree_t *tree, bool last);
-void tree_main(linklist l, format_tree_t *tree);
+void tree_display(_tree_info *tree, _bool islast);
+void tree_main(linklist l, _tree_info *tree);
 
 #endif

@@ -1,14 +1,14 @@
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
 #include "color.h"
 #include "list.h"
 #include "common.h"
+#include "types.h"
 
-linklist scan_for_color()
+linklist scan_for_colors()
 {
     linklist l = lopen();
-    lfcolor *c;
+    _colors *c;
     char *b, *v;
     int n, i, eq = 0, sm = 0;
 
@@ -18,7 +18,7 @@ linklist scan_for_color()
         return l;
     }
     n = strlen(v);
-    b = (char *)lf_alloc(sizeof(char) * n);
+    b = (char *)_alloc(sizeof(char) * n);
     strncpy(b, v, n);
     for (i = 0; i < n; i++)
     {
@@ -36,18 +36,18 @@ linklist scan_for_color()
             {
                 v[eq] = 0;
                 v[i] = 0;
-                c = (lfcolor *)malloc(LFCOLORSIZ);
+                c = (_colors *)malloc(COLORS_SIZE);
                 c->c = &v[eq] + 1;
                 c->a = &v[sm];
                 // verify if "c->a" is an extension
                 if (c->a[0] == '*' && c->a[1] == '.')
                 {
                     c->a += 2;
-                    c->e = true;
+                    c->e = _true;
                 }
                 else
                 {
-                    c->e = false;
+                    c->e = _false;
                 }
                 eq = 0;
                 sm = i + 1;
@@ -67,7 +67,7 @@ linklist scan_for_color()
     {
         v[eq] = 0;
         v[n - 1] = 0;
-        c = (lfcolor *)malloc(LFCOLORSIZ);
+        c = (_colors *)malloc(COLORS_SIZE);
         c->a = &v[sm];
         c->c = &v[eq] + 1;
         ladd(l, LFIRST, c);
@@ -75,11 +75,11 @@ linklist scan_for_color()
     return l;
 }
 
-char *getcolor(linklist l, const char *nm, bool is_ext)
+char *getcolor(linklist l, const char *nm, _bool is_ext)
 {
     int ok = 0;
     iterator i;
-    lfcolor *tmp = NULL;
+    _colors *tmp = NULL;
 
     if (lempty(l))
     {
@@ -87,7 +87,7 @@ char *getcolor(linklist l, const char *nm, bool is_ext)
     }
     for (i = lat(l, LFIRST); i && !ok; linc(&i))
     {
-        tmp = (lfcolor *)i->data;
+        tmp = (_colors *)i->data;
         if ((is_ext == tmp->e) &&
             (strcmp(nm, tmp->a) == 0))
         {
@@ -106,7 +106,7 @@ char *getcolor(linklist l, const char *nm, bool is_ext)
         }
         else
         {
-            return getcolor(l, "rs", false);
+            return getcolor(l, "rs", _false);
         }
     }
 }

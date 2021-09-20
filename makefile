@@ -9,7 +9,7 @@ clean:
 build:
 	if [ ! -d build ]; then mkdir build;fi
 
-lf: build/color.o build/common.o build/display.o build/format_column.o build/format_list.o build/format_tree.o build/format_long.o build/list.o build/lf.o build/main.o 
+lf: build/color.o build/args.o build/common.o build/display.o build/format_column.o build/format_list.o build/format_tree.o build/format_long.o build/list.o build/lf.o build/main.o 
 	${cc} ${coptions} $? -o $@
 
 build/main.o: src/main.c src/list.h src/common.h
@@ -40,5 +40,8 @@ build/format_long.o: src/format_long.c
 	${cc} ${coptions} $? -c -o $@
 
 build/common.o: src/common.c
+	${cc} ${coptions} $? -c -o $@
+
+build/args.o: src/args.c
 	${cc} ${coptions} $? -c -o $@
 	

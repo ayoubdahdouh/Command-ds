@@ -11,7 +11,7 @@ typedef struct node
 
 typedef struct linklist
 {
-    int count; // number of elements in LIST
+    long int count; // number of elements in LIST
     node first;
     node last;
 } * linklist;

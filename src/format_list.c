@@ -11,43 +11,48 @@
 void list_main(linklist l, char **tb)
 {
     struct winsize w;
-    int winsiz;
+    int window_size;
     unsigned long int cnt;
     int *ls, *ts = NULL;
     iterator it;
-    lf_type t;
+    _file file;
+    int i = 0;
 
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-    winsiz = w.ws_col;
-    ls = (int *)lf_alloc(sizeof(int) * l->count);
+    window_size = w.ws_col;
+    ls = (int *)_alloc(sizeof(int) * l->count);
     if (tb)
     {
-        ts = (int *)lf_alloc(sizeof(int) * l->count);
+        ts = (int *)_alloc(sizeof(int) * l->count);
     }
     // length of each name.
-    it = lat(l, LFIRST);
     int nb_spaces;
-    for (int i = 0; i < l->count; i++)
+    for (iterator it = lat(l, LFIRST); it; linc(&it), ++i)
     {
-        t = (lf_type)it->data;
-        ls[i] = strlen(t->name);
-        nb_spaces = has_space(t->name);
+        file = (_file)it->data;
+        ls[i] = strlen(file->name);
+        nb_spaces = has_space(file->name);
         if (nb_spaces)
         {
-            if (LFopt.nl->b)
+            if (_opt.nl->b)
             {
                 ls[i] += nb_spaces;
             }
-            if (LFopt.nl->q || !LFopt.nl->b)
+            if (_opt.nl->q || !_opt.nl->b)
             {
-               ls[i] += 2;
+                ls[i] += 2;
             }
         }
-        else if (LFopt.nl->q)
+        else if (_opt.nl->q)
         {
             ls[i] += 2;
         }
-        if (S_ISDIR(t->st.st_mode) && LFopt.nl->s)
+
+        if (_opt.nl->i && (S_ISDIR(file->st.st_mode) ||
+                           S_ISLNK(file->st.st_mode) ||
+                           S_ISSOCK(file->st.st_mode) ||
+                           S_ISFIFO(file->st.st_mode) ||
+                           (S_IEXEC & file->st.st_mode)))
         {
             ls[i] += 1;
         }
@@ -58,11 +63,11 @@ void list_main(linklist l, char **tb)
         linc(&it);
     }
     it = lat(l, LFIRST);
-    int remain = winsiz;
+    int remain = window_size;
     for (int i = 0; i < l->count; i++)
     {
-        t = (lf_type)it->data;
-        if (LFopt.zero)
+        file = (_file)it->data;
+        if (_opt._2)
         {
             cnt = ls[i] + 1;
         }
@@ -80,25 +85,25 @@ void list_main(linklist l, char **tb)
         }
         else
         {
-            remain = winsiz - cnt;
-            if (!LFopt.one)
+            remain = window_size - cnt;
+            if (!_opt._1)
             {
                 printf("\n");
             }
         }
-        display(t->name, &t->st.st_mode, false);
+        display(file->name, &file->st.st_mode, _false);
         if (i < l->count - 1)
         {
-            if (LFopt.one)
+            if (_opt._1)
             {
                 printf("\n");
             }
-            else if (LFopt.two)
+            else if (_opt._3)
             {
                 printf(", ");
             }
 
-            else if (LFopt.three)
+            else if (_opt._4)
             {
                 printf("; ");
             }

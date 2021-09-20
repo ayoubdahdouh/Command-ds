@@ -12,83 +12,89 @@
 #include "list.h"
 #include <wchar.h>
 
-void help(char h)
+void _print_help()
 {
-    if (!h)
-    {
-        printf("Usage:\n");
-        printf("     %s -[OPTION]=[ARGUMENT],... [FILE]...\n\n", PROGRAM);
-        printf("Options:\n");
-        printf("    it's possible to combine those lettre together\n\n");
-        printf("    -0  separate files with a space.\n");
-        printf("    -1  lists one file per line.\n");
-        printf("    -2  separate files with commas.\n");
-        printf("    -3  separate files with a semicolon.\n");
-        printf("    -a  show hidden files.\n");
-        printf("    -[...]m=[bcdflrsugtrwx],[...]\n");
-        printf("          File's mode, choose the files to list from the list below:\n");
-        printf("            b  block device\n");
-        printf("            c  character device\n");
-        printf("            d  directory\n");
-        printf("            p  FIFO/pipe\n");
-        printf("            l  symlink\n");
-        printf("            f  regular file\n");
-        printf("            s  socket\n");
-        printf("            u  set-user identification (SUID)\n");
-        printf("            g  set-group identification (SGID)\n");
-        printf("            t  sticky bit\n");
-        printf("            r  read by owner\n");
-        printf("            w  write by owner\n");
-        printf("            x  execute by owner\n");
-        printf("          By default, \"-m\" displays all files and folders except the hidden ones.\n");
-        printf("          wich has the same effect as not using the \"-m\" option.\n");
-        printf("    -[...]l=[inpsugamc],[...]\n");
-        printf("          File's information, choose the information to display from the list below:\n");
-        printf("            i  inode number\n");
-        printf("            n  number of hard links\n");
-        printf("            p  permissions\n");
-        printf("            s  size\n");
-        printf("            u  file owner\n");
-        printf("            g  file group\n");
-        printf("            a  last access\n");
-        printf("            m  last modification\n");
-        printf("            c  last status change\n");
-        printf("          By default, \"-l\" show i,n,p,s,m if no argument is set\n");
-        printf("    -[...]s=[insugamcte],[...]\n");
-        printf("          Sort the output\n");
-        printf("            i  inode number\n");
-        printf("            n  number of hard links\n");
-        printf("            s  size\n");
-        printf("            u  file owner\n");
-        printf("            g  file group\n");
-        printf("            a  last access\n");
-        printf("            m  last modification\n");
-        printf("            c  last status change\n");
-        printf("            t  file type\n");
-        printf("            e  file extension\n");
-        printf("          By default, %s will sort the output by name,\n", PROGRAM);
-        printf("          But if you invoke \"-s\" without giving any arguments, you disable sorting of the output.\n");
-        printf("    -[...]n=[bfqs],[...]\n");
-        printf("            b  adds a backslash to the string containing spaces\n");
-        printf("            f  follow link\n");
-        printf("            q  display the name in quotes\n");
-        printf("            s  display the folder name with a slash\n");
-        printf("    -[...]t=[DEPTH]\n");
-        printf("             DEPTH  tree depth\n");
-        printf("          By default (without DEPTH), the depth is unlimited.\n");
-        printf("    -r  make the size readable like 7K, 423M, 2G etc.\n");
-        printf("    -c  color the output.\n");
-        printf("    -h  print help.\n");
-        printf("    -v  print version information.\n");
-    }
+    printf("Usage:\n");
+    printf("     %s -[OPTION]=[ARGUMENT],... [FILE]...\n\n", PROGRAM);
+    printf("Options:\n");
+    printf("    it's possible to combine those lettre together\n\n");
+    printf("    -0  separate files with a space.\n");
+    printf("    -1  lists one file per line.\n");
+    printf("    -2  separate files with commas(,).\n");
+    printf("    -3  separate files with a semicolon(;).\n");
+    printf("    -d  list directories/dirlinks themselves, not their contents.\n");
+    printf("        by default, %s list directories/dirlinks  contents.\n", PROGRAM);
+    printf("    -[...]m=[bcdflrsugtrwx],[...]   File's mode settings\n");
+    printf("          choose the files to list from the list below:\n");
+    printf("            h  hidden files, all files began with a dot.\n");
+    printf("            b  block device\n");
+    printf("            c  character device\n");
+    printf("            d  directory\n");
+    printf("            p  FIFO/pipe\n");
+    printf("            l  symlink\n");
+    printf("            f  regular file\n");
+    printf("            s  socket\n");
+    printf("            u  set-user identification (SUID)\n");
+    printf("            g  set-group identification (SGID)\n");
+    printf("            t  sticky bit\n");
+    printf("            1  read by owner\n");
+    printf("            2  write by owner\n");
+    printf("            3  execute by owner\n");
+    printf("            4  read by group\n");
+    printf("            5  write by group\n");
+    printf("            6  execute by group\n");
+    printf("            7  read by others\n");
+    printf("            8  write by others\n");
+    printf("            9  execute by others\n");
+    printf("          By default, \"-m\" displays all files and folders.\n");
+    printf("          And without \"-m\", %s displays all files and folders except the hidden ones .\n", PROGRAM);
+    printf("          wich has the same effect as not using the \"-m\" option.\n");
+    printf("    -[...]t=[DEPTH]   FILE's tree settings\n");
+    printf("             DEPTH  tree depth\n");
+    printf("          By default (without DEPTH), the depth is unlimited.\n");
+    printf("    -[...]l=[inpsugamc],[...]   File's information settings\n");
+    printf("          choose the information to display from the list below:\n");
+    printf("            i  [i]node number\n");
+    printf("            n  [n]umber of hard links\n");
+    printf("            p  [p]ermissions\n");
+    printf("            s  [s]ize\n");
+    printf("            r  make the size [r]eadable like 5K, 43M, 1.7G etc.\n");
+    printf("            u  file owner ([u]ser)\n");
+    printf("            g  file [g]roup\n");
+    printf("            a  last [a]ccess\n");
+    printf("            m  last [m]odification\n");
+    printf("            c  last status [c]hange\n");
+    printf("          By default, if no argument is set, \"-l\" show i,n,p,r,u,g,m.\n");
+    printf("    -[...]n=[bfqs],[...]   FILE's name settings\n");
+    printf("            c  color the output\n");
+    printf("            b  adds a backslash to the string containing spaces\n");
+    printf("            f  if file's link, display link reference\n");
+    printf("            q  display the name in quotes\n");
+    printf("            s  display the folder name with a slash\n");
+    printf("    -[...]s=[insugamcte],[...]   sort FILE settings\n");
+    printf("          Sort the output\n");
+    printf("            i  inode number\n");
+    printf("            n  number of hard links\n");
+    printf("            s  size\n");
+    printf("            u  file owner\n");
+    printf("            g  file group\n");
+    printf("            a  last access\n");
+    printf("            m  last [m]odification\n");
+    printf("            c  last status [c]hange\n");
+    printf("            t  file [t]ype\n");
+    printf("            e  file [e]xtension\n");
+    printf("          By default, %s will sort the output by name,\n", PROGRAM);
+    printf("          But if you invoke \"-s\" without giving any arguments, you disable sorting of the output.\n");
+    printf("    -h  print help.\n");
+    printf("    -v  print version information.\n");
 }
 
-void version()
+void _print_version()
 {
     printf("Version: %s %s.\n", PROGRAM, VERSION);
 }
 
-void *lf_alloc(long int size)
+void *_alloc(long int size)
 {
     void *b;
     b = malloc(size);
@@ -101,46 +107,57 @@ void *lf_alloc(long int size)
 }
 // places the contents of the symbolic link pathname in the buffer "buf" (global variable).
 // if failed, also print error in the buffer "buf"
-bool lf_link(const char *nm)
+_bool _link(const char *nm)
 {
     int cnt;
     if (!nm)
     {
-        return false;
+        return _false;
     }
-    cnt = readlink(nm, LFbuf, PATH_MAX - 1);
+    cnt = readlink(nm, _buffer, PATH_MAX - 1);
     if (cnt == -1)
     {
-        strcpy(LFbuf, strerror(errno));
-        return false;
+        strcpy(_buffer, strerror(errno));
+        return _false;
     }
-    LFbuf[cnt] = 0;
-    return true;
+    _buffer[cnt] = 0;
+    return _true;
 }
 // if failed, also print error in the buffer "buf"
-bool lf_stat(const char *nm, struct stat *s)
+_bool _stat(const char *nm, struct stat *s)
 {
     if (lstat(nm, s) == -1)
     {
         // strcpy(buf, strerror(errno));
-        return false;
+        return _false;
     }
-    return true;
+    return _true;
 }
 
-void lf_init()
+void _initial()
 {
     setbuf(stdout, NULL);
     // init PATH
-    LFpath = (char *)lf_alloc(sizeof(char) * PATH_MAX);
+    _path = (char *)_alloc(sizeof(char) * PATH_MAX);
     // init BUF
-    LFbuf = (char *)lf_alloc(sizeof(char) * PATH_MAX);
+    _buffer = (char *)_alloc(sizeof(char) * PATH_MAX);
 }
 
-void lf_quit()
+void _quit(char *msg)
 {
-    free(LFpath);
-    free(LFbuf);
+    if (_path)
+    {
+        free(_path);
+    }
+    if (_buffer)
+    {
+        free(_buffer);
+    }
+    if (msg)
+    {
+        printf("%s\nTry \"%s -h\" for help.", msg, PROGRAM);
+        exit(EXIT_FAILURE);
+    }
     exit(EXIT_SUCCESS);
 }
 
@@ -157,33 +174,41 @@ int has_space(char *nm)
     return i;
 }
 
-bool is_absolute_path(const char *p)
+_bool is_absolute_path(const char *p)
 {
     if (p)
     {
         return (p[0] == '/');
     }
-    return false;
+    return _false;
 }
 
-char *fileextension(char *s)
+char *file_ext(char *s)
 {
     // not null and not empty
+    char *last = s + strlen(s) - 1;
     if (s && *s)
     {
-        char *c = s + strlen(s) - 1;
-        while (c >= s && *c != '.' && *c != '/')
+        char *c = last;
+        while (c > s && *c != '.' && *c != '/')
         {
             --c;
         }
         if (*c == '.')
         {
-            return c;
+            // c!=s otherwise "s" is hidden file/folder ex: .bashrc
+            // c!=last otherwise "s" have ho exention ex: hello.
+            // *(c - 1)!='/' otherwise "s" is hidden file/folder ex: /home/user/.bashrc
+            if ((c != s) && (c != last) && (*(c - 1) != '/'))
+            {
+                return c;
+            }
         }
     }
     return NULL;
 }
-char filetype(mode_t *m)
+
+char file_type(mode_t *m)
 {
     char c;
     switch (*m & S_IFMT)
@@ -216,7 +241,7 @@ char filetype(mode_t *m)
     return c;
 }
 
-int strwidth(char *s)
+int str_width(char *s)
 {
     int len;
     wchar_t *wcs;
@@ -228,4 +253,54 @@ int strwidth(char *s)
     mbstowcs(wcs, s, len);
     // display width
     return wcswidth(wcs, len * sizeof(wchar_t));
+}
+
+// strings compareing no case sensative
+int _strcmp(char *s1, char *s2)
+{
+    int res = 0;
+    char c1, c2;
+
+    if (!s1 && !s2)
+    {
+        return 0;
+    }
+    else if (!s1)
+    {
+        return -1;
+    }
+    else if (!s2)
+    {
+        return 1;
+    }
+    while (!res && *s1 && *s2)
+    {
+        // convert s1 to lower case
+        c1 = *s1 + ((*s1 >= 'A' && *s1 <= 'Z') ? 32 : 0);
+        // convert s2 to lower case
+        c2 = *s2 + ((*s2 >= 'A' && *s2 <= 'Z') ? 32 : 0);
+
+        if (c1 < c2)
+        {
+            res = -1;
+        }
+        else if (c1 > c2)
+        {
+            res = 1;
+        }
+        else
+        {
+            ++s1;
+            ++s2;
+        }
+    }
+    if (!res)
+    {
+        if (*s1)
+        {
+            return 1;
+        }
+        return -1;
+    }
+    return res;
 }

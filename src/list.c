@@ -34,18 +34,16 @@ void lclose(linklist l)
 {
     if (!l)
     {
-        LERR("[LCLOSE] Memory allocation failed");
-        return;
+        node x, y = l->first;
+        while (l->count)
+        {
+            --l->count;
+            x = y;
+            y = y->next;
+            free(x);
+        }
+        free(l);
     }
-    node x, y = l->first;
-    while (l->count)
-    {
-        --l->count;
-        x = y;
-        y = y->next;
-        free(x);
-    }
-    free(l);
 }
 
 int lempty(linklist l)
@@ -393,17 +391,14 @@ iterator lat(linklist l, int at)
 
     if (!l)
     {
-        LERR("[LAT] No list is given");
         return NULL;
     }
     if (at < LFIRST || (at >= l->count))
     {
-        LERR("[LAT] Out of bounds");
         return NULL;
     }
     if (lempty(l))
     {
-        LERR("[LAT] The list is empty");
         return NULL;
     }
     if (at == LFIRST)

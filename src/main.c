@@ -3,605 +3,261 @@
 #include <stdio.h>
 #include <limits.h>
 #include <locale.h>
+#include <errno.h>
 #include "list.h"
 #include "lf.h"
 #include "common.h"
 #include "color.h"
+#include "args.h"
+#include "display.h"
+#include "format_long.h"
 
-lf_option LFopt;
-char *LFpath;
-char *LFbuf;
-int LFpathsiz;
-linklist LFcolorlist;
+_options _opt;
+char *_path;
+char *_buffer;
+int _path_len;
+linklist _colors_list;
+char *_time_style;
 
-bool is_digit(const char *nm, int n)
+void run(linklist l)
 {
-    if (!nm || n <= 0)
+    char *nm;
+    int len;
+    struct stat s;
+    _tree_info tree;
+    _file file;
+    linklist files_list = lopen();
+    long int mularg = (l->count == 1) ? 0 : l->count;
+
+    _initial();
+
+    if (_opt.t)
     {
-        return false;
+        tree.level = 0;
+        tree.has_next = (char *)_alloc(PATH_MAX);
     }
-    while (n)
+    for (iterator it = lat(l, LFIRST); it; linc(&it))
     {
-        if (*nm < '0' || *nm > '9')
+        nm = (char *)it->data;
+        len = strlen(nm);
+        if (len != 1 && nm[len - 1] == '/')
         {
-            break;
+            nm[--len] = 0;
         }
-        --n;
-    }
-    return (n) ? false : true;
-}
-
-int set_t_arg(char *s[], int n, int i, int *j)
-{
-    int depth = 0;
-    bool ok = true;
-    if ((*j < strlen(s[i]) - 1) &&
-        (s[i][*j + 1] == '='))
-    {
-        *j += 2;
-        int cnt = 0;
-        for (char *k = &s[i][*j]; *k && *k != ','; ++k)
+        // if multiple arguments then print name of each argument before list.
+        if (mularg)
         {
-            if (*k >= '0' && *k <= '9')
-            {
-                ++cnt;
-            }
-            else
-            {
-                ok = false;
-                break;
-            }
+            printf("%s:\n", nm);
+            --mularg;
         }
-        if (ok && cnt > 0)
+        if (_stat(nm, &s))
         {
-            char *ss = (char *)lf_alloc(cnt * sizeof(char));
-            strncpy(ss, &s[i][*j], cnt);
-            *j += cnt;
-            depth = strtol(ss, NULL, 10);
-            free(ss);
-        }
-        else
-        {
-            if (!ok)
+            if ((S_ISDIR(s.st_mode) || S_ISLNK(s.st_mode)) && !_opt.d)
             {
-                printf("%s: For the \"t\" option, the argument must be a positive number.\n", PROGRAM);
-            }
-            else if (cnt == 0)
-            {
-                printf(PROGRAM ": The \"s\" option needs an argument after \"=\".\n");
-            }
-            else
-            {
-                printf(PROGRAM "Error in the option \"t\".");
-            }
-            printf("Please try \"" PROGRAM " -h\" for help.\n");
-            lf_quit();
-        }
-    }
-    return depth;
-}
-
-char set_s_arg(char *s[], int n, int i, int *j)
-{
-    char attr = 0;
-    bool ok = true, diff = false;
-
-    // if 's' is at  the end of string
-    // and there's a argument
-    if ((*j < strlen(s[i]) - 1) &&
-        (s[i][*j + 1] == '='))
-    {
-        *j += 2;
-        int cnt = 0;
-        char *k, prev = 0;
-
-        for (k = &s[i][*j]; *k && *k != ','; ++k)
-        {
-            if (!strchr("inugsamcte", *k))
-            {
-                ok = false;
-                break;
-            }
-            else
-            {
-                if (prev == 0)
+                if (S_ISDIR(s.st_mode))
                 {
-                    prev = *k;
+                    strcpy(_path, nm);
+                    _path_len = len;
                 }
-                if (prev != *k)
+                else
                 {
-                    diff = true;
-                    break;
+                    if (!_link(nm))
+                    {
+                        printf("%s: Cannot read the reference of \"%s\": %s\n", PROGRAM, nm, strerror(errno));
+                        continue;
+                    }
+                    strcpy(_path, _buffer);
+                    len = strlen(_buffer);
+                    if (len != 1 && nm[len - 1] == '/')
+                    {
+                        nm[--len] = 0;
+                    }
+                    _path_len = len;
+                    if (!_stat(_buffer, &s))
+                    {
+                        printf("%s: Cannot access the reference of \"%s\": %s\n", PROGRAM, nm, strerror(errno));
+                        continue;
+                    }
                 }
-                ++cnt;
-            }
-        }
-        if (ok && !diff && cnt > 0)
-        {
-            attr = s[i][*j];
-            ++(*j);
-        }
-        else
-        {
-            if (!ok)
-            {
-                printf("%s: The \"s\" option doesn't recognize the argument \"%c\".\n", PROGRAM, *k);
-            }
-            else if (diff)
-            {
-                printf(PROGRAM ": The \"s\" option accepts only one argument.\n");
-            }
-            else if (cnt == 0)
-            {
-                printf(PROGRAM ": The \"s\" option needs an argument after \"=\".\n");
-            }
-            else
-            {
-                printf(PROGRAM "Error in the option \"s\".");
-            }
-            printf("Please try \"" PROGRAM " -h\" for help.\n");
-            lf_quit();
-        }
-    }
-    return attr;
-}
-
-m_arg *set_m_arg(char *s[], int n, int i, int *j)
-{
-    bool ok = true;
-    m_arg *m = NULL;
-
-    if ((*j < strlen(s[i]) - 1) &&
-        (s[i][*j + 1] == '='))
-    {
-        *j += 2;
-        int cnt = 0;
-        char *k;
-        // verify that data are correct
-        for (k = &s[i][*j]; ok && *k && *k != ','; ++k)
-        {
-            if (!strchr("bcdplfsugtrwx", *k))
-            {
-                ok = false;
-                break;
-            }
-            else
-            {
-                ++cnt;
-            }
-        }
-        if (ok && cnt > 0)
-        {
-            m = (m_arg *)lf_alloc(M_ARG_SIZ);
-            for (char *k = &s[i][*j]; *k && *k != ','; ++k)
-            {
-                switch (*k)
+                if (_opt.t)
                 {
-                case 'b':
-                    m->b = true;
-                    break;
-                case 'c':
-                    m->c = true;
-                    break;
-                case 'd':
-                    m->d = true;
-                    break;
-                case 'p':
-                    m->f = true;
-                    break;
-                case 'l':
-                    m->l = true;
-                    break;
-                case 'f':
-                    m->r = true;
-                    break;
-                case 's':
-                    m->s = true;
-                    break;
-                case 'u':
-                    m->u = true;
-                    break;
-                case 'g':
-                    m->g = true;
-                    break;
-                case 't':
-                    m->t = true;
-                    break;
-                case 'r':
-                    m->r = true;
-                    break;
-                case 'w':
-                    m->w = true;
-                    break;
-                case 'x':
-                    m->x = true;
-                    break;
-                default:
-                    break;
+                    display(_path, &s.st_mode, _true);
+                }
+                if (_path[_path_len - 1] != '/')
+                {
+                    _path[_path_len++] = '/';
+                    _path[_path_len] = 0;
+                }
+                core(&tree);
+            }
+            else
+            {
+                if (_opt.l)
+                {
+                    lreset(files_list);
+                    file = (_file)_alloc(_FILE_SIZE);
+                    file->name = nm;
+                    file->st = s;
+                    ladd(files_list, LFIRST, file);
+                    long_main(files_list);
+                }
+                else
+                {
+                    display(nm, &s.st_mode, _true);
                 }
             }
-            *j += cnt;
-        }
-        else
-        {
-            if (!ok)
+            if (mularg)
             {
-                printf("%s: The option \"m\" doesn't recognize the argument \"%c\".\n", PROGRAM, *k);
-            }
-            else if (cnt == 0)
-            {
-                printf(PROGRAM ": The \"m\" option needs an argument after \"=\".\n");
-            }
-            else
-            {
-                printf(PROGRAM "Error in the option \"m\".");
-            }
-            printf("Please try \"" PROGRAM " -h\" for help.\n");
-            lf_quit();
-        }
-    }
-    return m;
-}
-
-l_arg *set_l_arg(char *s[], int n, int i, int *j)
-{
-    bool ok = true;
-    l_arg *la = NULL;
-
-    if ((*j < strlen(s[i]) - 1) &&
-        (s[i][*j + 1] == '='))
-    {
-        *j += 2;
-        int cnt = 0;
-        char *k;
-        // verify that data are correct
-        for (k = &s[i][*j]; ok && *k && *k != ','; ++k)
-        {
-            if (!strchr("inugspamc", *k))
-            {
-                ok = false;
-                break;
-            }
-            else
-            {
-                ++cnt;
-            }
-        }
-        if (ok && cnt > 0)
-        {
-            la = (l_arg *)lf_alloc(L_ARG_SIZ);
-            for (char *k = &s[i][*j]; *k && *k != ','; ++k)
-            {
-                switch (*k)
-                {
-                case 'i':
-                    la->i = true;
-                    break;
-                case 'n':
-                    la->n = true;
-                    break;
-                case 'u':
-                    la->u = true;
-                    break;
-                case 'g':
-                    la->g = true;
-                    break;
-                case 's':
-                    la->s = true;
-                    break;
-                case 'p':
-                    la->p = true;
-                    break;
-                case 'a':
-                    la->a = true;
-                    break;
-                case 'm':
-                    la->m = true;
-                    break;
-                case 'c':
-                    la->c = true;
-                    break;
-                default:
-                    break;
-                }
-            }
-            *j += cnt;
-        }
-        else
-        {
-            if (!ok)
-            {
-                printf("%s: The option \"l\" doesn't recognize the argument \"%c\".\n", PROGRAM, *k);
-            }
-            else if (cnt == 0)
-            {
-                printf(PROGRAM ": The \"l\" option needs an argument after \"=\".\n");
-            }
-            else
-            {
-                printf(PROGRAM "Error in the option \"l\".");
-            }
-            printf("Please try \"" PROGRAM " -h\" for help.\n");
-            lf_quit();
-        }
-    }
-    return la;
-}
-
-n_arg *set_n_arg(char *s[], int n, int i, int *j)
-{
-    bool ok = true;
-    n_arg *na = NULL;
-
-    if ((*j < strlen(s[i]) - 1) &&
-        (s[i][*j + 1] == '='))
-    {
-        *j += 2;
-        int cnt = 0;
-        char *k;
-        for (k = &s[i][*j]; ok && *k && *k != ','; ++k)
-        {
-            if (!strchr("bfqs", *k))
-            {
-                ok = false;
-                break;
-            }
-            else
-            {
-                ++cnt;
-            }
-        }
-        if (ok && cnt > 0)
-        {
-            na = (n_arg *)lf_alloc(N_ARG_SIZ);
-            for (char *k = &s[i][*j]; *k && *k != ','; ++k)
-            {
-                switch (*k)
-                {
-                case 'b':
-                    na->b = true;
-                    break;
-                case 'f':
-                    na->f = true;
-                    break;
-                case 'q':
-                    na->q = true;
-                    break;
-                case 's':
-                    na->s = true;
-                    break;
-                default:
-                    break;
-                }
-            }
-            *j += cnt;
-        }
-        else
-        {
-            if (!ok)
-            {
-                printf("%s: The option \"n\" doesn't recognize the argument \"%c\".\n", PROGRAM, *k);
-            }
-            else if (cnt == 0)
-            {
-                printf(PROGRAM ": The \"n\" option needs an argument after \"=\".\n");
-            }
-            else
-            {
-                printf(PROGRAM "Error in the option \"n\".\n");
-            }
-            printf("Please try \"" PROGRAM " -h\" for help.\n");
-            lf_quit();
-        }
-    }
-    return na;
-}
-
-void set_options(int argc, char *argv[], linklist l)
-{
-    int tmp;
-    bool ok = true;
-
-    for (int i = 1; i < argc; ++i)
-    {
-        if (argv[i][0] == '-')
-        {
-            tmp = strlen(argv[i]);
-            for (int j = 1; j < tmp; ++j)
-            {
-                switch (argv[i][j])
-                {
-                case ',':
-                    continue;
-                case '0':
-                    LFopt.zero = true;
-                    break;
-                case '1':
-                    LFopt.one = true;
-                    break;
-                case '2':
-                    LFopt.two = true;
-                    break;
-                case '3':
-                    LFopt.three = true;
-                    break;
-                case 'a':
-                    LFopt.a = true;
-                    break;
-                case 'c':
-                    LFopt.c = true;
-                    break;
-                case 'r':
-                    LFopt.r = true;
-                    break;
-                case 'v':
-                    LFopt.v = true;
-                    break;
-                case 'h':
-                    LFopt.h = true;
-                    break;
-                case 't':
-                    LFopt.t = true;
-                    LFopt.td = set_t_arg(argv, argc, i, &j);
-                    break;
-                case 's':
-                    LFopt.s = true;
-                    LFopt.sc = set_s_arg(argv, argc, i, &j);
-                    break;
-                case 'm':
-                    LFopt.m = true;
-                    LFopt.ml = set_m_arg(argv, argc, i, &j);
-                    break;
-                case 'l':
-                    LFopt.l = true;
-                    LFopt.ll = set_l_arg(argv, argc, i, &j);
-                    break;
-                case 'n':
-                    LFopt.n = true;
-                    LFopt.nl = set_n_arg(argv, argc, i, &j);
-                    break;
-                default:
-                    ok = false;
-                    printf("%s: Unknown option \"%c\"\n", PROGRAM, argv[i][j]);
-                    break;
-                }
+                printf("\n");
             }
         }
         else
         {
-            ladd(l, LLAST, argv[i]);
+            printf("%s: \"%s\": %s\n", PROGRAM, nm, strerror(errno));
         }
     }
-    if (!ok)
-    {
-        lf_quit();
-    }
+    lclose(files_list);
 }
 
 int main(int argc, char *argv[], char *envp[])
 {
-    linklist l;
+    linklist l = lopen();
+    _bool onecol;
 
     setlocale(LC_ALL, "");
-    l = lopen();
-    // init OPT
-    memset(&LFopt, 0, OPTIONSIZ);
+
     set_options(argc, argv, l);
-    if (LFopt.h)
+
+    if (_opt.h)
     {
-        help(0);
+        _print_help();
+        exit(EXIT_SUCCESS);
     }
-    else if (LFopt.v)
+    if (_opt.v)
     {
-        version();
+        _print_version();
+        exit(EXIT_SUCCESS);
+    }
+    if (_opt.l)
+    {
+        if (!_opt.ll)
+        {
+            _opt.ll = (_arg_l *)_alloc(_ARG_L_SIZE);
+            memset(_opt.ll, 0, _ARG_L_SIZE);
+            _opt.ll->n = _true;
+            _opt.ll->p = _true;
+            _opt.ll->r = _true;
+            _opt.ll->u = _true;
+            _opt.ll->g = _true;
+            _opt.ll->m = _true;
+        }
+        else
+        {
+            if (_opt.ll->r && _opt.ll->s)
+            {
+                _opt.ll->s = _false;
+            }
+        }
+    }
+    onecol = (_opt.ll &&
+              (_opt.ll->i + _opt.ll->n + _opt.ll->s + _opt.ll->r +
+                   _opt.ll->p + _opt.ll->u + _opt.ll->g + _opt.ll->a +
+                   _opt.ll->m + _opt.ll->c ==
+               _true));
+
+    if (_opt.t && (_opt.l + _opt._1 + _opt._2 + _opt._3 + _opt._4 >= _true))
+    {
+        _quit(PROGRAM ": The option \"t\" can't be combined with the options \"i\", \"1\", \"2\", \"3\" and \"4\".");
+    }
+    if (_opt.l && (_opt._1 + _opt._2 + _opt._3 + _opt._4 >= _true) && !onecol)
+    {
+        _quit(PROGRAM ": The option \"i\" can't be combined with the options \"1\", \"2\", \"3\" and \"4\", unless \"i\" has only one argument.");
+    }
+    if (_opt._1 + _opt._2 + _opt._3 + _opt._4 > _true)
+    {
+        _quit(PROGRAM ": The options \"1\", \"2\", \"3\" and \"4\" can't be combined.");
+    }
+    if (_opt.t && _opt.td > MAX_DEPTH)
+    {
+        printf("%s: maximum depth is %d\n", PROGRAM, MAX_DEPTH);
+        _quit(NULL);
+    }
+    if (!_opt.ml)
+    {
+        _opt.ml = (_arg_m *)_alloc(_ARG_M_SIZE);
+        if (_opt.m)
+        {
+            _opt.ml->h = _true;
+        }
+        _opt.ml->b = _true;
+        _opt.ml->c = _true;
+        _opt.ml->d = _true;
+        _opt.ml->l = _true;
+        _opt.ml->p = _true;
+        _opt.ml->r = _true;
+        _opt.ml->s = _true;
+        _opt.ml->t = _true;
+        _opt.ml->u = _true;
+        _opt.ml->g = _true;
+        _opt.ml->_1 = _true;
+        _opt.ml->_2 = _true;
+        _opt.ml->_3 = _true;
+        _opt.ml->_4 = _true;
+        _opt.ml->_5 = _true;
+        _opt.ml->_6 = _true;
+        _opt.ml->_7 = _true;
+        _opt.ml->_8 = _true;
+        _opt.ml->_9 = _true;
+    }
+
+    if (!_opt.nl)
+    {
+        _opt.nl = (_arg_n *)_alloc(_ARG_N_SIZE);
+        // set all arguments to _false
+        memset(_opt.nl, 0, _ARG_N_SIZE);
+        if (_opt.n)
+        { // by default n without argument
+            // follow links + color names + quotes spaced names
+            _opt.nl->f = _true;
+            _opt.nl->c = _true;
+            _opt.nl->q = _true;
+        }
     }
     else
     {
-        if (LFopt.t && (LFopt.l + LFopt.zero + LFopt.one + LFopt.two >= true))
+        // disable backslash if quoting names is enabled.
+        if (_opt.nl->b && _opt.nl->q)
         {
-            printf(PROGRAM ": The option \"t\" can't be combined with the options \"l\", \"0\", \"1\" and \"2\".\n");
-            lf_quit();
+            _opt.nl->b = _false;
         }
-        else if (LFopt.l && (LFopt.zero + LFopt.one + LFopt.two >= true))
-        {
-            if (!LFopt.ll ||
-                (LFopt.ll->i + LFopt.ll->n +
-                     LFopt.ll->s + LFopt.ll->p +
-                     LFopt.ll->u + LFopt.ll->g +
-                     LFopt.ll->a + LFopt.ll->m +
-                     LFopt.ll->c >
-                 true))
-            {
-                printf(PROGRAM ": The option \"l\" can't be combined with the options \"0\", \"1\" and \"2\", unless \"l\" has only one argument.\n");
-                lf_quit();
-            }
-        }
-        else if (LFopt.zero + LFopt.one + LFopt.two > true)
-        {
-            printf(PROGRAM ": The options \"0\", \"1\" and \"2\" can't be combined..\n");
-            lf_quit();
-        }
-
-        if (lempty(l))
-        {
-            ladd(l, LFIRST, "./");
-        }
-        if (!LFopt.nl)
-        {
-            LFopt.nl = (n_arg *)lf_alloc(N_ARG_SIZ);
-            memset(LFopt.nl, 0, N_ARG_SIZ);
-        }
-        if (!LFopt.ml)
-        {
-            LFopt.ml = (m_arg *)lf_alloc(M_ARG_SIZ);
-            LFopt.ml->b = true;
-            LFopt.ml->c = true;
-            LFopt.ml->d = true;
-            LFopt.ml->p = true;
-            LFopt.ml->l = true;
-            LFopt.ml->f = true;
-            LFopt.ml->s = true;
-            LFopt.ml->u = true;
-            LFopt.ml->g = true;
-            LFopt.ml->t = true;
-            LFopt.ml->r = true;
-            LFopt.ml->w = true;
-            LFopt.ml->x = true;
-        }
-        if (LFopt.l)
-        {
-            if (LFopt.ll)
-            {
-
-                // follow link if long format
-                if (LFopt.ll->i + LFopt.ll->n +
-                        LFopt.ll->s + LFopt.ll->p +
-                        LFopt.ll->u + LFopt.ll->g +
-                        LFopt.ll->a + LFopt.ll->m +
-                        LFopt.ll->c ==
-                    true)
-                {
-                    LFopt.nl->f = false;
-                }
-                else
-                {
-                    LFopt.nl->f = true;
-                }
-            }
-            else
-            {
-                LFopt.nl->f = true;
-                LFopt.ll = (l_arg *)lf_alloc(L_ARG_SIZ);
-                LFopt.ll->i = true;
-                LFopt.ll->n = true;
-                LFopt.ll->u = true;
-                LFopt.ll->g = true;
-                LFopt.ll->p = true;
-                LFopt.ll->s = true;
-                LFopt.ll->m = true;
-            }
-        }
-        if (LFopt.t)
-        {
-            LFopt.nl->f = true;
-        }
-        if (LFopt.c)
-        {
-            LFcolorlist = scan_for_color();
-            if (lempty(LFcolorlist))
-            {
-                printf(PROGRAM ": warning: \"-c\" not available because the \"LS_COLORS\" environment variable is not set.\n");
-                LFopt.c = false;
-            }
-            else if (!getcolor(LFcolorlist, "rs", false))
-            { // at least LS_COLORS must have value for "rs"
-                printf(PROGRAM ": warning: \"-c\" not available because the environment variable \"LS_COLORS\" has no value \"rs\".\n");
-                LFopt.c = false;
-            }
-        }
-        run(l);
     }
-    lf_quit(l);
+
+    if (_opt.nl->c)
+    {
+        _colors_list = scan_for_colors();
+        if (lempty(_colors_list))
+        {
+            printf(PROGRAM ": warning: \"-c\" needs the environment variable \"LS_COLORS\".\n");
+            _opt.nl->c = _false;
+        }
+        else if (!getcolor(_colors_list, "rs", _false))
+        { // LS_COLORS must have at least "rs" value
+            printf(PROGRAM ": warning: \"-c\" unavailable due to the environment variable \"LS_COLORS\" has no value \"rs\".\n");
+            _opt.nl->c = _false;
+        }
+    }
+    if (!_time_style)
+    {
+        _time_style = "%F %R";
+    }
+
+    // default folder to list is current working directory.
+    if (lempty(l))
+    {
+        ladd(l, LFIRST, ".");
+    }
+    run(l);
+    _quit(NULL);
     lclose(l);
     return 0;
 }

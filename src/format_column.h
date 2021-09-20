@@ -1,7 +1,6 @@
 #ifndef FORMAT_COLUMN
 #define FORMAT_COLUMN 1
 
-#include <stdbool.h>
 #include "list.h"
 
 void column_main(linklist l, char **tb);
