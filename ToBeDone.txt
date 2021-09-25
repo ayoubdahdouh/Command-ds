@@ -76,28 +76,22 @@ lrwxrwxrwx bonjour   ~rw-rw-r-- display.c        ~rw-rw-r-- format_list.c    ~rw
 drwxrwxr-x build     ~rw-rw-r-- display.h        ~rw-rw-r-- format_list.h    ~rw-rw-r-- lf.c           ~rw-rw-r-- makefile   
 }
 
-
-
-
 {
     # utf-8 STRING
 }
 
-Usage:
-     lf -[OPTION]=[ARGUMENT],... [FILE]...
+Usage:  lf -[OPTION]=[ARGUMENT],... [FILE]...
 
-Options:
-    it's possible to combine those lettre together
-.
+    List information about the FILEs (the current directory by default).
+    it's possible to combine those options together
+
+    -0  separate files with a space.
     -1  lists one file per line.
-    -2  separate files with a space
-    -3  separate files with commas(,).
-    -4  separate files with a semicolon(;).
+    -2  separate files with commas(,).
+    -3  separate files with a semicolon(;).
     -d  list directories/dirlinks themselves, not their contents.
-        by default, lf list directories/dirlinks  contents.
-    -[...]f="TIME_STYLE"  modify time style formtat
-        when display time information use this TIME_STYLE format instead the default YY-MM-DD HH:MM.
-    -[...]m=[hbcdflrsugtrwx123456789]    File's mode settings
+        by default, lf list directories/dirlinks contents.
+    -[...]m=[hbcdplrsugt123456789]   Mode settings
           choose the files to list from the list below:
             h  hidden files, all files began with a dot.
             b  block device
@@ -107,8 +101,8 @@ Options:
             l  symlink
             r  regular file
             s  socket
-            u  set-user identification (SUID)
-            g  set-group identification (SGID)
+            u  SUID (set-user identification)
+            g  SGID (set-group identification)
             t  sticky bit
             1  read by owner
             2  write by owner
@@ -119,55 +113,59 @@ Options:
             7  read by others
             8  write by others
             9  execute by others
+          Without "-m", lf displays all files and folders except the hidden ones.
           By default, "-m" displays all files and folders.
-          And without "-m", lf displays all files and folders except the hidden ones.
           wich has the same effect as not using the "-m" option.
-    -[...]t=[DEPTH]   FILE's tree settings
-             DEPTH  tree depth
-          By default (without DEPTH), the depth is MAX_DEPTH.
-    -[...]i=[inpsugamc]    File's information settings
+    -[...]t=[DEPTH]   Rree settings
+            DEPTH  tree depth
+          By default (without DEPTH), the depth is unlimited.
+    -[...]l=[inpsrugamc]   Information settings
           choose the information to display from the list below:
-            i  [i]node number
-            n  [n]umber of hard links
-            p  [p]ermissions
-            s  [s]ize
-            r  [r]eadable size like 5K, 43M, 1.7G etc.
-            u  file owner ([u]ser)
-            g  file [g]roup
-            a  last [a]ccess
-            m  last [m]odification
-            c  last status [c]hange
+            i  inode number
+            n  number of hard links
+            p  permissions
+            s  size in byte
+            r  readable size like 5K, 43M, 1.7G etc.
+            u  file owner (user)
+            g  file group
+            a  last access
+            m  last modification
+            c  last status change
           By default, if no argument is set, "-l" show i,n,p,r,u,g,m.
-    -[...]n=[bfqs]   FILE's name settings
+    -[...]n=[cbfqi]   Name settings
             c  color the output
-            f  follow link, if file's link, display also link content
+            f  follow link, if the file is link then display also link content
             b  adds a backslash to the string containing spaces
             q  adds quotes to the string containing spaces
-            i  Append a character indicator to filename
+            i  adds a character indicator to filename
                 '*'  executable files
                 '/'  directories
                 '@'  symbolic links
                 '|'  FIFO/pipe
                 '='  sockets
           By default, if no argument is set, "-n" show c,f,q.
-    -[...]s=[insugamcte]   sort FILE settings
+    -[...]s=[dinsugamcte]   Sort settings
           Sort the output
             d  disable sorting (don't sort)
             i  inode number
             n  number of hard links
             s  size
             u  file owner
-            g  file [g]roup
-            a  last [a]ccess
+            g  file group
+            a  last access
             m  last [m]odification
             c  last status [c]hange
             t  file [t]ype
             e  file [e]xtension
-          By default, lf will sort the output by names,
-          Which is the same things as invoking "-s" without giving any arguments
+          By default, if no argument is set, "-s" will sort the output by names,
+          Wich has the same effect as not using it.
     -h  print help.
     -v  print version information.
 
+ # remove all sizeof(char)      
+# set_f_arg check if format is correct before continue.
+# error on long_time().
+
 #optimise long_main redefine struct _file_info 
     les variables de maniximum aren't used by one colum
-# remove all sizeof(char)
+# add column names when 'l' is set.

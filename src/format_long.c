@@ -12,6 +12,8 @@
 #include "display.h"
 #include "common.h"
 
+#define novalue "?"
+
 void long_print(char *nm, int m, _bool rtl)
 {
     // rtl: left to right
@@ -24,6 +26,10 @@ void long_print(char *nm, int m, _bool rtl)
             printf(" ");
             --x;
         }
+    }
+    if (!nm)
+    {
+        nm = novalue;
     }
     printf("%s ", nm);
     if (!rtl)
@@ -44,16 +50,7 @@ void long_display(linklist l, _file_info *files_infos)
     for (iterator it = lat(l, LFIRST); it; linc(&it), ++i)
     {
         file = (_file)it->data;
-        // permissions
-        if (_opt.ll->p)
-        {
-            long_print(files_infos->p[i], files_infos->mp, _false);
-        }
-        // size
-        if (_opt.ll->s)
-        {
-            long_print(files_infos->s[i], files_infos->ms, _true);
-        }
+
         // inodes
         if (_opt.ll->i)
         {
@@ -63,6 +60,16 @@ void long_display(linklist l, _file_info *files_infos)
         if (_opt.ll->n)
         {
             long_print(files_infos->n[i], files_infos->mn, _false);
+        }
+        // permissions
+        if (_opt.ll->p)
+        {
+            long_print(files_infos->p[i], files_infos->mp, _false);
+        }
+        // size
+        if (_opt.ll->s || _opt.ll->r)
+        {
+            long_print(files_infos->s[i], files_infos->ms, _true);
         }
         // user
         if (_opt.ll->u)
@@ -113,14 +120,13 @@ void _free_tb(char **tb, int n)
 }
 void long_main(linklist l)
 {
-    _file_info files_infos;
+    _file_info files_info;
     _file file;
     iterator it;
     int i = 0, tmp;
     _bool onecol = _false; // multiple column
     char **col = NULL;
     int siz = sizeof(char *) * l->count;
-    char *novalue = "?";
 
     onecol = (_opt.ll->i + _opt.ll->n + _opt.ll->s + _opt.ll->r +
                   _opt.ll->p + _opt.ll->u + _opt.ll->g +
@@ -128,52 +134,52 @@ void long_main(linklist l)
               _true);
 
     // set default maximums sizes.
-    memset(&files_infos, 0, _FILE_INFO_SIZE);
-    files_infos.ma = 1;
-    files_infos.mc = 1;
-    files_infos.mg = 1;
-    files_infos.mi = 1;
-    files_infos.mm = 1;
-    files_infos.mn = 1;
-    files_infos.mp = 1;
-    files_infos.ms = 1;
-    files_infos.mu = 1;
+    memset(&files_info, 0, _FILE_INFO_SIZE);
+    files_info.ma = 1;
+    files_info.mc = 1;
+    files_info.mg = 1;
+    files_info.mi = 1;
+    files_info.mm = 1;
+    files_info.mn = 1;
+    files_info.mp = 1;
+    files_info.ms = 1;
+    files_info.mu = 1;
 
     if (_opt.ll->i)
     {
-        col = files_infos.i = (char **)_alloc(siz);
+        col = files_info.i = (char **)_alloc(siz);
     }
     if (_opt.ll->n)
     {
-        col = files_infos.n = (char **)_alloc(siz);
+        col = files_info.n = (char **)_alloc(siz);
     }
     if (_opt.ll->s || _opt.ll->r)
     {
-        col = files_infos.s = (char **)_alloc(siz);
+        col = files_info.s = (char **)_alloc(siz);
     }
     if (_opt.ll->p)
     {
-        col = files_infos.p = (char **)_alloc(siz);
+        col = files_info.p = (char **)_alloc(siz);
     }
     if (_opt.ll->u)
     {
-        col = files_infos.u = (char **)_alloc(siz);
+        col = files_info.u = (char **)_alloc(siz);
     }
     if (_opt.ll->g)
     {
-        col = files_infos.g = (char **)_alloc(siz);
+        col = files_info.g = (char **)_alloc(siz);
     }
     if (_opt.ll->m)
     {
-        col = files_infos.m = (char **)_alloc(siz);
+        col = files_info.m = (char **)_alloc(siz);
     }
     if (_opt.ll->a)
     {
-        col = files_infos.a = (char **)_alloc(siz);
+        col = files_info.a = (char **)_alloc(siz);
     }
     if (_opt.ll->c)
     {
-        col = files_infos.c = (char **)_alloc(siz);
+        col = files_info.c = (char **)_alloc(siz);
     }
 
     for (it = lat(l, LFIRST); it; linc(&it), ++i)
@@ -182,168 +188,98 @@ void long_main(linklist l)
         // inodes
         if (_opt.ll->i)
         {
-            if (file->err)
+            files_info.i[i] = long_ino(NULL, file->st.st_ino);
+            tmp = strlen(files_info.i[i]);
+            if (tmp > files_info.mi)
             {
-                files_infos.i[i] = novalue;
-            }
-            else
-            {
-                files_infos.i[i] = long_ino(NULL, file->st.st_ino);
-                tmp = strlen(files_infos.i[i]);
-                if (tmp > files_infos.mi)
-                {
-                    files_infos.mi = tmp;
-                }
+                files_info.mi = tmp;
             }
         }
         // nlink
         if (_opt.ll->n)
         {
-            if (file->err)
+            files_info.n[i] = long_nlink(NULL, file->st.st_nlink);
+            tmp = strlen(files_info.n[i]);
+            if (tmp > files_info.mn)
             {
-                files_infos.n[i] = novalue;
-            }
-            else
-            {
-                files_infos.n[i] = long_nlink(NULL, file->st.st_nlink);
-                tmp = strlen(files_infos.n[i]);
-                if (tmp > files_infos.mn)
-                {
-                    files_infos.mn = tmp;
-                }
+                files_info.mn = tmp;
             }
         }
         // user
         if (_opt.ll->u)
         {
-            if (file->err)
+            files_info.u[i] = long_user(NULL, file->st.st_uid);
+            tmp = strlen(files_info.u[i]);
+            if (tmp > files_info.mu)
             {
-                files_infos.u[i] = novalue;
-            }
-            else
-            {
-                files_infos.u[i] = long_user(NULL, file->st.st_uid);
-                tmp = strlen(files_infos.u[i]);
-                if (tmp > files_infos.mu)
-                {
-                    files_infos.mu = tmp;
-                }
+                files_info.mu = tmp;
             }
         }
         // group
         if (_opt.ll->g)
         {
-            if (file->err)
+            files_info.g[i] = long_group(NULL, file->st.st_gid);
+            tmp = strlen(files_info.g[i]);
+            if (tmp > files_info.mg)
             {
-                files_infos.g[i] = novalue;
-            }
-            else
-            {
-                files_infos.g[i] = long_group(NULL, file->st.st_gid);
-                tmp = strlen(files_infos.g[i]);
-                if (tmp > files_infos.mg)
-                {
-                    files_infos.mg = tmp;
-                }
+                files_info.mg = tmp;
             }
         }
-        // size
-        if (_opt.ll->s)
+        // size and readable size
+        if (_opt.ll->r || _opt.ll->s)
         {
-            if (file->err)
+            if (_opt.ll->r)
             {
-                files_infos.s[i] = novalue;
+                files_info.s[i] = long_size_readable(NULL, file->st.st_size);
             }
             else
             {
-                files_infos.s[i] = long_size(NULL, file->st.st_size);
-                tmp = strlen(files_infos.s[i]);
-                if (tmp > files_infos.ms)
-                {
-                    files_infos.ms = tmp;
-                }
+                files_info.s[i] = long_size(NULL, file->st.st_size);
             }
-        }
-        // readable size
-        else if (_opt.ll->r)
-        {
-            if (file->err)
+            tmp = strlen(files_info.s[i]);
+            if (tmp > files_info.ms)
             {
-                files_infos.s[i] = novalue;
-            }
-            else
-            {
-                files_infos.s[i] = long_size_readable(NULL, file->st.st_size);
-                tmp = strlen(files_infos.s[i]);
-                if (tmp > files_infos.ms)
-                {
-                    files_infos.ms = tmp;
-                }
+                files_info.ms = tmp;
             }
         }
         // permissions
         if (_opt.ll->p)
         {
-            if (file->err)
+            files_info.p[i] = long_permission(NULL, &file->st.st_mode);
+            tmp = strlen(files_info.p[i]);
+            if (tmp > files_info.mp)
             {
-                files_infos.p[i] = novalue;
-            }
-            else
-            {
-                files_infos.p[i] = long_permission(NULL, &file->st.st_mode);
-                tmp = strlen(files_infos.p[i]);
-                if (tmp > files_infos.mp)
-                {
-                    files_infos.mp = tmp;
-                }
+                files_info.mp = tmp;
             }
         }
         if (_opt.ll->m)
-        { // modification time; max_mtime = 16 (doesn't change)
-            if (file->err)
+        { // modification time; max_mtime = 16
+
+            files_info.m[i] = long_time(NULL, &file->st.st_mtime);
+            tmp = strlen(files_info.m[i]);
+            if (tmp > files_info.mm)
             {
-                files_infos.m[i] = novalue;
-            }
-            else
-            {
-                files_infos.m[i] = long_time(NULL, &file->st.st_mtime);
-                tmp = strlen(files_infos.m[i]);
-                if (tmp > files_infos.mm)
-                {
-                    files_infos.mm = tmp;
-                }
+                files_info.mm = tmp;
             }
         }
         if (_opt.ll->a)
-        { // modification time; max_mtime = 16 (doesn't change)
-            if (file->err)
+        { // modification time; max_mtime = 16
+
+            files_info.a[i] = long_time(NULL, &file->st.st_atime);
+            tmp = strlen(files_info.a[i]);
+            if (tmp > files_info.ma)
             {
-                files_infos.a[i] = novalue;
-            }
-            else
-            {
-                files_infos.a[i] = long_time(NULL, &file->st.st_atime);
-                tmp = strlen(files_infos.a[i]);
-                if (tmp > files_infos.ma)
-                {
-                    files_infos.ma = tmp;
-                }
+                files_info.ma = tmp;
             }
         }
         if (_opt.ll->c)
-        { // modification time; max_mtime = 16 (doesn't change)
-            if (file->err)
+        { // modification time; max_mtime = 16
+
+            files_info.c[i] = long_time(NULL, &file->st.st_ctime);
+            tmp = strlen(files_info.c[i]);
+            if (tmp > files_info.mc)
             {
-                files_infos.c[i] = novalue;
-            }
-            else
-            {
-                files_infos.c[i] = long_time(NULL, &file->st.st_ctime);
-                tmp = strlen(files_infos.c[i]);
-                if (tmp > files_infos.mc)
-                {
-                    files_infos.mc = tmp;
-                }
+                files_info.mc = tmp;
             }
         }
     }
@@ -361,17 +297,17 @@ void long_main(linklist l)
     }
     else
     { // display one column
-        long_display(l, &files_infos);
+        long_display(l, &files_info);
     }
-    _free_tb(files_infos.i, l->count);
-    _free_tb(files_infos.n, l->count);
-    _free_tb(files_infos.u, l->count);
-    _free_tb(files_infos.g, l->count);
-    _free_tb(files_infos.s, l->count);
-    _free_tb(files_infos.p, l->count);
-    _free_tb(files_infos.m, l->count);
-    _free_tb(files_infos.a, l->count);
-    _free_tb(files_infos.c, l->count);
+    _free_tb(files_info.i, l->count);
+    _free_tb(files_info.n, l->count);
+    _free_tb(files_info.u, l->count);
+    _free_tb(files_info.g, l->count);
+    _free_tb(files_info.s, l->count);
+    _free_tb(files_info.p, l->count);
+    _free_tb(files_info.m, l->count);
+    _free_tb(files_info.a, l->count);
+    _free_tb(files_info.c, l->count);
 }
 
 int number_size(long int n)
@@ -387,14 +323,14 @@ int number_size(long int n)
 
 char *long_ino(char *buf, ino_t data)
 {
-    buf = (char *)_alloc(sizeof(char) * number_size(data));
+    buf = (char *)_alloc(number_size(data));
     sprintf(buf, "%ld", data);
     return buf;
 }
 
 char *long_nlink(char *buf, nlink_t data)
 {
-    buf = (char *)_alloc(sizeof(char) * number_size(data));
+    buf = (char *)_alloc(number_size(data));
     sprintf(buf, "%ld", data);
     return buf;
 }
@@ -407,7 +343,7 @@ char *long_size_readable(char *buf, long int data)
 
     if (!buf)
     {
-        buf = (char *)_alloc(sizeof(char) * number_size(data));
+        buf = (char *)_alloc(number_size(data));
     }
     while (cnt > 1024)
     {
@@ -433,7 +369,7 @@ char *long_size(char *buf, long int data)
 {
     if (!buf)
     {
-        buf = (char *)_alloc(sizeof(char) * number_size(data));
+        buf = (char *)_alloc(number_size(data));
     }
     sprintf(buf, "%ld", data);
 
@@ -449,7 +385,7 @@ char *long_user(char *user, uid_t uid)
     {
         if (!user)
         {
-            user = (char *)_alloc(sizeof(char) * 2);
+            user = (char *)_alloc(2);
         }
         user[0] = '?';
         user[1] = 0;
@@ -457,7 +393,7 @@ char *long_user(char *user, uid_t uid)
     }
     if (!user)
     {
-        user = (char *)_alloc(sizeof(char) * (strlen(pw->pw_name) + 1));
+        user = (char *)_alloc((strlen(pw->pw_name) + 1));
     }
     strcpy(user, pw->pw_name);
     return user;
@@ -472,7 +408,7 @@ char *long_group(char *group, gid_t gid)
     {
         if (!group)
         {
-            group = (char *)_alloc(sizeof(char) * 2);
+            group = (char *)_alloc(2);
         }
         group[0] = '?';
         group[1] = 0;
@@ -480,7 +416,7 @@ char *long_group(char *group, gid_t gid)
     }
     if (!group)
     {
-        group = (char *)_alloc(sizeof(char) * (strlen(grp->gr_name) + 1));
+        group = (char *)_alloc((strlen(grp->gr_name) + 1));
     }
     strcpy(group, grp->gr_name);
 
@@ -490,16 +426,16 @@ char *long_group(char *group, gid_t gid)
 char *long_time(char *buf, const time_t *atm)
 {
     struct tm *t;
-    int bufflen = 100;
+    int buflen = 100;
     int repeat = 12, result;
 
-    char *tmp = (char *)malloc(sizeof(char) * bufflen);
+    char *tmp = (char *)malloc(buflen);
     t = localtime(atm);
-    while (!(result = strftime(tmp, bufflen, _time_style, t)) && (tmp[0] == 0) && repeat)
+    while (!(result = strftime(tmp, buflen, _time_style, t)) && (tmp[0] == 0) && repeat)
     {
         --repeat;
-        bufflen += 100;
-        tmp = realloc(tmp, bufflen);
+        buflen += 100;
+        tmp = realloc(tmp, buflen);
     }
     if (repeat == 0 && result == 0)
     {
@@ -520,7 +456,7 @@ char *long_permission(char *b, __mode_t *m)
 
     if (!b)
     {
-        b = (char *)_alloc(sizeof(char) * 12);
+        b = (char *)_alloc(12);
     }
     b[0] = file_type(m);
     for (i = 1; i < 10; i += 3)

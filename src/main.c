@@ -13,11 +13,11 @@
 #include "format_long.h"
 
 _options _opt;
-char *_path;
-char *_buffer;
-int _path_len;
-linklist _colors_list;
-char *_time_style;
+char *_path = NULL;
+char *_buffer = NULL;
+int _path_len = 0;
+linklist _colors_list = NULL;
+char *_time_style = NULL;
 
 void run(linklist l)
 {
@@ -218,7 +218,10 @@ int main(int argc, char *argv[], char *envp[])
         if (_opt.n)
         { // by default n without argument
             // follow links + color names + quotes spaced names
-            _opt.nl->f = _true;
+            if ((_opt.l && !onecol) || _opt.t)
+            {
+                _opt.nl->f = _true;
+            }
             _opt.nl->c = _true;
             _opt.nl->q = _true;
         }

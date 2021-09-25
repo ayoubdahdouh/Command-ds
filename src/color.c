@@ -18,7 +18,7 @@ linklist scan_for_colors()
         return l;
     }
     n = strlen(v);
-    b = (char *)_alloc(sizeof(char) * n);
+    b = (char *)_alloc(n);
     strncpy(b, v, n);
     for (i = 0; i < n; i++)
     {

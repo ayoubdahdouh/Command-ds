@@ -47,7 +47,7 @@ void core(_tree_info *tree)
         if (_opt.ml->h || (item->d_name[0] != '.'))
         {
             file = (_file)_alloc(_FILE_SIZE);
-            file->name = (char *)_alloc(sizeof(char) * (strlen(item->d_name) + 1));
+            file->name = (char *)_alloc((strlen(item->d_name) + 1));
             strcpy(file->name, item->d_name);
             strcpy(&_path[_path_len], item->d_name);
             if (_stat(_path, &s))
