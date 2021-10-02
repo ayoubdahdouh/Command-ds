@@ -168,4 +168,8 @@ Usage:  lf -[OPTION]=[ARGUMENT],... [FILE]...
 
 #optimise long_main redefine struct _file_info 
     les variables de maniximum aren't used by one colum
+# move lf to ds
+
 # add column names when 'l' is set.
+# add -c option (count number of output).
+# add -r option (reverse output).

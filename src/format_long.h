@@ -5,7 +5,7 @@
 #include "types.h"
 
 void long_print(char *nm, int m, _bool rtl);
-void long_display(linklist l, _file_info *files_infos);
+void long_display(linklist l, _file_info *files_info, int index, int mi, int mn, int mu, int mg, int mp, int ms, int ma, int mm, int mc);
 void _free_tb(char **tb, int n);
 void long_main(linklist l);
 int number_size(long int n);

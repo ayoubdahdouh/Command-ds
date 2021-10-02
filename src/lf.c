@@ -104,11 +104,11 @@ void core(_tree_info *tree)
     }
     else if (_opt._1 || _opt._2 || _opt._3 || _opt._4)
     { // format long
-        list_main(files_list, NULL);
+        list_main(files_list, NULL,0);
     }
     else
     { // format column
-        column_main(files_list, NULL);
+        column_main(files_list, NULL,0);
     }
     for (iterator it = lat(files_list, LFIRST); it; linc(&it))
     {

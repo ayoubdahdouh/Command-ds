@@ -89,27 +89,18 @@ typedef struct _file
 } * _file;
 #define _FILE_SIZE sizeof(struct _file)
 
+#define I_INDEX 0
+#define N_INDEX 1
+#define U_INDEX 2
+#define G_INDEX 3
+#define S_INDEX 4
+#define P_INDEX 5
+#define A_INDEX 6
+#define M_INDEX 7
+#define C_INDEX 8
 typedef struct _file_info
 {
-    char **i;
-    int mi;
-    char **n;
-    int mn;
-    char **u;
-    int mu;
-    char **g;
-    int mg;
-    char **s;
-    int ms;
-    char **p;
-    int mp;
-    char **a;
-    int ma;
-    char **m;
-    int mm;
-    char **c;
-    int mc;
-
+    char *bfr[9];
 } _file_info;
 
 #define _FILE_INFO_SIZE sizeof(struct _file_info)

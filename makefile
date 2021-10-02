@@ -1,15 +1,15 @@
 cc=gcc
 coptions=-g -Wall -Werror
 
-all: clean build lf
+all: clean build ds
 
 clean:
-	rm -f build/* lf
+	rm -f build/* ds
 	
 build:
 	if [ ! -d build ]; then mkdir build;fi
 
-lf: build/color.o build/args.o build/common.o build/display.o build/format_column.o build/format_list.o build/format_tree.o build/format_long.o build/list.o build/lf.o build/main.o 
+ds: build/color.o build/args.o build/common.o build/display.o build/format_column.o build/format_list.o build/format_tree.o build/format_long.o build/list.o build/lf.o build/main.o 
 	${cc} ${coptions} $? -o $@
 
 build/main.o: src/main.c src/list.h src/common.h

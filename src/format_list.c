@@ -7,8 +7,9 @@
 #include "format_list.h"
 #include "common.h"
 #include "display.h"
+#include "types.h"
 
-void list_main(linklist l, char **tb)
+void list_main(linklist l, _file_info *files_info, int index)
 {
     struct winsize w;
     int window_size;
@@ -21,7 +22,7 @@ void list_main(linklist l, char **tb)
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     window_size = w.ws_col;
     ls = (int *)_alloc(sizeof(int) * l->count);
-    if (tb)
+    if (files_info)
     {
         ts = (int *)_alloc(sizeof(int) * l->count);
     }
@@ -56,9 +57,9 @@ void list_main(linklist l, char **tb)
         {
             ls[i] += 1;
         }
-        if (tb)
+        if (files_info)
         {
-            ts[i] = strlen(tb[i]) + 1; // +1 for space between "tb" and "l"
+            ts[i] = strlen(files_info[i].bfr[index]) + 1; // +1 for space between "tb" and "l"
         }
         linc(&it);
     }
@@ -75,9 +76,9 @@ void list_main(linklist l, char **tb)
         {
             cnt = ls[i] + 2;
         }
-        if (tb)
+        if (files_info)
         {
-            cnt += strlen(tb[i]) + 1; // +1 for space between "tb" and "l"
+            cnt += strlen(files_info[i].bfr[index]) + 1; // +1 for space between "tb" and "l"
         }
         if (cnt <= remain)
         {

@@ -9,8 +9,9 @@
 #include "format_long.h"
 #include "list.h"
 #include "display.h"
+#include "types.h"
 
-void column_display(linklist l, int *ls, int *lm, char **tb, int *ts, int *tm, int cl, int ln)
+void column_display(linklist l, int *ls, int *lm, _file_info *files_info, int index, int *ts, int *tm, int cl, int ln)
 {
     int x;
     _file t;
@@ -24,9 +25,9 @@ void column_display(linklist l, int *ls, int *lm, char **tb, int *ts, int *tm, i
             {
                 // if options -s, -p, -m, -u or -g is set
                 t = (_file)lget(l, x);
-                if (tb)
+                if (files_info)
                 {
-                    long_print(tb[x], tm[j] - 1, 1);
+                    long_print(files_info[x].bfr[index], tm[j] - 1, 1);
                 }
                 display(t->name, &t->st.st_mode, _false);
                 x = lm[j] - ls[x];
@@ -44,7 +45,7 @@ void column_display(linklist l, int *ls, int *lm, char **tb, int *ts, int *tm, i
     }
 }
 
-void column_main(linklist l, char **tb)
+void column_main(linklist l, _file_info *files_info, int index)
 {
     struct winsize w;
     int cl = l->count, ln = 1, winsiz, ok = 0;
@@ -63,7 +64,7 @@ void column_main(linklist l, char **tb)
 
     ls = (int *)_alloc(sizeof(int) * l->count);
     lm = (int *)_alloc(sizeof(int) * l->count);
-    if (tb)
+    if (files_info)
     {
         ts = (int *)_alloc(sizeof(int) * l->count);
         tm = (int *)_alloc(sizeof(int) * l->count);
@@ -95,9 +96,9 @@ void column_main(linklist l, char **tb)
         {
             ls[i] += 1;
         }
-        if (tb)
+        if (files_info)
         {
-            ts[i] = strlen(tb[i]) + 1; // +1 for space between "tb" and "l"
+            ts[i] = strlen(files_info[i].bfr[index]) + 1; // +1 for space between "tb" and "l"
         }
         linc(&it);
     }
@@ -107,7 +108,7 @@ void column_main(linklist l, char **tb)
         for (int i = 0; i < cl; i++)
         { // for each column "i", calculates the maximum of that column
             x = ls[i * ln];
-            if (tb)
+            if (files_info)
             {
                 y = ts[i * ln];
             }
@@ -120,13 +121,13 @@ void column_main(linklist l, char **tb)
                     {
                         x = ls[k];
                     }
-                    if (tb && (ts[k] > y))
+                    if (files_info && (ts[k] > y))
                     {
                         y = ts[k];
                     }
                 }
             }
-            if (tb)
+            if (files_info)
             {
                 cnt += x + y;
                 tm[i] = y;
@@ -155,7 +156,7 @@ void column_main(linklist l, char **tb)
             }
         }
     }
-    column_display(l, ls, lm, tb, ts, tm, cl, ln);
+    column_display(l, ls, lm, files_info, index, ts, tm, cl, ln);
     free(ls);
     free(ts);
     free(lm);

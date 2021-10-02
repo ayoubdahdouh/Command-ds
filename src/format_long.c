@@ -42,7 +42,7 @@ void long_print(char *nm, int m, _bool rtl)
     }
 }
 
-void long_display(linklist l, _file_info *files_infos)
+void long_display(linklist l, _file_info *files_info, int index, int mi, int mn, int mu, int mg, int mp, int ms, int ma, int mm, int mc)
 {
     _file file;
     int i = 0;
@@ -54,175 +54,152 @@ void long_display(linklist l, _file_info *files_infos)
         // inodes
         if (_opt.ll->i)
         {
-            long_print(files_infos->i[i], files_infos->mi, _false);
+            long_print(files_info[i].bfr[index], mi, _false);
         }
         // nlink
         if (_opt.ll->n)
         {
-            long_print(files_infos->n[i], files_infos->mn, _false);
+            long_print(files_info[i].bfr[index], mn, _false);
         }
         // permissions
         if (_opt.ll->p)
         {
-            long_print(files_infos->p[i], files_infos->mp, _false);
+            long_print(files_info[i].bfr[index], mp, _false);
         }
         // size
         if (_opt.ll->s || _opt.ll->r)
         {
-            long_print(files_infos->s[i], files_infos->ms, _true);
+            long_print(files_info[i].bfr[index], ms, _true);
         }
         // user
         if (_opt.ll->u)
         {
-            long_print(files_infos->u[i], files_infos->mu, _false);
+            long_print(files_info[i].bfr[index], mu, _false);
         }
         // group
         if (_opt.ll->g)
         {
-            long_print(files_infos->g[i], files_infos->mg, _false);
+            long_print(files_info[i].bfr[index], mg, _false);
         }
         // access
         if (_opt.ll->a)
         {
-            long_print(files_infos->a[i], files_infos->ma, _false);
+            long_print(files_info[i].bfr[index], ma, _false);
         }
         // modification
         if (_opt.ll->m)
         {
-            long_print(files_infos->m[i], files_infos->mm, _false);
+            long_print(files_info[i].bfr[index], mm, _false);
         }
         // change
         if (_opt.ll->c)
         {
-            long_print(files_infos->c[i], files_infos->mc, _false);
+            long_print(files_info[i].bfr[index], mc, _false);
         }
         // file's name
         display(file->name, &file->st.st_mode, _true);
     }
 }
 
-void _free_tb(char **tb, int n)
-{
-    if (tb)
-    {
-        char **tmp = tb;
-        while (n)
-        {
-            if (tmp[0][0] != '?')
-            {
-                free(*tmp);
-                ++tmp;
-            }
-            --n;
-        }
-        free(tb);
-    }
-}
 void long_main(linklist l)
 {
-    _file_info files_info;
+    _file_info *files_info;
     _file file;
-    iterator it;
     int i = 0, tmp;
-    _bool onecol = _false; // multiple column
-    char **col = NULL;
-    int siz = sizeof(char *) * l->count;
+    int mi = 1, mn = 1, mu = 1, mg = 1, ms = 1, mp = 1, ma = 1, mm = 1, mc = 1;
 
-    onecol = (_opt.ll->i + _opt.ll->n + _opt.ll->s + _opt.ll->r +
-                  _opt.ll->p + _opt.ll->u + _opt.ll->g +
-                  _opt.ll->a + _opt.ll->m + _opt.ll->c ==
-              _true);
-
-    // set default maximums sizes.
-    memset(&files_info, 0, _FILE_INFO_SIZE);
-    files_info.ma = 1;
-    files_info.mc = 1;
-    files_info.mg = 1;
-    files_info.mi = 1;
-    files_info.mm = 1;
-    files_info.mn = 1;
-    files_info.mp = 1;
-    files_info.ms = 1;
-    files_info.mu = 1;
-
+    int col_index;
+    int col_cnt = 0;
     if (_opt.ll->i)
     {
-        col = files_info.i = (char **)_alloc(siz);
+        ++col_cnt;
+        col_index = I_INDEX;
     }
     if (_opt.ll->n)
     {
-        col = files_info.n = (char **)_alloc(siz);
-    }
-    if (_opt.ll->s || _opt.ll->r)
-    {
-        col = files_info.s = (char **)_alloc(siz);
-    }
-    if (_opt.ll->p)
-    {
-        col = files_info.p = (char **)_alloc(siz);
+        ++col_cnt;
+        col_index = N_INDEX;
     }
     if (_opt.ll->u)
     {
-        col = files_info.u = (char **)_alloc(siz);
+        ++col_cnt;
+        col_index = U_INDEX;
     }
     if (_opt.ll->g)
     {
-        col = files_info.g = (char **)_alloc(siz);
+        ++col_cnt;
+        col_index = G_INDEX;
     }
-    if (_opt.ll->m)
+    if (_opt.ll->r || _opt.ll->s)
     {
-        col = files_info.m = (char **)_alloc(siz);
+        ++col_cnt;
+        col_index = S_INDEX;
+    }
+    if (_opt.ll->p)
+    {
+        ++col_cnt;
+        col_index = P_INDEX;
     }
     if (_opt.ll->a)
     {
-        col = files_info.a = (char **)_alloc(siz);
+        ++col_cnt;
+        col_index = A_INDEX;
+    }
+    if (_opt.ll->m)
+    {
+        ++col_cnt;
+        col_index = M_INDEX;
     }
     if (_opt.ll->c)
     {
-        col = files_info.c = (char **)_alloc(siz);
+        ++col_cnt;
+        col_index = C_INDEX;
     }
+    // set default maximums sizes.
+    files_info = (_file_info *)_alloc(_FILE_INFO_SIZE * l->count);
+    memset(&files_info, 0, _FILE_INFO_SIZE * l->count);
 
-    for (it = lat(l, LFIRST); it; linc(&it), ++i)
+    for (iterator it = lat(l, LFIRST); it; linc(&it), ++i)
     {
         file = (_file)it->data;
         // inodes
         if (_opt.ll->i)
         {
-            files_info.i[i] = long_ino(NULL, file->st.st_ino);
-            tmp = strlen(files_info.i[i]);
-            if (tmp > files_info.mi)
+            files_info[i].bfr[I_INDEX] = long_ino(NULL, file->st.st_ino);
+            tmp = strlen(files_info[i].bfr[I_INDEX]);
+            if (tmp > mi)
             {
-                files_info.mi = tmp;
+                mi = tmp;
             }
         }
         // nlink
         if (_opt.ll->n)
         {
-            files_info.n[i] = long_nlink(NULL, file->st.st_nlink);
-            tmp = strlen(files_info.n[i]);
-            if (tmp > files_info.mn)
+            files_info[i].bfr[N_INDEX] = long_nlink(NULL, file->st.st_nlink);
+            tmp = strlen(files_info[i].bfr[N_INDEX]);
+            if (tmp > mn)
             {
-                files_info.mn = tmp;
+                mn = tmp;
             }
         }
         // user
         if (_opt.ll->u)
         {
-            files_info.u[i] = long_user(NULL, file->st.st_uid);
-            tmp = strlen(files_info.u[i]);
-            if (tmp > files_info.mu)
+            files_info[i].bfr[U_INDEX] = long_user(NULL, file->st.st_uid);
+            tmp = strlen(files_info[i].bfr[U_INDEX]);
+            if (tmp > mu)
             {
-                files_info.mu = tmp;
+                mu = tmp;
             }
         }
         // group
         if (_opt.ll->g)
         {
-            files_info.g[i] = long_group(NULL, file->st.st_gid);
-            tmp = strlen(files_info.g[i]);
-            if (tmp > files_info.mg)
+            files_info[i].bfr[G_INDEX] = long_group(NULL, file->st.st_gid);
+            tmp = strlen(files_info[i].bfr[G_INDEX]);
+            if (tmp > mg)
             {
-                files_info.mg = tmp;
+                mg = tmp;
             }
         }
         // size and readable size
@@ -230,84 +207,76 @@ void long_main(linklist l)
         {
             if (_opt.ll->r)
             {
-                files_info.s[i] = long_size_readable(NULL, file->st.st_size);
+                files_info[i].bfr[S_INDEX] = long_size_readable(NULL, file->st.st_size);
             }
             else
             {
-                files_info.s[i] = long_size(NULL, file->st.st_size);
+                files_info[i].bfr[S_INDEX] = long_size(NULL, file->st.st_size);
             }
-            tmp = strlen(files_info.s[i]);
-            if (tmp > files_info.ms)
+            tmp = strlen(files_info[i].bfr[S_INDEX]);
+            if (tmp > ms)
             {
-                files_info.ms = tmp;
+                ms = tmp;
             }
         }
         // permissions
         if (_opt.ll->p)
         {
-            files_info.p[i] = long_permission(NULL, &file->st.st_mode);
-            tmp = strlen(files_info.p[i]);
-            if (tmp > files_info.mp)
+            files_info[i].bfr[P_INDEX] = long_permission(NULL, &file->st.st_mode);
+            tmp = strlen(files_info[i].bfr[P_INDEX]);
+            if (tmp > mp)
             {
-                files_info.mp = tmp;
+                mp = tmp;
             }
         }
         if (_opt.ll->m)
         { // modification time; max_mtime = 16
 
-            files_info.m[i] = long_time(NULL, &file->st.st_mtime);
-            tmp = strlen(files_info.m[i]);
-            if (tmp > files_info.mm)
+            files_info[i].bfr[M_INDEX] = long_time(NULL, &file->st.st_mtime);
+            tmp = strlen(files_info[i].bfr[M_INDEX]);
+            if (tmp > mm)
             {
-                files_info.mm = tmp;
+                mm = tmp;
             }
         }
         if (_opt.ll->a)
         { // modification time; max_mtime = 16
 
-            files_info.a[i] = long_time(NULL, &file->st.st_atime);
-            tmp = strlen(files_info.a[i]);
-            if (tmp > files_info.ma)
+            files_info[i].bfr[A_INDEX] = long_time(NULL, &file->st.st_atime);
+            tmp = strlen(files_info[i].bfr[A_INDEX]);
+            if (tmp > ma)
             {
-                files_info.ma = tmp;
+                ma = tmp;
             }
         }
         if (_opt.ll->c)
         { // modification time; max_mtime = 16
 
-            files_info.c[i] = long_time(NULL, &file->st.st_ctime);
-            tmp = strlen(files_info.c[i]);
-            if (tmp > files_info.mc)
+            files_info[i].bfr[C_INDEX] = long_time(NULL, &file->st.st_ctime);
+            tmp = strlen(files_info[i].bfr[C_INDEX]);
+            if (tmp > mc)
             {
-                files_info.mc = tmp;
+                mc = tmp;
             }
         }
     }
 
-    if (onecol)
+    if (col_cnt)
     { // display multiple columns
         if (_opt._2 || _opt._1 || _opt._3 || _opt._4)
         {
-            list_main(l, col);
+            list_main(l, files_info, col_index);
         }
         else
         {
-            column_main(l, col);
+            column_main(l, files_info, col_index);
         }
     }
     else
     { // display one column
-        long_display(l, &files_info);
+        long_display(l, files_info, col_index, mi, mn, mu, mg, mp, ms, ma, mm, mc);
     }
-    _free_tb(files_info.i, l->count);
-    _free_tb(files_info.n, l->count);
-    _free_tb(files_info.u, l->count);
-    _free_tb(files_info.g, l->count);
-    _free_tb(files_info.s, l->count);
-    _free_tb(files_info.p, l->count);
-    _free_tb(files_info.m, l->count);
-    _free_tb(files_info.a, l->count);
-    _free_tb(files_info.c, l->count);
+    free(files_info);
 }
 
 int number_size(long int n)
