@@ -8,117 +8,98 @@
 #include "common.h"
 #include "display.h"
 #include "types.h"
+#include "format_long.h"
 
 void list_main(linklist l, _file_info *files_info, int index)
 {
     struct winsize w;
     int window_size;
-    unsigned long int cnt;
-    int *ls, *ts = NULL;
-    iterator it;
     _file file;
+    int nb_spaces;
+    int nbr, remain;
     int i = 0;
+    _bool beginning_of_line;
 
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     window_size = w.ws_col;
-    ls = (int *)_alloc(sizeof(int) * l->count);
-    if (files_info)
-    {
-        ts = (int *)_alloc(sizeof(int) * l->count);
-    }
-    // length of each name.
-    int nb_spaces;
+    remain = window_size;
+
     for (iterator it = lat(l, LFIRST); it; linc(&it), ++i)
     {
+        beginning_of_line = _false;
         file = (_file)it->data;
-        ls[i] = strlen(file->name);
+        nbr = strlen(file->name) + 1; // +1 for the character in use.
         nb_spaces = has_space(file->name);
         if (nb_spaces)
         {
             if (_opt.nl->b)
             {
-                ls[i] += nb_spaces;
+                nbr += nb_spaces;
             }
             if (_opt.nl->q || !_opt.nl->b)
             {
-                ls[i] += 2;
+                nbr += 2;
             }
         }
         else if (_opt.nl->q)
         {
-            ls[i] += 2;
+            nbr += 2;
         }
-
         if (_opt.nl->i && (S_ISDIR(file->st.st_mode) ||
                            S_ISLNK(file->st.st_mode) ||
                            S_ISSOCK(file->st.st_mode) ||
                            S_ISFIFO(file->st.st_mode) ||
                            (S_IEXEC & file->st.st_mode)))
         {
-            ls[i] += 1;
+            nbr += 1;
         }
         if (files_info)
         {
-            ts[i] = strlen(files_info[i].bfr[index]) + 1; // +1 for space between "tb" and "l"
+            nbr += strlen(files_info[i].bfr[index]) + 1; // +1 for space between information column and "l"
         }
-        linc(&it);
-    }
-    it = lat(l, LFIRST);
-    int remain = window_size;
-    for (int i = 0; i < l->count; i++)
-    {
-        file = (_file)it->data;
-        if (_opt._2)
+        if (nbr < remain)
         {
-            cnt = ls[i] + 1;
+            remain -= nbr;
         }
         else
-        {
-            cnt = ls[i] + 2;
-        }
-        if (files_info)
-        {
-            cnt += strlen(files_info[i].bfr[index]) + 1; // +1 for space between "tb" and "l"
-        }
-        if (cnt <= remain)
-        {
-            remain -= cnt;
-        }
-        else
-        {
-            remain = window_size - cnt;
+        { // go to newline
+            beginning_of_line = _true;
+            remain = window_size - nbr;
             if (!_opt._1)
             {
                 printf("\n");
             }
         }
-        display(file->name, &file->st.st_mode, _false);
-        if (i < l->count - 1)
+        if (i && !beginning_of_line && !_opt._1 && !_opt._2)
         {
-            if (_opt._1)
-            {
-                printf("\n");
-            }
-            else if (_opt._3)
-            {
-                printf(", ");
-            }
-
-            else if (_opt._4)
-            {
-                printf("; ");
-            }
-            else
-            {
-                printf(" ");
-            }
+            printf(" ");
+            --remain;
         }
-        else
+        if (files_info)
+        {
+            printf("%s ", files_info[i].bfr[index]);
+        }
+        display(file->name, &file->st.st_mode, _false);
+        if (_opt._1)
         {
             printf("\n");
         }
-        linc(&it);
+        else if (_opt._3)
+        {
+            printf(",");
+        }
+        else if (_opt._4)
+        {
+            printf(";");
+        }
+        else
+        { // if _2
+
+            printf(" ");
+        }
     }
-    free(ls);
-    free(ts);
+    if (!_opt._1)
+    {
+        printf("\n");
+    }
 }

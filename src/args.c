@@ -11,7 +11,7 @@ int set_t_arg(char **c)
     _bool ok = _true;
     int cnt = 0;
 
-    if (**c && **c == '=')
+    if (**c && **c == ':')
     {
         ++*c;
         for (char *d = *c; ok && *d; ++d)
@@ -48,7 +48,7 @@ int set_t_arg(char **c)
 
 char set_s_arg(char **c)
 {
-    if (**c && **c == '=')
+    if (**c && **c == ':')
     {
         ++*c;
         if (**c)
@@ -79,7 +79,7 @@ void set_m_arg(char **c, _arg_m **argm)
     _bool ok = _true;
     char *d;
 
-    if (**c && **c == '=')
+    if (**c && **c == ':')
     {
         ++*c;
         // if "argm" already allocated.
@@ -182,7 +182,7 @@ void set_l_arg(char **c, _arg_l **argl)
     _bool ok = _true;
     char *d;
 
-    if (**c && **c == '=')
+    if (**c && **c == ':')
     {
         ++*c;
         // if "argl" already allocated.
@@ -252,7 +252,7 @@ void set_n_arg(char **c, _arg_n **argn)
     _bool ok = _true;
     char *d;
 
-    if (**c && **c == '=')
+    if (**c && **c == ':')
     {
         ++*c;
         if (!*argn)
@@ -306,7 +306,7 @@ char *set_f_arg(char **c)
     char default_style[6] = "%F %R";
     char *time_style = NULL;
 
-    if (**c && (**c == '=') && *(*c + 1))
+    if (**c && (**c == ':') && *(*c + 1))
     {
         ++*c;
         int cnt = strlen(*c);
@@ -351,6 +351,9 @@ void set_options(int argc, char *argv[], linklist l)
                     break;
                 case '4':
                     _opt._4 = _true;
+                    break;
+                case 'c':
+                    _opt.c = _true;
                     break;
                 case 'd':
                     _opt.d = _true;

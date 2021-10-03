@@ -17,10 +17,11 @@ void _print_help()
     printf("Usage:  %s [OPTION]=[ARGUMENT],... [FILE]...\n\n", PROGRAM);
     printf("    List information about the FILEs (the current directory by default).\n");
     printf("    it's possible to combine those options together\n\n");
-    printf("    -0  separate files with a space.\n");
-    printf("    -1  lists one file per line.\n");
-    printf("    -2  separate files with commas(,).\n");
-    printf("    -3  separate files with a semicolon(;).\n");
+    printf("    -1  separate files with a newline(\\n).\n");
+    printf("    -2  separate files with a space (SPACE).\n");
+    printf("    -3  separate files with commas(,).\n");
+    printf("    -4  separate files with a semicolon(;).\n");
+    printf("    -c  count number of files and folders.\n");
     printf("    -d  list directories/dirlinks themselves, not their contents.\n");
     printf("        by default, %s list directories/dirlinks contents.\n", PROGRAM);
     printf("    -[...]m=[hbcdplrsugt123456789]   Mode settings\n");

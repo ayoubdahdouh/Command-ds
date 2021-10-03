@@ -25,6 +25,8 @@ void core(_tree_info *tree)
     struct stat s;
     linklist files_list = lopen();
     _file file;
+    long int cnt = 0;
+    _bool ok, err_occured;
 
     // keep value of "path" and "path_z"
     if (!dir)
@@ -44,16 +46,13 @@ void core(_tree_info *tree)
 
     while ((item = readdir(dir)))
     {
+        ok = _false;
+        err_occured = _true;
         if (_opt.ml->h || (item->d_name[0] != '.'))
         {
-            file = (_file)_alloc(_FILE_SIZE);
-            file->name = (char *)_alloc((strlen(item->d_name) + 1));
-            strcpy(file->name, item->d_name);
             strcpy(&_path[_path_len], item->d_name);
             if (_stat(_path, &s))
             {
-                file->err = _false;
-                file->st = s;
                 if ((S_ISDIR(s.st_mode) && _opt.ml->d) ||     /* directory */
                     (S_ISREG(s.st_mode) && _opt.ml->r) ||     /* regular file */
                     (S_ISBLK(s.st_mode) && _opt.ml->b) ||     /* block device */
@@ -74,18 +73,34 @@ void core(_tree_info *tree)
                     ((S_IWOTH & s.st_mode) && _opt.ml->_8) || /* write by others */
                     ((S_IXOTH & s.st_mode) && _opt.ml->_9))   /* execute by others */
                 {
-                    ladd(files_list, LLAST, file);
+                    ok = _true;
+                    err_occured = _false;
                 }
             }
-            else
+            if (ok)
             {
-                // notify that cannot retreive stat of file.
-                file->err = _true;
-                ladd(files_list, LLAST, file);
+                if (_opt.c)
+                {
+                    ++cnt;
+                }
+                else
+                {
+                    file = (_file)_alloc(_FILE_SIZE);
+                    file->name = (char *)_alloc((strlen(item->d_name) + 1));
+                    file->st = s;
+                    file->err = err_occured;
+                    strcpy(file->name, item->d_name);
+                    ladd(files_list, LLAST, file);
+                }
             }
         }
     }
     closedir(dir);
+    if (_opt.c)
+    {
+        printf("%ld\n", cnt);
+        return;
+    }
     if (lempty(files_list))
     {
         return;
@@ -104,11 +119,11 @@ void core(_tree_info *tree)
     }
     else if (_opt._1 || _opt._2 || _opt._3 || _opt._4)
     { // format long
-        list_main(files_list, NULL,0);
+        list_main(files_list, NULL, 0);
     }
     else
     { // format column
-        column_main(files_list, NULL,0);
+        column_main(files_list, NULL, 0);
     }
     for (iterator it = lat(files_list, LFIRST); it; linc(&it))
     {

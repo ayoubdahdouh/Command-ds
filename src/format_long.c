@@ -16,12 +16,17 @@
 
 void long_print(char *nm, int m, _bool rtl)
 {
+    if (m <= 0)
+    {
+        return;
+    }
+
     // rtl: left to right
     int x = m - strlen(nm);
 
     if (rtl)
     {
-        while (x)
+        while (x > 0)
         {
             printf(" ");
             --x;
@@ -34,7 +39,7 @@ void long_print(char *nm, int m, _bool rtl)
     printf("%s ", nm);
     if (!rtl)
     {
-        while (x)
+        while (x > 0)
         {
             printf(" ");
             --x;
@@ -42,7 +47,7 @@ void long_print(char *nm, int m, _bool rtl)
     }
 }
 
-void long_display(linklist l, _file_info *files_info, int index, int mi, int mn, int mu, int mg, int mp, int ms, int ma, int mm, int mc)
+void long_display(linklist l, _file_info *files_info, int mi, int mn, int mu, int mg, int mp, int ms, int ma, int mm, int mc)
 {
     _file file;
     int i = 0;
@@ -54,58 +59,76 @@ void long_display(linklist l, _file_info *files_info, int index, int mi, int mn,
         // inodes
         if (_opt.ll->i)
         {
-            long_print(files_info[i].bfr[index], mi, _false);
+            long_print(files_info[i].bfr[I_INDEX], mi, _false);
         }
         // nlink
         if (_opt.ll->n)
         {
-            long_print(files_info[i].bfr[index], mn, _false);
+            long_print(files_info[i].bfr[N_INDEX], mn, _false);
         }
         // permissions
         if (_opt.ll->p)
         {
-            long_print(files_info[i].bfr[index], mp, _false);
+            long_print(files_info[i].bfr[P_INDEX], mp, _false);
         }
         // size
         if (_opt.ll->s || _opt.ll->r)
         {
-            long_print(files_info[i].bfr[index], ms, _true);
+            long_print(files_info[i].bfr[S_INDEX], ms, _true);
         }
         // user
         if (_opt.ll->u)
         {
-            long_print(files_info[i].bfr[index], mu, _false);
+            long_print(files_info[i].bfr[U_INDEX], mu, _false);
         }
         // group
         if (_opt.ll->g)
         {
-            long_print(files_info[i].bfr[index], mg, _false);
+            long_print(files_info[i].bfr[G_INDEX], mg, _false);
         }
         // access
         if (_opt.ll->a)
         {
-            long_print(files_info[i].bfr[index], ma, _false);
+            long_print(files_info[i].bfr[A_INDEX], ma, _false);
         }
         // modification
         if (_opt.ll->m)
         {
-            long_print(files_info[i].bfr[index], mm, _false);
+            long_print(files_info[i].bfr[M_INDEX], mm, _false);
         }
         // change
         if (_opt.ll->c)
         {
-            long_print(files_info[i].bfr[index], mc, _false);
+            long_print(files_info[i].bfr[C_INDEX], mc, _false);
         }
         // file's name
         display(file->name, &file->st.st_mode, _true);
     }
 }
 
+int max_length(_file_info *files_info, int n, int index)
+{
+    int max = 0, len;
+    // verify that fieds not empties.
+    // it's enough to verify the first one.
+    if (files_info[0].bfr[index])
+    {
+        for (int i = 0; i < n; i++)
+        {
+            len = strlen(files_info[i].bfr[index]);
+            if (max < len)
+            {
+                max = len;
+            }
+        }
+    }
+    return max;
+}
 void long_main(linklist l)
 {
     _file_info *files_info;
     _file file;
-    int i = 0, tmp;
+    int i = 0;
     int mi = 1, mn = 1, mu = 1, mg = 1, ms = 1, mp = 1, ma = 1, mm = 1, mc = 1;
 
     int col_index;
@@ -157,111 +180,55 @@ void long_main(linklist l)
     }
     // set default maximums sizes.
     files_info = (_file_info *)_alloc(_FILE_INFO_SIZE * l->count);
-    memset(&files_info, 0, _FILE_INFO_SIZE * l->count);
+    memset(files_info, 0, _FILE_INFO_SIZE * l->count);
 
     for (iterator it = lat(l, LFIRST); it; linc(&it), ++i)
     {
         file = (_file)it->data;
-        // inodes
         if (_opt.ll->i)
-        {
+        { // inodes
             files_info[i].bfr[I_INDEX] = long_ino(NULL, file->st.st_ino);
-            tmp = strlen(files_info[i].bfr[I_INDEX]);
-            if (tmp > mi)
-            {
-                mi = tmp;
-            }
         }
-        // nlink
         if (_opt.ll->n)
-        {
+        { // nlink
             files_info[i].bfr[N_INDEX] = long_nlink(NULL, file->st.st_nlink);
-            tmp = strlen(files_info[i].bfr[N_INDEX]);
-            if (tmp > mn)
-            {
-                mn = tmp;
-            }
         }
-        // user
         if (_opt.ll->u)
-        {
+        { // user
             files_info[i].bfr[U_INDEX] = long_user(NULL, file->st.st_uid);
-            tmp = strlen(files_info[i].bfr[U_INDEX]);
-            if (tmp > mu)
-            {
-                mu = tmp;
-            }
         }
-        // group
         if (_opt.ll->g)
-        {
+        { // group
             files_info[i].bfr[G_INDEX] = long_group(NULL, file->st.st_gid);
-            tmp = strlen(files_info[i].bfr[G_INDEX]);
-            if (tmp > mg)
-            {
-                mg = tmp;
-            }
         }
-        // size and readable size
-        if (_opt.ll->r || _opt.ll->s)
-        {
-            if (_opt.ll->r)
-            {
-                files_info[i].bfr[S_INDEX] = long_size_readable(NULL, file->st.st_size);
-            }
-            else
-            {
-                files_info[i].bfr[S_INDEX] = long_size(NULL, file->st.st_size);
-            }
-            tmp = strlen(files_info[i].bfr[S_INDEX]);
-            if (tmp > ms)
-            {
-                ms = tmp;
-            }
+        if (_opt.ll->r)
+        { // dable size
+            files_info[i].bfr[S_INDEX] = long_size(NULL, file->st.st_size);
         }
-        // permissions
+        else if (_opt.ll->r || _opt.ll->s)
+        { // size
+            files_info[i].bfr[S_INDEX] = long_size_readable(NULL, file->st.st_size);
+        }
         if (_opt.ll->p)
-        {
+        { // permissions
             files_info[i].bfr[P_INDEX] = long_permission(NULL, &file->st.st_mode);
-            tmp = strlen(files_info[i].bfr[P_INDEX]);
-            if (tmp > mp)
-            {
-                mp = tmp;
-            }
         }
         if (_opt.ll->m)
-        { // modification time; max_mtime = 16
+        { // modification time
 
             files_info[i].bfr[M_INDEX] = long_time(NULL, &file->st.st_mtime);
-            tmp = strlen(files_info[i].bfr[M_INDEX]);
-            if (tmp > mm)
-            {
-                mm = tmp;
-            }
         }
         if (_opt.ll->a)
-        { // modification time; max_mtime = 16
+        { // access time
 
             files_info[i].bfr[A_INDEX] = long_time(NULL, &file->st.st_atime);
-            tmp = strlen(files_info[i].bfr[A_INDEX]);
-            if (tmp > ma)
-            {
-                ma = tmp;
-            }
         }
         if (_opt.ll->c)
-        { // modification time; max_mtime = 16
-
+        { // change status time
             files_info[i].bfr[C_INDEX] = long_time(NULL, &file->st.st_ctime);
-            tmp = strlen(files_info[i].bfr[C_INDEX]);
-            if (tmp > mc)
-            {
-                mc = tmp;
-            }
         }
     }
-
-    if (col_cnt)
+    if (col_cnt == 1)
     { // display multiple columns
         if (_opt._2 || _opt._1 || _opt._3 || _opt._4)
         {
@@ -274,7 +241,16 @@ void long_main(linklist l)
     }
     else
     { // display one column
-        long_display(l, files_info, col_index, mi, mn, mu, mg, mp, ms, ma, mm, mc);
+        mi = max_length(files_info, l->count, I_INDEX);
+        mn = max_length(files_info, l->count, N_INDEX);
+        mu = max_length(files_info, l->count, U_INDEX);
+        mg = max_length(files_info, l->count, G_INDEX);
+        mp = max_length(files_info, l->count, P_INDEX);
+        ms = max_length(files_info, l->count, S_INDEX);
+        ma = max_length(files_info, l->count, A_INDEX);
+        mm = max_length(files_info, l->count, M_INDEX);
+        mc = max_length(files_info, l->count, C_INDEX);
+        long_display(l, files_info, mi ? mi : 1, mn ? mn : 1, mu ? mu : 1, mg ? mg : 1, mp ? mp : 1, ms ? ms : 1, ma ? ma : 1, mm ? mm : 1, mc ? mc : 1);
     }
     free(files_info);
 }

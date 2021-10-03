@@ -65,6 +65,7 @@ typedef struct _options
     _bool _2;
     _bool _3;
     _bool _4;
+    _bool c;    // counter
     _bool d;    // manipulate argument itself not (its content if it's link) or not its reference if it's link
     _bool m;    // mode
     _arg_m *ml; // mode list
@@ -73,10 +74,10 @@ typedef struct _options
     char s_char; // sort character
     _bool t;     // tree format
     long td;     // tree depth
-    _bool n;
+    _bool n;     // names settings
     _arg_n *nl;
-    _bool v;
-    _bool h;
+    _bool v; // version
+    _bool h; // Help
 } _options;
 #define _OPTIONS_SIZE sizeof(_options)
 
