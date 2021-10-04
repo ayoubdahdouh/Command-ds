@@ -196,18 +196,25 @@ int main(int argc, char *argv[], char *envp[])
         _opt.ml->p = _true;
         _opt.ml->r = _true;
         _opt.ml->s = _true;
-        _opt.ml->t = _true;
-        _opt.ml->u = _true;
-        _opt.ml->g = _true;
-        _opt.ml->_1 = _true;
-        _opt.ml->_2 = _true;
-        _opt.ml->_3 = _true;
-        _opt.ml->_4 = _true;
-        _opt.ml->_5 = _true;
-        _opt.ml->_6 = _true;
-        _opt.ml->_7 = _true;
-        _opt.ml->_8 = _true;
-        _opt.ml->_9 = _true;
+    }
+    else
+    {
+        if (!_opt.ml->d &&
+            !_opt.ml->r &&
+            !_opt.ml->b &&
+            !_opt.ml->c &&
+            !_opt.ml->l &&
+            !_opt.ml->p &&
+            !_opt.ml->s)
+        {
+            _opt.ml->b = _true;
+            _opt.ml->c = _true;
+            _opt.ml->d = _true;
+            _opt.ml->l = _true;
+            _opt.ml->p = _true;
+            _opt.ml->r = _true;
+            _opt.ml->s = _true;
+        }
     }
 
     if (!_opt.nl)

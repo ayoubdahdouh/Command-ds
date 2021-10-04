@@ -5,6 +5,7 @@
 #include "format_tree.h"
 #include "common.h"
 
+_bool validate_mode(mode_t *mode);
 void core(_tree_info *tree);
 int _strcmp(char *s1, char *s2);
 

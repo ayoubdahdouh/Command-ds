@@ -18,6 +18,107 @@
 #include "color.h"
 #include "display.h"
 
+_bool validate_mode(mode_t *mode)
+{
+    _bool ok = _false;
+
+    switch (*mode & S_IFMT)
+    {
+    case S_IFBLK:
+        if (_opt.ml->b)
+        {
+            ok = _true;
+        }
+        break;
+    case S_IFCHR:
+        if (_opt.ml->c)
+        {
+            ok = _true;
+        }
+        break;
+    case S_IFDIR:
+        if (_opt.ml->d)
+        {
+            ok = _true;
+        }
+        break;
+    case S_IFIFO:
+        if (_opt.ml->p)
+        {
+            ok = _true;
+        }
+        break;
+    case S_IFLNK:
+        if (_opt.ml->l)
+        {
+            ok = _true;
+        }
+        break;
+    case S_IFREG:
+        if (_opt.ml->r)
+        {
+            ok = _true;
+        }
+        break;
+    case S_IFSOCK:
+        if (_opt.ml->s)
+        {
+            ok = _true;
+        }
+        break;
+    default:
+        break;
+    }
+    if (ok && _opt.ml->u)
+    { /* SUID */
+        ok = S_ISUID && *mode;
+    }
+    if (ok && _opt.ml->g)
+    { /* SGID */
+        ok = S_ISGID && *mode;
+    }
+    if (ok && _opt.ml->t)
+    { /* sticky bit */
+        ok = S_ISVTX && *mode;
+    }
+    if (ok && _opt.ml->_1)
+    { /* read by owner */
+        ok = S_IRUSR & *mode;
+    }
+    if (ok && _opt.ml->_2)
+    { /* write by owner */
+        ok = S_IWUSR & *mode;
+    }
+    if (ok && _opt.ml->_3)
+    { /* execute by owner */
+        ok = S_IXUSR & *mode;
+    }
+    if (ok && _opt.ml->_4)
+    { /* read by group */
+        ok = S_IRGRP & *mode;
+    }
+    if (ok && _opt.ml->_5)
+    { /* write by group */
+        ok = S_IWGRP & *mode;
+    }
+    if (ok && _opt.ml->_6)
+    { /* execute by group */
+        ok = S_IXGRP & *mode;
+    }
+    if (ok && _opt.ml->_7)
+    { /* read by others */
+        ok = S_IROTH & *mode;
+    }
+    if (ok && _opt.ml->_8)
+    { /* write by others */
+        ok = S_IWOTH & *mode;
+    }
+    if (ok && _opt.ml->_9)
+    { /* execute by others */
+        ok = S_IXOTH & *mode;
+    }
+    return ok;
+}
 void core(_tree_info *tree)
 {
     DIR *dir = opendir(_path);
@@ -53,25 +154,7 @@ void core(_tree_info *tree)
             strcpy(&_path[_path_len], item->d_name);
             if (_stat(_path, &s))
             {
-                if ((S_ISDIR(s.st_mode) && _opt.ml->d) ||     /* directory */
-                    (S_ISREG(s.st_mode) && _opt.ml->r) ||     /* regular file */
-                    (S_ISBLK(s.st_mode) && _opt.ml->b) ||     /* block device */
-                    (S_ISCHR(s.st_mode) && _opt.ml->c) ||     /* character device */
-                    (S_ISFIFO(s.st_mode) && _opt.ml->p) ||    /* FIFO/pipe */
-                    (S_ISLNK(s.st_mode) && _opt.ml->l) ||     /* symlink */
-                    (S_ISSOCK(s.st_mode) && _opt.ml->s) ||    /* socket */
-                    ((S_ISUID && s.st_mode) && _opt.ml->s) || /* SUID */
-                    ((S_ISGID && s.st_mode) && _opt.ml->g) || /* SGID */
-                    ((S_ISVTX && s.st_mode) && _opt.ml->t) || /* sticky bit */
-                    ((S_IRUSR & s.st_mode) && _opt.ml->_1) || /* read by owner */
-                    ((S_IWUSR & s.st_mode) && _opt.ml->_2) || /* write by owner */
-                    ((S_IXUSR & s.st_mode) && _opt.ml->_3) || /* execute by owner */
-                    ((S_IRGRP & s.st_mode) && _opt.ml->_4) || /* read by group */
-                    ((S_IWGRP & s.st_mode) && _opt.ml->_5) || /* write by group */
-                    ((S_IXGRP & s.st_mode) && _opt.ml->_6) || /* execute by group */
-                    ((S_IROTH & s.st_mode) && _opt.ml->_7) || /* read by others */
-                    ((S_IWOTH & s.st_mode) && _opt.ml->_8) || /* write by others */
-                    ((S_IXOTH & s.st_mode) && _opt.ml->_9))   /* execute by others */
+                if (validate_mode(&s.st_mode))
                 {
                     ok = _true;
                     err_occured = _false;
