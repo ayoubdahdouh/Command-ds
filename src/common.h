@@ -8,34 +8,38 @@
 #define PROGRAM "lf"
 #define VERSION "1.0.0-alpha+pre"
 
-extern _options _opt;
-extern char *_path, *_buffer;
-extern int _path_len;
-extern linklist _colors_list;
-extern char *_time_style;
+extern u_int8_t Nparams;
+extern u_int16_t Sparams;
+extern u_int16_t Lparams;
+extern u_int32_t Mparams;
+extern u_int16_t Opts;
+extern int Tparam;
+extern char *Pth, *Bfr;
+extern int PthLen;
+extern linklist ColorsList;
+extern char *TimeStyle;
 
-void _print_help();
-void _print_version();
+void printHelp();
+void printVersion();
 
-void *_alloc(long int size);
-_bool _stat(const char *nm, struct stat *s);
-_bool _link(const char *nm);
+void *Alloc(long int size);
+Bool Stat(const char *nm, struct stat *s);
+Bool readLink(const char *nm);
 
-void _initial();
-void _quit(char *msg); // free memories + print "msg" if exist and return 0 otherwise return 1
+void Initial();
+void Quit(char *msg); // free memories + print "msg" if exist and return 0 otherwise return 1
 
-int has_space(char *nm);
-_bool is_absolute_path(const char *pth);
-char *file_ext(char *s);
-char file_type(mode_t *m);
+int countSpaces(char *nm);
+Bool isAbsolutePath(const char *pth);
+char *fileExtension(char *s);
+char fileType(mode_t *m);
 
 // display width of the string, for non-ASCII characters
-int str_width(char *s);
+int strWidth(char *s);
 
-int _strcmp(char *s1, char *s2);
+int strCmp(char *s1, char *s2);
 
-#define ERR_INVALID_OPTION -1001
-#define ERR_COLORS_NOT_AVILABLE -1002
-#define ERR_DEPTH_WRONG -1003
+int countActiveBits(u_int32_t stream, int n);
+
 
 #endif

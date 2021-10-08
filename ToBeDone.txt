@@ -170,7 +170,12 @@ Usage:  lf -[OPTION]=[ARGUMENT],... [FILE]...
 # move lf to ds
 # add -c option (count number of output).
 
-#replace _bool with array of bit. (bit mask) in ml,nl,ll,options
+#replace Bool with array of bit. (bit mask) in ml,nl,ll,options
 
 # add column names when 'l' is set.
 # add -r option (reverse output).
+# OS not used.
+#implementation of "+" and "="
+
+#bug in (./ds -nmt)
+#rename all files/functions/variable to java style.

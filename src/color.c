@@ -8,7 +8,7 @@
 linklist scan_for_colors()
 {
     linklist l = lopen();
-    _colors *c;
+    Color *c;
     char *b, *v;
     int n, i, eq = 0, sm = 0;
 
@@ -18,7 +18,7 @@ linklist scan_for_colors()
         return l;
     }
     n = strlen(v);
-    b = (char *)_alloc(n);
+    b = (char *)Alloc(n);
     strncpy(b, v, n);
     for (i = 0; i < n; i++)
     {
@@ -36,18 +36,18 @@ linklist scan_for_colors()
             {
                 v[eq] = 0;
                 v[i] = 0;
-                c = (_colors *)malloc(COLORS_SIZE);
+                c = (Color *)malloc(COLORS_SIZE);
                 c->c = &v[eq] + 1;
                 c->a = &v[sm];
                 // verify if "c->a" is an extension
                 if (c->a[0] == '*' && c->a[1] == '.')
                 {
                     c->a += 2;
-                    c->e = _true;
+                    c->e = True;
                 }
                 else
                 {
-                    c->e = _false;
+                    c->e = False;
                 }
                 eq = 0;
                 sm = i + 1;
@@ -67,7 +67,7 @@ linklist scan_for_colors()
     {
         v[eq] = 0;
         v[n - 1] = 0;
-        c = (_colors *)malloc(COLORS_SIZE);
+        c = (Color *)malloc(COLORS_SIZE);
         c->a = &v[sm];
         c->c = &v[eq] + 1;
         ladd(l, LFIRST, c);
@@ -75,11 +75,11 @@ linklist scan_for_colors()
     return l;
 }
 
-char *getcolor(linklist l, const char *nm, _bool is_ext)
+char *getcolor(linklist l, const char *nm, Bool is_ext)
 {
     int ok = 0;
     iterator i;
-    _colors *tmp = NULL;
+    Color *tmp = NULL;
 
     if (lempty(l))
     {
@@ -87,7 +87,7 @@ char *getcolor(linklist l, const char *nm, _bool is_ext)
     }
     for (i = lat(l, LFIRST); i && !ok; linc(&i))
     {
-        tmp = (_colors *)i->data;
+        tmp = (Color *)i->data;
         if ((is_ext == tmp->e) &&
             (strcmp(nm, tmp->a) == 0))
         {
@@ -106,7 +106,7 @@ char *getcolor(linklist l, const char *nm, _bool is_ext)
         }
         else
         {
-            return getcolor(l, "rs", _false);
+            return getcolor(l, "rs", False);
         }
     }
 }

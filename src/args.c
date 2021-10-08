@@ -5,13 +5,11 @@
 #include "list.h"
 #include "common.h"
 
-int set_t_arg(char **c)
+void set_t_arg(char **c)
 {
-    int depth = 0;
-    _bool ok = _true;
+    Bool ok = True;
     int cnt = 0;
-
-    if (**c && **c == ':')
+    if (**c == ':')
     {
         ++*c;
         for (char *d = *c; ok && *d; ++d)
@@ -22,33 +20,34 @@ int set_t_arg(char **c)
             }
             else
             {
-                ok = _false;
+                ok = False;
                 break;
             }
         }
         if (ok && cnt)
         {
-            char *ss = (char *)_alloc((cnt + 1));
-            strncpy(ss, *c, cnt);
-            sscanf(ss, "%d", &depth);
-            free(ss);
+            sscanf(*c, "%d", &Tparam);
             *c += cnt - 1;
-        }
-        else if (cnt == 0)
-        {
-            _quit(PROGRAM ": The \"s\" option needs an argument after \"=\".");
         }
         else if (!ok)
         {
-            _quit(PROGRAM ": For the \"t\" option, the argument must be a number.");
+            Quit(PROGRAM ": the depth must be a positive number (without the + sign).");
+        }
+        else
+        { // if (cnt == 0)
+            Quit(PROGRAM ": 't' needs a parameter after ':'.");
         }
     }
-    return (depth == 0) ? MAX_DEPTH : depth;
+    else
+    {
+        --*c;
+        Tparam = MAX_DEPTH;
+    }
 }
 
-char set_s_arg(char **c)
+void set_s_arg(char **c)
 {
-    if (**c && **c == ':')
+    if (**c == ':')
     {
         ++*c;
         if (**c)
@@ -57,106 +56,139 @@ char set_s_arg(char **c)
             {
                 if (*(*c + 1))
                 {
-                    _quit(PROGRAM ": The \"s\" option accepts only one argument.");
+                    Quit(PROGRAM ": The 's' accepts only one parameter.");
+                }
+                else
+                {
+                    switch (**c)
+                    {
+                    case 'd':
+                        Sparams = SD;
+                        break;
+                    case 'i':
+                        Sparams = SI;
+                        break;
+                    case 'n':
+                        Sparams = SN;
+                        break;
+                    case 's':
+                        Sparams = SS;
+                        break;
+                    case 'u':
+                        Sparams = SU;
+                        break;
+                    case 'g':
+                        Sparams = SG;
+                        break;
+                    case 'a':
+                        Sparams = SA;
+                        break;
+                    case 'm':
+                        Sparams = SM;
+                        break;
+                    case 'c':
+                        Sparams = SC;
+                        break;
+                    case 't':
+                        Sparams = ST;
+                        break;
+                    case 'e':
+                        Sparams = SE;
+                        break;
+                    }
                 }
             }
             else
             {
-                printf("%s: \"s\" doesn't recognize \"%c\".", PROGRAM, **c);
-                _quit(NULL);
+                printf("%s: 's' doesn't recognize '%c'.", PROGRAM, **c);
+                Quit(NULL);
             }
         }
         else
         {
-            _quit(PROGRAM ": The \"s\" option needs an argument after \"=\".");
+            Quit(PROGRAM ": The 's' needs a parameter after ':'.");
         }
     }
-    return **c;
+    else
+    {
+        --*c;
+    }
 }
 
-void set_m_arg(char **c, _arg_m **argm)
+void set_m_arg(char **c)
 {
-    _bool ok = _true;
+    Bool ok = True;
     char *d;
 
-    if (**c && **c == ':')
+    if (**c == ':')
     {
         ++*c;
-        // if "argm" already allocated.
-        if (!*argm)
-        {
-            *argm = (_arg_m *)_alloc(_ARG_M_SIZE);
-            memset(*argm, 0, _ARG_M_SIZE);
-        }
         for (d = *c; ok && *d; ++d)
         {
             switch (*d)
             {
             case 'h':
-                (*argm)->h = _true;
+                Mparams |= MH;
                 break;
             case 'b':
-                (*argm)->b = _true;
+                Mparams |= MB;
                 break;
             case 'c':
-                (*argm)->c = _true;
+                Mparams |= MC;
                 break;
             case 'd':
-                (*argm)->d = _true;
+                Mparams |= MD;
                 break;
             case 'p':
-                (*argm)->p = _true;
+                Mparams |= MP;
                 break;
             case 'l':
-                (*argm)->l = _true;
-                break;
-            case 'f':
-                (*argm)->r = _true;
-                break;
-            case 's':
-                (*argm)->s = _true;
+                Mparams |= ML;
                 break;
             case 'r':
-                (*argm)->r = _true;
+                Mparams |= MR;
+                break;
+            case 's':
+                Mparams |= MS;
                 break;
             case 'u':
-                (*argm)->u = _true;
+                Mparams |= MU;
                 break;
             case 'g':
-                (*argm)->g = _true;
+                Mparams |= MG;
                 break;
             case 't':
-                (*argm)->t = _true;
+                Mparams |= MT;
                 break;
             case '1':
-                (*argm)->_1 = _true;
+                Mparams |= M1;
                 break;
             case '2':
-                (*argm)->_2 = _true;
+                Mparams |= M2;
                 break;
             case '3':
-                (*argm)->_3 = _true;
+                Mparams |= M3;
                 break;
             case '4':
-                (*argm)->_4 = _true;
+                Mparams |= M4;
                 break;
             case '5':
-                (*argm)->_5 = _true;
+                Mparams |= M5;
                 break;
             case '6':
-                (*argm)->_6 = _true;
+                Mparams |= M6;
                 break;
             case '7':
-                (*argm)->_7 = _true;
+                Mparams |= M7;
                 break;
             case '8':
-                (*argm)->_8 = _true;
+                Mparams |= M8;
                 break;
             case '9':
-                (*argm)->_9 = _true;
+                Mparams |= M9;
                 break;
             default:
-                ok = _false;
+                ok = False;
                 --d;
                 break;
             }
@@ -167,66 +199,64 @@ void set_m_arg(char **c, _arg_m **argm)
         }
         else if (!ok)
         {
-            printf("%s: \"m\" doesn't recognize \"%c\".\n", PROGRAM, *d);
-            _quit(NULL);
+            printf("%s: 'm' doesn't recognize '%c'.\n", PROGRAM, *d);
+            Quit(NULL);
         }
         else
         { // if (*d==c)
-            _quit(PROGRAM ": \"m\" needs an argument after \"=\".");
+            Quit(PROGRAM ": 'm' needs a parameter after ':'.");
         }
+    }
+    else
+    {
+        --*c;
     }
 }
 
-void set_l_arg(char **c, _arg_l **argl)
+void set_l_arg(char **c)
 {
-    _bool ok = _true;
+    Bool ok = True;
     char *d;
 
-    if (**c && **c == ':')
+    if (**c == ':')
     {
         ++*c;
-        // if "argl" already allocated.
-        if (!*argl)
-        {
-            *argl = (_arg_l *)_alloc(_ARG_L_SIZE);
-            memset(*argl, 0, _ARG_L_SIZE);
-        }
         for (d = *c; ok && *d; ++d)
         {
             switch (*d)
             {
             case 'i':
-                (*argl)->i = _true;
+                Lparams |= LI;
                 break;
             case 'n':
-                (*argl)->n = _true;
+                Lparams |= LN;
                 break;
             case 'p':
-                (*argl)->p = _true;
+                Lparams |= LP;
                 break;
             case 's':
-                (*argl)->s = _true;
+                Lparams |= LS;
                 break;
             case 'r':
-                (*argl)->r = _true;
+                Lparams |= LR;
                 break;
             case 'u':
-                (*argl)->u = _true;
+                Lparams |= LU;
                 break;
             case 'g':
-                (*argl)->g = _true;
+                Lparams |= LG;
                 break;
             case 'a':
-                (*argl)->a = _true;
+                Lparams |= LA;
                 break;
             case 'm':
-                (*argl)->m = _true;
+                Lparams |= LM;
                 break;
             case 'c':
-                (*argl)->c = _true;
+                Lparams |= LC;
                 break;
             default:
-                ok = _false;
+                ok = False;
                 --d;
                 break;
             }
@@ -237,50 +267,45 @@ void set_l_arg(char **c, _arg_l **argl)
         }
         else if (!ok)
         {
-            printf("%s: \"l\" doesn't recognize \"%c\".\n", PROGRAM, *d);
-            _quit(NULL);
+            printf("%s: 'l' doesn't recognize '%c'.\n", PROGRAM, *d);
+            Quit(NULL);
         }
         else
         { // if (*d == c)
-            _quit(PROGRAM ": The \"l\" option needs an argument after \"=\".\n");
+            Quit(PROGRAM ": The 'l' needs a parameter after ':'.\n");
         }
     }
 }
 
-void set_n_arg(char **c, _arg_n **argn)
+void set_n_arg(char **c)
 {
-    _bool ok = _true;
+    Bool ok = True;
     char *d;
 
-    if (**c && **c == ':')
+    if (**c == ':')
     {
         ++*c;
-        if (!*argn)
-        {
-            *argn = (_arg_n *)_alloc(_ARG_N_SIZE);
-            memset(*argn, 0, _ARG_N_SIZE);
-        }
         for (d = *c; ok && *d; ++d)
         {
             switch (*d)
             {
             case 'c':
-                (*argn)->c = _true;
+                Nparams |= NC;
                 break;
             case 'b':
-                (*argn)->b = _true;
+                Nparams |= NB;
                 break;
             case 'f':
-                (*argn)->f = _true;
+                Nparams |= NF;
                 break;
             case 'q':
-                (*argn)->q = _true;
+                Nparams |= NQ;
                 break;
             case 'i':
-                (*argn)->i = _true;
+                Nparams |= NI;
                 break;
             default:
-                ok = _false;
+                ok = False;
                 --d;
                 break;
             }
@@ -291,44 +316,47 @@ void set_n_arg(char **c, _arg_n **argn)
         }
         else if (!ok)
         {
-            printf("%s: \"n\" doesn't recognize \"%c\".\n", PROGRAM, *d);
-            _quit(NULL);
+            printf("%s: 'n' doesn't recognize '%c'.\n", PROGRAM, *d);
+            Quit(NULL);
         }
         else
         { //  if (d == *c)
-            _quit(PROGRAM ": \"n\" needs an argument after \"=\".");
+            Quit(PROGRAM ": 'n' needs a parameter after ':'.");
         }
+    }
+    else
+    {
+        --*c;
     }
 }
 
-char *set_f_arg(char **c)
+void set_f_arg(char **c)
 {
-    char default_style[6] = "%F %R";
-    char *time_style = NULL;
-
-    if (**c && (**c == ':') && *(*c + 1))
+    if ((**c == ':') && *(*c + 1))
     {
         ++*c;
         int cnt = strlen(*c);
-        time_style = (char *)_alloc((cnt + 1));
-        strncpy(time_style, *c, cnt);
+        TimeStyle = (char *)Alloc((cnt + 1));
+        strncpy(TimeStyle, *c, cnt);
         *c += cnt - 1;
     }
     else
     {
-        time_style = (char *)_alloc(6);
-        strcpy(time_style, default_style);
+        --*c;
+        TimeStyle = NULL;
     }
-
-    return time_style;
 }
 
 void set_options(int argc, char *argv[], linklist l)
 {
-    _bool ok = _true;
-    char *c;
+    Bool ok = True;
 
-    memset(&_opt, 0, _OPTIONS_SIZE);
+    char *c;
+    memset(&Opts, 0, sizeof(Opts));
+    memset(&Mparams, 0, sizeof(Mparams));
+    memset(&Lparams, 0, sizeof(Lparams));
+    memset(&Nparams, 0, sizeof(Nparams));
+    memset(&Sparams, 0, sizeof(Sparams));
     --argc;
     while (ok && argc)
     {
@@ -341,85 +369,71 @@ void set_options(int argc, char *argv[], linklist l)
                 switch (*c)
                 {
                 case '1':
-                    _opt._1 = _true;
+                    Opts |= O1;
                     break;
                 case '2':
-                    _opt._2 = _true;
+                    Opts |= O2;
                     break;
                 case '3':
-                    _opt._3 = _true;
+                    Opts |= O3;
                     break;
                 case '4':
-                    _opt._4 = _true;
+                    Opts |= O4;
                     break;
                 case 'c':
-                    _opt.c = _true;
+                    Opts |= OC;
                     break;
                 case 'd':
-                    _opt.d = _true;
+                    Opts |= OD;
                     break;
                 case 'v':
-                    _opt.v = _true;
+                    Opts |= OV;
                     break;
                 case 'h':
-                    _opt.h = _true;
+                    Opts |= OH;
                     break;
                 case 't':
+                    Opts |= OT;
                     ++c;
-                    _opt.t = _true;
-                    _opt.td = set_t_arg(&c);
-                    if (!_opt.td)
-                    {
-                        --c;
-                    }
+                    set_t_arg(&c);
                     break;
                 case 's':
+                    Opts |= OS;
                     ++c;
-                    _opt.s_char = set_s_arg(&c);
-                    if (!_opt.s_char)
-                    {
-                        --c;
-                    }
+                    set_s_arg(&c);
                     break;
                 case 'm':
+                    Opts |= OM;
                     ++c;
-                    _opt.m = _true;
-                    set_m_arg(&c, &_opt.ml);
-                    if (!_opt.ml)
-                    {
-                        --c;
-                    }
+                    set_m_arg(&c);
                     break;
                 case 'l':
+                    Opts |= OL;
                     ++c;
-                    _opt.l = _true;
-                    set_l_arg(&c, &_opt.ll);
-                    if (!_opt.ll)
+                    set_l_arg(&c);
+                    if (!countActiveBits(Lparams, 10))
                     {
                         --c;
                     }
                     break;
                 case 'n':
+                    Opts |= ON;
                     ++c;
-                    _opt.n = _true;
-                    set_n_arg(&c, &_opt.nl);
-                    if (!_opt.nl)
-                    {
-                        --c;
-                    }
+                    set_n_arg(&c);
 
                     break;
                 case 'f':
+                    Opts |= OF;
                     ++c;
-                    if (_time_style)
+                    if (TimeStyle)
                     {
-                        free(_time_style);
+                        free(TimeStyle);
                     }
-                    _time_style = set_f_arg(&c);
+                    set_f_arg(&c);
                     break;
                 default:
                     --c;
-                    ok = _false;
+                    ok = False;
                     break;
                 }
             }
@@ -433,7 +447,7 @@ void set_options(int argc, char *argv[], linklist l)
     }
     if (!ok)
     {
-        printf("%s: Unknown option \"%c\"\n", PROGRAM, *c);
-        _quit(NULL);
+        printf("%s: Unknown option '%c'\n", PROGRAM, *c);
+        Quit(NULL);
     }
 }

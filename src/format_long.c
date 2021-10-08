@@ -12,9 +12,7 @@
 #include "display.h"
 #include "common.h"
 
-#define novalue "?"
-
-void long_print(char *nm, int m, _bool rtl)
+void long_print(char *nm, int m, Bool rtl)
 {
     if (m <= 0)
     {
@@ -34,9 +32,13 @@ void long_print(char *nm, int m, _bool rtl)
     }
     if (!nm)
     {
-        nm = novalue;
+        printf("? ");
     }
-    printf("%s ", nm);
+    else
+    {
+        printf("%s ", nm);
+    }
+
     if (!rtl)
     {
         while (x > 0)
@@ -47,66 +49,66 @@ void long_print(char *nm, int m, _bool rtl)
     }
 }
 
-void long_display(linklist l, _file_info *files_info, int mi, int mn, int mu, int mg, int mp, int ms, int ma, int mm, int mc)
+void long_display(linklist l, FileInfo *files_info, int mi, int mn, int mu, int mg, int mp, int ms, int ma, int mm, int mc)
 {
-    _file file;
+    File file;
     int i = 0;
 
     for (iterator it = lat(l, LFIRST); it; linc(&it), ++i)
     {
-        file = (_file)it->data;
+        file = (File)it->data;
 
         // inodes
-        if (_opt.ll->i)
+        if (Lparams & LI)
         {
-            long_print(files_info[i].bfr[I_INDEX], mi, _false);
+            long_print(files_info[i].bfr[I_INDEX], mi, False);
         }
         // nlink
-        if (_opt.ll->n)
+        if (Lparams & LN)
         {
-            long_print(files_info[i].bfr[N_INDEX], mn, _false);
-        }
-        // permissions
-        if (_opt.ll->p)
-        {
-            long_print(files_info[i].bfr[P_INDEX], mp, _false);
-        }
-        // size
-        if (_opt.ll->s || _opt.ll->r)
-        {
-            long_print(files_info[i].bfr[S_INDEX], ms, _true);
+            long_print(files_info[i].bfr[N_INDEX], mn, False);
         }
         // user
-        if (_opt.ll->u)
+        if (Lparams & LU)
         {
-            long_print(files_info[i].bfr[U_INDEX], mu, _false);
+            long_print(files_info[i].bfr[U_INDEX], mu, False);
         }
         // group
-        if (_opt.ll->g)
+        if (Lparams & LG)
         {
-            long_print(files_info[i].bfr[G_INDEX], mg, _false);
+            long_print(files_info[i].bfr[G_INDEX], mg, False);
+        }
+        // permissions
+        if (Lparams & LP)
+        {
+            long_print(files_info[i].bfr[P_INDEX], mp, False);
+        }
+        // size
+        if (Lparams & LS || Lparams & LR)
+        {
+            long_print(files_info[i].bfr[S_INDEX], ms, True);
         }
         // access
-        if (_opt.ll->a)
+        if (Lparams & LA)
         {
-            long_print(files_info[i].bfr[A_INDEX], ma, _false);
+            long_print(files_info[i].bfr[A_INDEX], ma, False);
         }
         // modification
-        if (_opt.ll->m)
+        if (Lparams & LM)
         {
-            long_print(files_info[i].bfr[M_INDEX], mm, _false);
+            long_print(files_info[i].bfr[M_INDEX], mm, False);
         }
         // change
-        if (_opt.ll->c)
+        if (Lparams & LC)
         {
-            long_print(files_info[i].bfr[C_INDEX], mc, _false);
+            long_print(files_info[i].bfr[C_INDEX], mc, False);
         }
         // file's name
-        display(file->name, &file->st.st_mode, _true);
+        display(file->name, &file->st.st_mode, True);
     }
 }
 
-int max_length(_file_info *files_info, int n, int index)
+int max_length(FileInfo *files_info, int n, int index)
 {
     int max = 0, len;
     // verify that fieds not empties.
@@ -126,111 +128,111 @@ int max_length(_file_info *files_info, int n, int index)
 }
 void long_main(linklist l)
 {
-    _file_info *files_info;
-    _file file;
+    FileInfo *files_info;
+    File file;
     int i = 0;
     int mi = 1, mn = 1, mu = 1, mg = 1, ms = 1, mp = 1, ma = 1, mm = 1, mc = 1;
 
     int col_index;
     int col_cnt = 0;
-    if (_opt.ll->i)
+    if (Lparams & LI)
     {
         ++col_cnt;
         col_index = I_INDEX;
     }
-    if (_opt.ll->n)
+    if (Lparams & LN)
     {
         ++col_cnt;
         col_index = N_INDEX;
     }
-    if (_opt.ll->u)
+    if (Lparams & LU)
     {
         ++col_cnt;
         col_index = U_INDEX;
     }
-    if (_opt.ll->g)
+    if (Lparams & LG)
     {
         ++col_cnt;
         col_index = G_INDEX;
     }
-    if (_opt.ll->r || _opt.ll->s)
+    if ((Lparams & LR) || (Lparams & LS))
     {
         ++col_cnt;
         col_index = S_INDEX;
     }
-    if (_opt.ll->p)
+    if (Lparams & LP)
     {
         ++col_cnt;
         col_index = P_INDEX;
     }
-    if (_opt.ll->a)
+    if (Lparams & LA)
     {
         ++col_cnt;
         col_index = A_INDEX;
     }
-    if (_opt.ll->m)
+    if (Lparams & LM)
     {
         ++col_cnt;
         col_index = M_INDEX;
     }
-    if (_opt.ll->c)
+    if (Lparams & LC)
     {
         ++col_cnt;
         col_index = C_INDEX;
     }
     // set default maximums sizes.
-    files_info = (_file_info *)_alloc(_FILE_INFO_SIZE * l->count);
+    files_info = (FileInfo *)Alloc(_FILE_INFO_SIZE * l->count);
     memset(files_info, 0, _FILE_INFO_SIZE * l->count);
 
     for (iterator it = lat(l, LFIRST); it; linc(&it), ++i)
     {
-        file = (_file)it->data;
-        if (_opt.ll->i)
+        file = (File)it->data;
+        if (Lparams & LI)
         { // inodes
             files_info[i].bfr[I_INDEX] = long_ino(NULL, file->st.st_ino);
         }
-        if (_opt.ll->n)
+        if (Lparams & LN)
         { // nlink
             files_info[i].bfr[N_INDEX] = long_nlink(NULL, file->st.st_nlink);
         }
-        if (_opt.ll->u)
+        if (Lparams & LU)
         { // user
             files_info[i].bfr[U_INDEX] = long_user(NULL, file->st.st_uid);
         }
-        if (_opt.ll->g)
+        if (Lparams & LG)
         { // group
             files_info[i].bfr[G_INDEX] = long_group(NULL, file->st.st_gid);
         }
-        if (_opt.ll->r)
+        if (Lparams & LS)
         { // dable size
             files_info[i].bfr[S_INDEX] = long_size(NULL, file->st.st_size);
         }
-        else if (_opt.ll->r || _opt.ll->s)
+        else if (Lparams & LR)
         { // size
             files_info[i].bfr[S_INDEX] = long_size_readable(NULL, file->st.st_size);
         }
-        if (_opt.ll->p)
+        if (Lparams & LP)
         { // permissions
             files_info[i].bfr[P_INDEX] = long_permission(NULL, &file->st.st_mode);
         }
-        if (_opt.ll->m)
+        if (Lparams & LM)
         { // modification time
 
             files_info[i].bfr[M_INDEX] = long_time(NULL, &file->st.st_mtime);
         }
-        if (_opt.ll->a)
+        if (Lparams & LA)
         { // access time
 
             files_info[i].bfr[A_INDEX] = long_time(NULL, &file->st.st_atime);
         }
-        if (_opt.ll->c)
+        if (Lparams & LC)
         { // change status time
             files_info[i].bfr[C_INDEX] = long_time(NULL, &file->st.st_ctime);
         }
     }
     if (col_cnt == 1)
     { // display multiple columns
-        if (_opt._2 || _opt._1 || _opt._3 || _opt._4)
+        if (Opts & O2 || Opts & O1 || Opts & O3 || Opts & O4)
         {
             list_main(l, files_info, col_index);
         }
@@ -268,14 +270,14 @@ int number_size(long int n)
 
 char *long_ino(char *buf, ino_t data)
 {
-    buf = (char *)_alloc(number_size(data));
+    buf = (char *)Alloc(number_size(data));
     sprintf(buf, "%ld", data);
     return buf;
 }
 
 char *long_nlink(char *buf, nlink_t data)
 {
-    buf = (char *)_alloc(number_size(data));
+    buf = (char *)Alloc(number_size(data));
     sprintf(buf, "%ld", data);
     return buf;
 }
@@ -288,7 +290,7 @@ char *long_size_readable(char *buf, long int data)
 
     if (!buf)
     {
-        buf = (char *)_alloc(number_size(data));
+        buf = (char *)Alloc(number_size(data));
     }
     while (cnt > 1024)
     {
@@ -314,7 +316,7 @@ char *long_size(char *buf, long int data)
 {
     if (!buf)
     {
-        buf = (char *)_alloc(number_size(data));
+        buf = (char *)Alloc(number_size(data));
     }
     sprintf(buf, "%ld", data);
 
@@ -330,7 +332,7 @@ char *long_user(char *user, uid_t uid)
     {
         if (!user)
         {
-            user = (char *)_alloc(2);
+            user = (char *)Alloc(2);
         }
         user[0] = '?';
         user[1] = 0;
@@ -338,7 +340,7 @@ char *long_user(char *user, uid_t uid)
     }
     if (!user)
     {
-        user = (char *)_alloc((strlen(pw->pw_name) + 1));
+        user = (char *)Alloc((strlen(pw->pw_name) + 1));
     }
     strcpy(user, pw->pw_name);
     return user;
@@ -353,7 +355,7 @@ char *long_group(char *group, gid_t gid)
     {
         if (!group)
         {
-            group = (char *)_alloc(2);
+            group = (char *)Alloc(2);
         }
         group[0] = '?';
         group[1] = 0;
@@ -361,7 +363,7 @@ char *long_group(char *group, gid_t gid)
     }
     if (!group)
     {
-        group = (char *)_alloc((strlen(grp->gr_name) + 1));
+        group = (char *)Alloc((strlen(grp->gr_name) + 1));
     }
     strcpy(group, grp->gr_name);
 
@@ -376,7 +378,7 @@ char *long_time(char *buf, const time_t *atm)
 
     char *tmp = (char *)malloc(buflen);
     t = localtime(atm);
-    while (!(result = strftime(tmp, buflen, _time_style, t)) && (tmp[0] == 0) && repeat)
+    while (!(result = strftime(tmp, buflen, TimeStyle, t)) && (tmp[0] == 0) && repeat)
     {
         --repeat;
         buflen += 100;
@@ -384,7 +386,7 @@ char *long_time(char *buf, const time_t *atm)
     }
     if (repeat == 0 && result == 0)
     {
-        _quit("%s: error: can't allocate enough memory to handle the time style");
+        Quit("%s: error: can't allocate enough memory to handle the time style");
     }
 
     if (!buf)
@@ -401,9 +403,9 @@ char *long_permission(char *b, __mode_t *m)
 
     if (!b)
     {
-        b = (char *)_alloc(12);
+        b = (char *)Alloc(12);
     }
-    b[0] = file_type(m);
+    b[0] = fileType(m);
     for (i = 1; i < 10; i += 3)
     {
         if (*m & modes[i - 1])

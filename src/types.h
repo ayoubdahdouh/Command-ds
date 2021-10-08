@@ -3,92 +3,111 @@
 
 #include <sys/stat.h>
 
+#define B0 (1 << 0)   // 0x1
+#define B1 (1 << 1)   // 0x2
+#define B2 (1 << 2)   // 0x4
+#define B3 (1 << 3)   // 0x8
+#define B4 (1 << 4)   // 0x10
+#define B5 (1 << 5)   // 0x20
+#define B6 (1 << 6)   // 0x40
+#define B7 (1 << 7)   // 0x80
+#define B8 (1 << 8)   // 0x100
+#define B9 (1 << 9)   // 0x200
+#define B10 (1 << 10) // 0x400
+#define B11 (1 << 11) // 0x800
+#define B12 (1 << 12) // 0x1000
+#define B13 (1 << 13) // 0x2000
+#define B14 (1 << 14) // 0x4000
+#define B15 (1 << 15) // 0x8000
+#define B16 (1 << 16) // 0x10000
+#define B17 (1 << 17) // 0x20000
+#define B18 (1 << 18) // 0x40000
+#define B19 (1 << 19) // 0x80000
+
 typedef enum
 {
-    _false,
-    _true
-} _bool;
+    False,
+    True
+} Bool;
 
-typedef struct _arg_m
-{
-    _bool h;
-    _bool b;
-    _bool c;
-    _bool d;
-    _bool p;
-    _bool l;
-    _bool r;
-    _bool s;
-    _bool u;
-    _bool g;
-    _bool t;
-    _bool _1;
-    _bool _2;
-    _bool _3;
-    _bool _4;
-    _bool _5;
-    _bool _6;
-    _bool _7;
-    _bool _8;
-    _bool _9;
-} _arg_m;
-#define _ARG_M_SIZE sizeof(_arg_m)
+// Options M parameters
+#define MH B0
+#define MD B1
+#define MR B2
+#define ML B3
+#define MB B4
+#define MC B5
+#define MP B6
+#define MS B7
+#define MU B8
+#define MG B9
+#define MT B10
+#define M1 B11
+#define M2 B12
+#define M3 B13
+#define M4 B14
+#define M5 B15
+#define M6 B16
+#define M7 B17
+#define M8 B18
+#define M9 B19
 
-typedef struct _arg_l
-{
-    _bool i;
-    _bool n;
-    _bool u;
-    _bool g;
-    _bool s;
-    _bool r;
-    _bool p;
-    _bool a;
-    _bool m;
-    _bool c;
-} _arg_l;
-#define _ARG_L_SIZE sizeof(_arg_l)
+// Options L parameters
+#define LI B0
+#define LN B1
+#define LU B2
+#define LG B3
+#define LS B4
+#define LR B5
+#define LP B6
+#define LA B7
+#define LM B8
+#define LC B9
 
-typedef struct _arg_n
-{
-    _bool c;
-    _bool b;
-    _bool f;
-    _bool q;
-    _bool i; /* character indicator */
-} _arg_n;
-#define _ARG_N_SIZE sizeof(_arg_n)
+// Options N parameters
+#define NC B0
+#define NB B1
+#define NF B2
+#define NQ B3
+#define NI B4
 
-typedef struct _options
-{
-    _bool _1;
-    _bool _2;
-    _bool _3;
-    _bool _4;
-    _bool c;    // counter
-    _bool d;    // manipulate argument itself not (its content if it's link) or not its reference if it's link
-    _bool m;    // mode
-    _arg_m *ml; // mode list
-    _bool l;    // information
-    _arg_l *ll;
-    char s_char; // sort character
-    _bool t;     // tree format
-    long td;     // tree depth
-    _bool n;     // names settings
-    _arg_n *nl;
-    _bool v; // version
-    _bool h; // Help
-} _options;
-#define _OPTIONS_SIZE sizeof(_options)
+// Options S parameters
+#define SD B0
+#define SI B1
+#define SN B2
+#define SS B3
+#define SU B4
+#define SG B5
+#define SA B6
+#define SM B7
+#define SC B8
+#define ST B9
+#define SE B10
 
-typedef struct _file
+// Options
+#define O1 B0
+#define O2 B1
+#define O3 B2
+#define O4 B3
+#define OT B4
+#define OL B5
+#define OD B6
+#define OM B7
+#define OS B8
+#define ON B9
+#define OV B10
+#define OH B11
+#define OC B12
+#define OF B13
+
+typedef struct File
 {
     char *name;
     struct stat st;
     int err;
 
-} * _file;
-#define _FILE_SIZE sizeof(struct _file)
+} * File;
+#define _FILE_SIZE sizeof(struct File)
 
 #define I_INDEX 0
 #define N_INDEX 1
@@ -99,28 +118,28 @@ typedef struct _file
 #define A_INDEX 6
 #define M_INDEX 7
 #define C_INDEX 8
-typedef struct _file_info
+typedef struct FileInfo
 {
     char *bfr[9];
-} _file_info;
+} FileInfo;
 
-#define _FILE_INFO_SIZE sizeof(struct _file_info)
+#define _FILE_INFO_SIZE sizeof(struct FileInfo)
 
-typedef struct _tree_info
+typedef struct TreeInfo
 {
     int level;
     char *has_next;
-} _tree_info;
+} TreeInfo;
 #define _TREE_INFO_SIZE sizeof(_tree_info)
 #define MAX_DEPTH (PATH_MAX - 1)
 
-typedef struct _colors
+typedef struct Color
 {
     char *a;
     char *c;
-    _bool e;
-} _colors;
+    Bool e;
+} Color;
 
-#define COLORS_SIZE sizeof(_colors)
+#define COLORS_SIZE sizeof(Color)
 
 #endif
