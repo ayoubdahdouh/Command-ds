@@ -4,14 +4,14 @@
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <string.h>
-#include "format_column.h"
+#include "useColumn.h"
 #include "common.h"
-#include "format_long.h"
-#include "list.h"
+#include "useLong.h"
+#include "linkedList.h"
 #include "display.h"
 #include "types.h"
 
-void column_display(linklist l, int *ls, int *lm, FileInfo *files_info, int index, int *ts, int *tm, int cl, int ln)
+void columnDisplay(linkedList l, int *ls, int *lm, FileInfo *filesInfo, int index, int *ts, int *tm, int cl, int ln)
 {
     int x;
     File t;
@@ -24,10 +24,10 @@ void column_display(linklist l, int *ls, int *lm, FileInfo *files_info, int inde
             if (x < l->count)
             {
                 // if options -s, -p, -m, -u or -g is set
-                t = (File)lget(l, x);
-                if (files_info)
+                t = (File)lGet(l, x);
+                if (filesInfo)
                 {
-                    long_print(files_info[x].bfr[index], tm[j] - 1, 1);
+                    printFormattedValue(filesInfo[x].bfr[index], tm[j] - 1, 1);
                 }
                 display(t->name, &t->st.st_mode, False);
                 x = lm[j] - ls[x];
@@ -45,32 +45,32 @@ void column_display(linklist l, int *ls, int *lm, FileInfo *files_info, int inde
     }
 }
 
-void column_main(linklist l, FileInfo *files_info, int index)
+void columnMain(linkedList l, FileInfo *filesInfo, int index)
 {
     struct winsize w;
     int cl = l->count, ln = 1, winsiz, ok = 0;
     unsigned long int cnt;
-    int *ls;        // list sizes
-    int *lm;        // list max sizes
+    int *ls;        // linkedList sizes
+    int *lm;        // linkedList max sizes
     int *ts = NULL; // array sizes of "tb"
     int *tm = NULL; // array max sizes of "tb"
     int x, y = 0;
-    iterator it;
+    Iterator it;
     File file;
     int k;
 
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     winsiz = w.ws_col;
 
-    ls = (int *)Alloc(sizeof(int) * l->count);
-    lm = (int *)Alloc(sizeof(int) * l->count);
-    if (files_info)
+    ls = (int *)memAlloc(sizeof(int) * l->count);
+    lm = (int *)memAlloc(sizeof(int) * l->count);
+    if (filesInfo)
     {
-        ts = (int *)Alloc(sizeof(int) * l->count);
-        tm = (int *)Alloc(sizeof(int) * l->count);
+        ts = (int *)memAlloc(sizeof(int) * l->count);
+        tm = (int *)memAlloc(sizeof(int) * l->count);
     }
     // length of each name.
-    it = lat(l, LFIRST);
+    it = lAt(l, LFIRST);
     int nb_spaces;
     for (int i = 0; i < l->count; i++)
     {
@@ -96,11 +96,11 @@ void column_main(linklist l, FileInfo *files_info, int index)
         {
             ls[i] += 1;
         }
-        if (files_info)
+        if (filesInfo)
         {
-            ts[i] = strlen(files_info[i].bfr[index]) + 1; // +1 for space between "tb" and "l"
+            ts[i] = strlen(filesInfo[i].bfr[index]) + 1; // +1 for space between "tb" and "l"
         }
-        linc(&it);
+        lInc(&it);
     }
     while (!ok)
     {
@@ -108,7 +108,7 @@ void column_main(linklist l, FileInfo *files_info, int index)
         for (int i = 0; i < cl; i++)
         { // for each column "i", calculates the maximum of that column
             x = ls[i * ln];
-            if (files_info)
+            if (filesInfo)
             {
                 y = ts[i * ln];
             }
@@ -121,13 +121,13 @@ void column_main(linklist l, FileInfo *files_info, int index)
                     {
                         x = ls[k];
                     }
-                    if (files_info && (ts[k] > y))
+                    if (filesInfo && (ts[k] > y))
                     {
                         y = ts[k];
                     }
                 }
             }
-            if (files_info)
+            if (filesInfo)
             {
                 cnt += x + y;
                 tm[i] = y;
@@ -156,7 +156,7 @@ void column_main(linklist l, FileInfo *files_info, int index)
             }
         }
     }
-    column_display(l, ls, lm, files_info, index, ts, tm, cl, ln);
+    columnDisplay(l, ls, lm, filesInfo, index, ts, tm, cl, ln);
     free(ls);
     free(ts);
     free(lm);

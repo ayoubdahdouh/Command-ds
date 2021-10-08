@@ -9,16 +9,16 @@
 #include <limits.h>
 #include <errno.h>
 #include "common.h"
-#include "lf.h"
-#include "format_column.h"
-#include "format_long.h"
-#include "format_tree.h"
-#include "format_list.h"
-#include "list.h"
+#include "ds.h"
+#include "useColumn.h"
+#include "useLong.h"
+#include "useTree.h"
+#include "useList.h"
+#include "linkedList.h"
 #include "color.h"
 #include "display.h"
 
-Bool validate_mode(mode_t *m)
+Bool checkMode(mode_t *m)
 {
     Bool ok = False;
 
@@ -124,10 +124,10 @@ void core(TreeInfo *tree)
     DIR *dir = opendir(Pth);
     struct dirent *item;
     struct stat s;
-    linklist files_list = lopen();
+    linkedList filesList = lOpen();
     File file;
     long int cnt = 0;
-    Bool ok, err_occured;
+    Bool ok, errOccured;
 
     // keep value of "path" and "path_z"
     if (!dir)
@@ -135,12 +135,12 @@ void core(TreeInfo *tree)
         strcpy(Bfr, strerror(errno));
         if (Opts & OT)
         {
-            tree_display(tree, True);
+            printBranch(tree, True);
             printf("access denied: %s\n", Bfr);
         }
         else
         {
-            printf("%s: access denied to \"%s\": %s\n", PROGRAM, Pth, Bfr);
+            printf("%s: access denied to '%s': %s\n", PROGRAM, Pth, Bfr);
         }
         return;
     }
@@ -148,16 +148,16 @@ void core(TreeInfo *tree)
     while ((item = readdir(dir)))
     {
         ok = False;
-        err_occured = True;
+        errOccured = True;
         if ((Mparams & MH) || (item->d_name[0] != '.'))
         {
             strcpy(&Pth[PthLen], item->d_name);
-            if (Stat(Pth, &s))
+            if (fileStat(Pth, &s))
             {
-                if (validate_mode(&s.st_mode))
+                if (checkMode(&s.st_mode))
                 {
                     ok = True;
-                    err_occured = False;
+                    errOccured = False;
                 }
             }
             if (ok)
@@ -168,12 +168,12 @@ void core(TreeInfo *tree)
                 }
                 else
                 {
-                    file = (File)Alloc(_FILE_SIZE);
-                    file->name = (char *)Alloc((strlen(item->d_name) + 1));
+                    file = (File)memAlloc(FILE_SIZE);
+                    file->name = (char *)memAlloc((strlen(item->d_name) + 1));
                     file->st = s;
-                    file->err = err_occured;
+                    file->err = errOccured;
                     strcpy(file->name, item->d_name);
-                    ladd(files_list, LLAST, file);
+                    lInsert(filesList, LLAST, file);
                 }
             }
         }
@@ -184,42 +184,42 @@ void core(TreeInfo *tree)
         printf("%ld\n", cnt);
         return;
     }
-    if (lempty(files_list))
+    if (lEmpty(filesList))
     {
         return;
     }
     if (!(Sparams & SD))
     {
-        Sort(files_list);
+        Sort(filesList);
     }
     if (Opts & OT)
     { // format tree
-        tree_main(files_list, tree);
+        treeMain(filesList, tree);
     }
     else if (Opts & OL)
     { // format long
-        long_main(files_list);
+        longMain(filesList);
     }
     else if (Opts & O1 || Opts & O2 || Opts & O3 || Opts & O4)
     { // format long
-        list_main(files_list, NULL, 0);
+        listMain(filesList, NULL, 0);
     }
     else
     { // format column
-        column_main(files_list, NULL, 0);
+        columnMain(filesList, NULL, 0);
     }
-    for (iterator it = lat(files_list, LFIRST); it; linc(&it))
+    for (Iterator it = lAt(filesList, LFIRST); it; lInc(&it))
     {
         file = (File)it->data;
         free(file->name);
         free(file);
     }
-    lclose(files_list);
+    lClose(filesList);
 }
 
 int sortNames(File f1, File f2)
 {
-    return strCmp(f1->name, f2->name);
+    return strCompare(f1->name, f2->name);
 }
 int sortI(File f1, File f2)
 {
@@ -262,46 +262,46 @@ int sortE(File f1, File f2)
     char *s1 = fileExtension(f1->name), *s2 = fileExtension(f2->name);
     if (s1 && s2 && strcmp(s1, s2))
     {
-        return strCmp(s1, s2);
+        return strCompare(s1, s2);
     }
-    return strCmp(f1->name, f2->name);
+    return strCompare(f1->name, f2->name);
 }
 
-void Sort(linklist l)
+void Sort(linkedList l)
 {
-    lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortNames);
+    lSort(l, LFIRST, LLAST, (int (*)(void *, void *))sortNames);
 
     switch (Sparams)
     {
     case SI:
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortI);
+        lSort(l, LFIRST, LLAST, (int (*)(void *, void *))sortI);
         break;
     case SN:
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortN);
+        lSort(l, LFIRST, LLAST, (int (*)(void *, void *))sortN);
         break;
     case SU:
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortU);
+        lSort(l, LFIRST, LLAST, (int (*)(void *, void *))sortU);
         break;
     case SG:
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortG);
+        lSort(l, LFIRST, LLAST, (int (*)(void *, void *))sortG);
         break;
     case SS:
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortS);
+        lSort(l, LFIRST, LLAST, (int (*)(void *, void *))sortS);
         break;
     case SM:
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortM);
+        lSort(l, LFIRST, LLAST, (int (*)(void *, void *))sortM);
         break;
     case SA:
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortA);
+        lSort(l, LFIRST, LLAST, (int (*)(void *, void *))sortA);
         break;
     case SC:
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortC);
+        lSort(l, LFIRST, LLAST, (int (*)(void *, void *))sortC);
         break;
     case ST:
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortT);
+        lSort(l, LFIRST, LLAST, (int (*)(void *, void *))sortT);
         break;
     case SE:
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortE);
+        lSort(l, LFIRST, LLAST, (int (*)(void *, void *))sortE);
         break;
     default:
         break;

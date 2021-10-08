@@ -107,7 +107,7 @@ typedef struct File
     int err;
 
 } * File;
-#define _FILE_SIZE sizeof(struct File)
+#define FILE_SIZE sizeof(struct File)
 
 #define I_INDEX 0
 #define N_INDEX 1
@@ -123,15 +123,15 @@ typedef struct FileInfo
     char *bfr[9];
 } FileInfo;
 
-#define _FILE_INFO_SIZE sizeof(struct FileInfo)
+#define FILEINFO_SIZE sizeof(struct FileInfo)
 
 typedef struct TreeInfo
 {
     int level;
     char *has_next;
 } TreeInfo;
-#define _TREE_INFO_SIZE sizeof(_tree_info)
-#define MAX_DEPTH (PATH_MAX - 1)
+#define TREEINFO_SIZE sizeof(TreeInfo)
+#define TREEMAXDEPTH (PATH_MAX - 1)
 
 typedef struct Color
 {
@@ -140,6 +140,6 @@ typedef struct Color
     Bool e;
 } Color;
 
-#define COLORS_SIZE sizeof(Color)
+#define COLOR_SIZE sizeof(Color)
 
 #endif

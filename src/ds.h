@@ -1,15 +1,14 @@
 #ifndef LF_H
 #define LF_H
 
-#include "list.h"
-#include "format_tree.h"
+#include "linkedList.h"
+#include "useTree.h"
 #include "common.h"
 
-Bool validate_mode(mode_t *mode);
+Bool checkMode(mode_t *mode);
 void core(TreeInfo *tree);
-int strCmp(char *s1, char *s2);
 
-void Sort(linklist l);
+void Sort(linkedList l);
 int sortNames(File t1, File t2);
 int sortI(File t1, File t2);
 int sortN(File t1, File t2);

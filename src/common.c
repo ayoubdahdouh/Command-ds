@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include "common.h"
-#include "list.h"
+#include "linkedList.h"
 #include <wchar.h>
 
 void printHelp()
@@ -22,10 +22,10 @@ void printHelp()
     printf("    -3  separate files with commas(,).\n");
     printf("    -4  separate files with a semicolon(;).\n");
     printf("    -c  count number of files and folders.\n");
-    printf("    -d  list directories/dirlinks themselves, not their contents.\n");
-    printf("        by default, %s list directories/dirlinks contents.\n", PROGRAM);
+    printf("    -d  linkedList directories/dirlinks themselves, not their contents.\n");
+    printf("        by default, %s linkedList directories/dirlinks contents.\n", PROGRAM);
     printf("    -[...]m=[hbcdplrsugt123456789]   Mode settings\n");
-    printf("          choose the files to list from the list below:\n");
+    printf("          choose the files to linkedList from the linkedList below:\n");
     printf("            h  hidden files, all files began with a dot.\n");
     printf("            b  block device\n");
     printf("            c  character device\n");
@@ -46,14 +46,14 @@ void printHelp()
     printf("            7  read by others\n");
     printf("            8  write by others\n");
     printf("            9  execute by others\n");
-    printf("          Without \"-m\", %s displays all files and folders except the hidden ones.\n", PROGRAM);
-    printf("          By default, \"-m\" displays all files and folders.\n");
-    printf("          wich has the same effect as not using the \"-m\" option.\n");
+    printf("          Without '-m', %s displays all files and folders except the hidden ones.\n", PROGRAM);
+    printf("          By default, '-m' displays all files and folders.\n");
+    printf("          wich has the same effect as not using the '-m' option.\n");
     printf("    -[...]t=[DEPTH]   Tree settings\n");
     printf("            DEPTH  tree depth\n");
     printf("          By default (without DEPTH), the depth is unlimited.\n");
     printf("    -[...]l=[inpsrugamc]   Information settings\n");
-    printf("          choose the information to display from the list below:\n");
+    printf("          choose the information to display from the linkedList below:\n");
     printf("            i  inode number\n");
     printf("            n  number of hard links\n");
     printf("            p  permissions\n");
@@ -64,7 +64,7 @@ void printHelp()
     printf("            a  last access\n");
     printf("            m  last modification\n");
     printf("            c  last status change\n");
-    printf("          By default, if no argument is set, \"-l\" show i,n,p,r,u,g,m.\n");
+    printf("          By default, if no argument is set, '-l' show i,n,p,r,u,g,m.\n");
     printf("    -[...]n=[cbfqi]   Name settings\n");
     printf("            c  color the output\n");
     printf("            f  follow link, if the file is link then display also link content\n");
@@ -76,7 +76,7 @@ void printHelp()
     printf("                '@'  symbolic links\n");
     printf("                '|'  FIFO/pipe\n");
     printf("                '='  sockets\n");
-    printf("          By default, if no argument is set, \"-n\" show c,f,q.\n");
+    printf("          By default, if no argument is set, '-n' show c,f,q.\n");
     printf("    -[...]s=[dinsugamcte]   Sort settings\n");
     printf("          Sort the output\n");
     printf("            d  disable sorting (don't sort)\n");
@@ -90,7 +90,7 @@ void printHelp()
     printf("            c  last status [c]hange\n");
     printf("            t  file [t]ype\n");
     printf("            e  file [e]xtension\n");
-    printf("          By default, if no argument is set, \"-s\" will sort the output by names,\n");
+    printf("          By default, if no argument is set, '-s' will sort the output by names,\n");
     printf("          Wich has the same effect as not using it.\n");
     printf("    -h  print help.\n");
     printf("    -v  print version information.\n");
@@ -101,7 +101,7 @@ void printVersion()
     printf("Version: %s %s.\n", PROGRAM, VERSION);
 }
 
-void *Alloc(long int size)
+void *memAlloc(long int size)
 {
     void *b;
     b = malloc(size);
@@ -131,7 +131,7 @@ Bool readLink(const char *nm)
     return True;
 }
 // if failed, also print error in the buffer "buf"
-Bool Stat(const char *nm, struct stat *s)
+Bool fileStat(const char *nm, struct stat *s)
 {
     if (lstat(nm, s) == -1)
     {
@@ -140,16 +140,16 @@ Bool Stat(const char *nm, struct stat *s)
     return True;
 }
 
-void Initial()
+void initProgram()
 {
     setbuf(stdout, NULL);
     // init PATH
-    Pth = (char *)Alloc(PATH_MAX);
+    Pth = (char *)memAlloc(PATH_MAX);
     // init BUF
-    Bfr = (char *)Alloc(PATH_MAX);
+    Bfr = (char *)memAlloc(PATH_MAX);
 }
 
-void Quit(char *msg)
+void quitProgram(char *msg)
 {
     if (Pth)
     {
@@ -258,7 +258,7 @@ int strWidth(char *s)
 }
 
 // strings compareing no case sensative
-int strCmp(char *s1, char *s2)
+int strCompare(char *s1, char *s2)
 {
     int res = 0;
     char c1, c2;

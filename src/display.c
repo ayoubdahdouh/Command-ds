@@ -5,7 +5,7 @@
 #include "display.h"
 #include "common.h"
 #include "color.h"
-void display_name(char *nm, mode_t *m, char *c, char *r)
+void displayName(char *nm, mode_t *m, char *c, char *r)
 {
     int n = countSpaces(nm);
 
@@ -16,7 +16,7 @@ void display_name(char *nm, mode_t *m, char *c, char *r)
 
     if ((Nparams & NQ) && n)
     {
-        printf("\"");
+        printf("'");
     }
     // if name "nm" contains spaces and print bachslash is enabled.
     if ((Nparams & NB) && n)
@@ -40,7 +40,7 @@ void display_name(char *nm, mode_t *m, char *c, char *r)
 
     if ((Nparams & NQ) && n)
     {
-        printf("\"");
+        printf("'");
     }
     if (Nparams & NC)
     {
@@ -78,8 +78,8 @@ void display(char *nm, mode_t *m, Bool nl)
 
     if (Nparams & NC)
     {
-        rs = getcolor(ColorsList, "rs", False);
-        choose_color(nm, m, &c1);
+        rs = getColor(ColorsList, "rs", False);
+        chooseColor(nm, m, &c1);
     }
     if (S_ISLNK(*m))
     {
@@ -91,30 +91,30 @@ void display(char *nm, mode_t *m, Bool nl)
                 strcpy(&Pth[PthLen], Bfr);
                 strcpy(Bfr, Pth);
             }
-            if (Stat(Bfr, &s))
+            if (fileStat(Bfr, &s))
             {
                 if (Nparams & NC)
                 {
-                    choose_color(Bfr, &s.st_mode, &c2);
+                    chooseColor(Bfr, &s.st_mode, &c2);
                 }
             }
             else if (Nparams & NC)
             {
-                c1 = c2 = getcolor(ColorsList, "or", False);
+                c1 = c2 = getColor(ColorsList, "or", False);
             }
             strcpy(Bfr, &Pth[PthLen]);
         }
         else if (Nparams & NC)
         {
-            c1 = c2 = getcolor(ColorsList, "or", False);
+            c1 = c2 = getColor(ColorsList, "or", False);
         }
     }
 
-    display_name(nm, m, c1, rs);
+    displayName(nm, m, c1, rs);
     if (S_ISLNK(*m) && Nparams & NF)
     {
         printf(" -> ");
-        display_name(Bfr, &s.st_mode, c2, rs);
+        displayName(Bfr, &s.st_mode, c2, rs);
     }
 
     if (nl)
@@ -123,35 +123,35 @@ void display(char *nm, mode_t *m, Bool nl)
     }
 }
 
-void choose_color(char *nm, mode_t *m, char **c)
+void chooseColor(char *nm, mode_t *m, char **c)
 {
     if (!nm)
     {
-        *c = getcolor(ColorsList, nm, True);
+        *c = getColor(ColorsList, nm, True);
     }
     if (S_ISBLK(*m))
     {
-        *c = getcolor(ColorsList, "bd", False);
+        *c = getColor(ColorsList, "bd", False);
     }
     else if (S_ISCHR(*m))
     {
-        *c = getcolor(ColorsList, "cd", False);
+        *c = getColor(ColorsList, "cd", False);
     }
     else if (S_ISFIFO(*m))
     {
-        *c = getcolor(ColorsList, "pi", False);
+        *c = getColor(ColorsList, "pi", False);
     }
     else if (S_ISSOCK(*m))
     {
-        *c = getcolor(ColorsList, "so", False);
+        *c = getColor(ColorsList, "so", False);
     }
     else if (S_ISDIR(*m))
     {
-        *c = getcolor(ColorsList, "di", False);
+        *c = getColor(ColorsList, "di", False);
     }
     else if (S_ISLNK(*m))
     {
-        *c = getcolor(ColorsList, "ln", False);
+        *c = getColor(ColorsList, "ln", False);
         // if (follow_lnk)
         // {
 
@@ -183,35 +183,35 @@ void choose_color(char *nm, mode_t *m, char **c)
     {
         if (*m & S_ISUID)
         { // if executable, green colour
-            *c = getcolor(ColorsList, "su", False);
+            *c = getColor(ColorsList, "su", False);
         }
         else if (*m & S_ISGID)
         { // if executable, green colour
-            *c = getcolor(ColorsList, "sg", False);
+            *c = getColor(ColorsList, "sg", False);
         }
         else if (*m & S_ISVTX)
         { // if executable, green colour
-            *c = getcolor(ColorsList, "tw", False);
+            *c = getColor(ColorsList, "tw", False);
         }
         else if (*m & S_IXUSR)
         { // if executable, green colour
-            *c = getcolor(ColorsList, "ex", False);
+            *c = getColor(ColorsList, "ex", False);
         }
         else
         {
             char *ext = fileExtension(nm);
             if (ext)
             {
-                *c = getcolor(ColorsList, ext, True);
+                *c = getColor(ColorsList, ext, True);
             }
             else
             {
-                *c = getcolor(ColorsList, "rs", False);
+                *c = getColor(ColorsList, "rs", False);
             }
         }
     }
     else
     {
-        *c = getcolor(ColorsList, "rs", False);
+        *c = getColor(ColorsList, "rs", False);
     }
 }
