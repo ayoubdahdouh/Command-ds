@@ -4,8 +4,8 @@
 #include <sys/stat.h>
 #include "types.h"
 
-void choose_color(char *nm, mode_t *m, char **c);
-void display_name(char *nm, mode_t *m, char *c, char *r);
+void chooseColor(char *nm, mode_t *m, char **c);
+void displayName(char *nm, mode_t *m, char *c, char *r);
 void display(char *nm, mode_t *m, Bool nl);
 
 #endif

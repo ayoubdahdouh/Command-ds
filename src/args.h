@@ -2,14 +2,14 @@
 #define ARGS_H
 
 #include "types.h"
-#include "list.h"
+#include "linkedList.h"
 
-void set_t_arg(char **c);
-void set_s_arg(char **c);
-void set_m_arg(char **c);
-void set_l_arg(char **c);
-void set_n_arg(char **c);
-void set_f_arg(char **c);
-void set_options(int argc, char *argv[], linklist l);
+void setTParam(char **c);
+void setSParam(char **c);
+void setMParams(char **c);
+void setLParams(char **c);
+void setNParams(char **c);
+void setFParam(char **c);
+void setOptions(int argc, char *argv[], linkedList l);
 
 #endif

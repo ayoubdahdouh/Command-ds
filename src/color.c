@@ -1,13 +1,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include "color.h"
-#include "list.h"
+#include "linkedList.h"
 #include "common.h"
 #include "types.h"
 
-linklist scan_for_colors()
+linkedList scanForColors()
 {
-    linklist l = lopen();
+    linkedList l = lOpen();
     Color *c;
     char *b, *v;
     int n, i, eq = 0, sm = 0;
@@ -18,7 +18,7 @@ linklist scan_for_colors()
         return l;
     }
     n = strlen(v);
-    b = (char *)Alloc(n);
+    b = (char *)memAlloc(n);
     strncpy(b, v, n);
     for (i = 0; i < n; i++)
     {
@@ -36,7 +36,7 @@ linklist scan_for_colors()
             {
                 v[eq] = 0;
                 v[i] = 0;
-                c = (Color *)malloc(COLORS_SIZE);
+                c = (Color *)malloc(COLOR_SIZE);
                 c->c = &v[eq] + 1;
                 c->a = &v[sm];
                 // verify if "c->a" is an extension
@@ -52,7 +52,7 @@ linklist scan_for_colors()
                 eq = 0;
                 sm = i + 1;
 
-                ladd(l, LFIRST, c);
+                lInsert(l, LFIRST, c);
             }
             else
             {
@@ -67,25 +67,25 @@ linklist scan_for_colors()
     {
         v[eq] = 0;
         v[n - 1] = 0;
-        c = (Color *)malloc(COLORS_SIZE);
+        c = (Color *)malloc(COLOR_SIZE);
         c->a = &v[sm];
         c->c = &v[eq] + 1;
-        ladd(l, LFIRST, c);
+        lInsert(l, LFIRST, c);
     }
     return l;
 }
 
-char *getcolor(linklist l, const char *nm, Bool is_ext)
+char *getColor(linkedList l, const char *nm, Bool is_ext)
 {
     int ok = 0;
-    iterator i;
+    Iterator i;
     Color *tmp = NULL;
 
-    if (lempty(l))
+    if (lEmpty(l))
     {
         return NULL;
     }
-    for (i = lat(l, LFIRST); i && !ok; linc(&i))
+    for (i = lAt(l, LFIRST); i && !ok; lInc(&i))
     {
         tmp = (Color *)i->data;
         if ((is_ext == tmp->e) &&
@@ -106,7 +106,7 @@ char *getcolor(linklist l, const char *nm, Bool is_ext)
         }
         else
         {
-            return getcolor(l, "rs", False);
+            return getColor(l, "rs", False);
         }
     }
 }

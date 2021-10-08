@@ -70,10 +70,10 @@ https://www.gnu.org/software/coreutils/manual/html_node/Formatting-the-file-name
 #####  FUTURE VERSION #####
 
 {
-#add -x horizontal list contents.
-~rwxrwxr-x a.out     ~rw-rw-r-- common.h         ~rw-rw-r-- format_column.h  ~rw-rw-r-- format_tree.h  ~rw-rw-r-- list.h     ~rw-rw-r-- ToBeDone.txt
-lrwxrwxrwx bonjour   ~rw-rw-r-- display.c        ~rw-rw-r-- format_list.c    ~rwxrwxr-x lf             ~rw-rw-r-- main.c     
-drwxrwxr-x build     ~rw-rw-r-- display.h        ~rw-rw-r-- format_list.h    ~rw-rw-r-- lf.c           ~rw-rw-r-- makefile   
+#add -x horizontal linkedList contents.
+~rwxrwxr-x a.out     ~rw-rw-r-- common.h         ~rw-rw-r-- useColumn.h  ~rw-rw-r-- useTree.h  ~rw-rw-r-- linkedList.h     ~rw-rw-r-- ToBeDone.txt
+lrwxrwxrwx bonjour   ~rw-rw-r-- display.c        ~rw-rw-r-- useList.c    ~rwxrwxr-x lf             ~rw-rw-r-- main.c     
+drwxrwxr-x build     ~rw-rw-r-- display.h        ~rw-rw-r-- useList.h    ~rw-rw-r-- lf.c           ~rw-rw-r-- makefile   
 }
 
 {
@@ -89,10 +89,10 @@ Usage:  lf -[OPTION]=[ARGUMENT],... [FILE]...
     -1  lists one file per line.
     -2  separate files with commas(,).
     -3  separate files with a semicolon(;).
-    -d  list directories/dirlinks themselves, not their contents.
-        by default, lf list directories/dirlinks contents.
+    -d  linkedList directories/dirlinks themselves, not their contents.
+        by default, lf linkedList directories/dirlinks contents.
     -[...]m=[hbcdplrsugt123456789]   Mode settings
-          choose the files to list from the list below:
+          choose the files to linkedList from the linkedList below:
             h  hidden files, all files began with a dot.
             b  block device
             c  character device
@@ -120,7 +120,7 @@ Usage:  lf -[OPTION]=[ARGUMENT],... [FILE]...
             DEPTH  tree depth
           By default (without DEPTH), the depth is unlimited.
     -[...]l=[inpsrugamc]   Information settings
-          choose the information to display from the list below:
+          choose the information to display from the linkedList below:
             i  inode number
             n  number of hard links
             p  permissions

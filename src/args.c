@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
-#include "list.h"
+#include "linkedList.h"
 #include "common.h"
 
-void set_t_arg(char **c)
+void setTParam(char **c)
 {
     Bool ok = True;
     int cnt = 0;
@@ -31,21 +31,21 @@ void set_t_arg(char **c)
         }
         else if (!ok)
         {
-            Quit(PROGRAM ": the depth must be a positive number (without the + sign).");
+            quitProgram(PROGRAM ": the depth must be a positive number (without the + sign).");
         }
         else
         { // if (cnt == 0)
-            Quit(PROGRAM ": 't' needs a parameter after ':'.");
+            quitProgram(PROGRAM ": 't' needs a parameter after ':'.");
         }
     }
     else
     {
         --*c;
-        Tparam = MAX_DEPTH;
+        Tparam = TREEMAXDEPTH;
     }
 }
 
-void set_s_arg(char **c)
+void setSParam(char **c)
 {
     if (**c == ':')
     {
@@ -56,7 +56,7 @@ void set_s_arg(char **c)
             {
                 if (*(*c + 1))
                 {
-                    Quit(PROGRAM ": The 's' accepts only one parameter.");
+                    quitProgram(PROGRAM ": The 's' accepts only one parameter.");
                 }
                 else
                 {
@@ -101,12 +101,12 @@ void set_s_arg(char **c)
             else
             {
                 printf("%s: 's' doesn't recognize '%c'.", PROGRAM, **c);
-                Quit(NULL);
+                quitProgram(NULL);
             }
         }
         else
         {
-            Quit(PROGRAM ": The 's' needs a parameter after ':'.");
+            quitProgram(PROGRAM ": The 's' needs a parameter after ':'.");
         }
     }
     else
@@ -115,7 +115,7 @@ void set_s_arg(char **c)
     }
 }
 
-void set_m_arg(char **c)
+void setMParams(char **c)
 {
     Bool ok = True;
     char *d;
@@ -200,11 +200,11 @@ void set_m_arg(char **c)
         else if (!ok)
         {
             printf("%s: 'm' doesn't recognize '%c'.\n", PROGRAM, *d);
-            Quit(NULL);
+            quitProgram(NULL);
         }
         else
         { // if (*d==c)
-            Quit(PROGRAM ": 'm' needs a parameter after ':'.");
+            quitProgram(PROGRAM ": 'm' needs a parameter after ':'.");
         }
     }
     else
@@ -213,7 +213,7 @@ void set_m_arg(char **c)
     }
 }
 
-void set_l_arg(char **c)
+void setLParams(char **c)
 {
     Bool ok = True;
     char *d;
@@ -268,16 +268,16 @@ void set_l_arg(char **c)
         else if (!ok)
         {
             printf("%s: 'l' doesn't recognize '%c'.\n", PROGRAM, *d);
-            Quit(NULL);
+            quitProgram(NULL);
         }
         else
         { // if (*d == c)
-            Quit(PROGRAM ": The 'l' needs a parameter after ':'.\n");
+            quitProgram(PROGRAM ": The 'l' needs a parameter after ':'.\n");
         }
     }
 }
 
-void set_n_arg(char **c)
+void setNParams(char **c)
 {
     Bool ok = True;
     char *d;
@@ -317,11 +317,11 @@ void set_n_arg(char **c)
         else if (!ok)
         {
             printf("%s: 'n' doesn't recognize '%c'.\n", PROGRAM, *d);
-            Quit(NULL);
+            quitProgram(NULL);
         }
         else
         { //  if (d == *c)
-            Quit(PROGRAM ": 'n' needs a parameter after ':'.");
+            quitProgram(PROGRAM ": 'n' needs a parameter after ':'.");
         }
     }
     else
@@ -330,13 +330,13 @@ void set_n_arg(char **c)
     }
 }
 
-void set_f_arg(char **c)
+void setFParam(char **c)
 {
     if ((**c == ':') && *(*c + 1))
     {
         ++*c;
         int cnt = strlen(*c);
-        TimeStyle = (char *)Alloc((cnt + 1));
+        TimeStyle = (char *)memAlloc((cnt + 1));
         strncpy(TimeStyle, *c, cnt);
         *c += cnt - 1;
     }
@@ -347,7 +347,7 @@ void set_f_arg(char **c)
     }
 }
 
-void set_options(int argc, char *argv[], linklist l)
+void setOptions(int argc, char *argv[], linkedList l)
 {
     Bool ok = True;
 
@@ -395,22 +395,22 @@ void set_options(int argc, char *argv[], linklist l)
                 case 't':
                     Opts |= OT;
                     ++c;
-                    set_t_arg(&c);
+                    setTParam(&c);
                     break;
                 case 's':
                     Opts |= OS;
                     ++c;
-                    set_s_arg(&c);
+                    setSParam(&c);
                     break;
                 case 'm':
                     Opts |= OM;
                     ++c;
-                    set_m_arg(&c);
+                    setMParams(&c);
                     break;
                 case 'l':
                     Opts |= OL;
                     ++c;
-                    set_l_arg(&c);
+                    setLParams(&c);
                     if (!countActiveBits(Lparams, 10))
                     {
                         --c;
@@ -419,7 +419,7 @@ void set_options(int argc, char *argv[], linklist l)
                 case 'n':
                     Opts |= ON;
                     ++c;
-                    set_n_arg(&c);
+                    setNParams(&c);
 
                     break;
                 case 'f':
@@ -429,7 +429,7 @@ void set_options(int argc, char *argv[], linklist l)
                     {
                         free(TimeStyle);
                     }
-                    set_f_arg(&c);
+                    setFParam(&c);
                     break;
                 default:
                     --c;
@@ -441,13 +441,13 @@ void set_options(int argc, char *argv[], linklist l)
         else
         {
             // it's a file/folder.
-            ladd(l, LFIRST, c);
+            lInsert(l, LFIRST, c);
         }
         --argc;
     }
     if (!ok)
     {
         printf("%s: Unknown option '%c'\n", PROGRAM, *c);
-        Quit(NULL);
+        quitProgram(NULL);
     }
 }

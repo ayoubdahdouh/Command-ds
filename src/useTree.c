@@ -2,13 +2,13 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <string.h>
-#include "format_tree.h"
+#include "useTree.h"
 #include "common.h"
-#include "lf.h"
-#include "list.h"
+#include "ds.h"
+#include "linkedList.h"
 #include "display.h"
 
-void tree_display(TreeInfo *tree, Bool islast)
+void printBranch(TreeInfo *tree, Bool islast)
 {
     for (int j = 0; j < tree->level; j++)
     {
@@ -31,18 +31,18 @@ void tree_display(TreeInfo *tree, Bool islast)
     }
 }
 
-void tree_main(linklist l, TreeInfo *tree)
+void treeMain(linkedList l, TreeInfo *tree)
 {
     Bool islast;
     File file;
-    int i = 0, tmp_path_len = PthLen;
+    int i = 0, tmpLen = PthLen;
     int n = l->count - ((Mparams & MH) ? 2 : 0);
 
     while (i < n)
     {
         islast = (i == n - 1) ? True : False;
-        PthLen = tmp_path_len;
-        file = (File)(lat(l, LFIRST))->data;
+        PthLen = tmpLen;
+        file = (File)(lAt(l, LFIRST))->data;
         if (S_ISDIR(file->st.st_mode))
         {
             if (strcmp(file->name, ".") && strcmp(file->name, ".."))
@@ -56,7 +56,7 @@ void tree_main(linklist l, TreeInfo *tree)
                 {
                     tree->has_next[tree->level] = '1';
                 }
-                tree_display(tree, islast);
+                printBranch(tree, islast);
                 display(file->name, &file->st.st_mode, True);
                 if (tree->level + 1 < Tparam)
                 {
@@ -74,11 +74,11 @@ void tree_main(linklist l, TreeInfo *tree)
         else
         {
             ++i;
-            tree_display(tree, islast);
+            printBranch(tree, islast);
             display(file->name, &file->st.st_mode, True);
         }
         free(file->name);
         free(file);
-        ldel(l, LFIRST);
+        lDelete(l, LFIRST);
     }
 }

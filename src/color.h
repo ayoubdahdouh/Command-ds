@@ -22,10 +22,10 @@
 // st (sticky directory)
 // ex (executable file)
 
-#include "list.h"
+#include "linkedList.h"
 #include "types.h"
 
-char *getcolor(linklist l, const char *nm, Bool is_ext);
-linklist scan_for_colors();
+char *getColor(linkedList l, const char *nm, Bool is_ext);
+linkedList scanForColors();
 
 #endif

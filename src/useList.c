@@ -3,38 +3,38 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include "list.h"
-#include "format_list.h"
+#include "linkedList.h"
+#include "useList.h"
 #include "common.h"
 #include "display.h"
 #include "types.h"
-#include "format_long.h"
+#include "useLong.h"
 
-void list_main(linklist l, FileInfo *files_info, int index)
+void listMain(linkedList l, FileInfo *filesInfo, int index)
 {
     struct winsize w;
-    int window_size;
+    int wSize;
     File file;
-    int nb_spaces;
+    int nbrSpaces;
     int nbr, remain;
     int i = 0;
-    Bool beginning_of_line;
+    Bool newLine;
 
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-    window_size = w.ws_col;
-    remain = window_size;
+    wSize = w.ws_col;
+    remain = wSize;
 
-    for (iterator it = lat(l, LFIRST); it; linc(&it), ++i)
+    for (Iterator it = lAt(l, LFIRST); it; lInc(&it), ++i)
     {
-        beginning_of_line = False;
+        newLine = False;
         file = (File)it->data;
         nbr = strlen(file->name) + 1; // +1 for the character in use.
-        nb_spaces = countSpaces(file->name);
-        if (nb_spaces)
+        nbrSpaces = countSpaces(file->name);
+        if (nbrSpaces)
         {
             if (Nparams & NB)
             {
-                nbr += nb_spaces;
+                nbr += nbrSpaces;
             }
             if (Nparams & NQ)
             {
@@ -53,9 +53,9 @@ void list_main(linklist l, FileInfo *files_info, int index)
         {
             nbr += 1;
         }
-        if (files_info)
+        if (filesInfo)
         {
-            nbr += strlen(files_info[i].bfr[index]) + 1; // +1 for space between information column and "l"
+            nbr += strlen(filesInfo[i].bfr[index]) + 1; // +1 for space between information column and "l"
         }
         if (nbr < remain)
         {
@@ -63,21 +63,21 @@ void list_main(linklist l, FileInfo *files_info, int index)
         }
         else
         { // go to newline
-            beginning_of_line = True;
-            remain = window_size - nbr;
+            newLine = True;
+            remain = wSize - nbr;
             if (!(Opts & O1))
             {
                 printf("\n");
             }
         }
-        if (i && !beginning_of_line && !(Opts & O1) && !(Opts & O2))
+        if (i && !newLine && !(Opts & O1) && !(Opts & O2))
         {
             printf(" ");
             --remain;
         }
-        if (files_info)
+        if (filesInfo)
         {
-            printf("%s ", files_info[i].bfr[index]);
+            printf("%s ", filesInfo[i].bfr[index]);
         }
         display(file->name, &file->st.st_mode, False);
         if (Opts & O1)

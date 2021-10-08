@@ -4,13 +4,13 @@
 #include <limits.h>
 #include <locale.h>
 #include <errno.h>
-#include "list.h"
-#include "lf.h"
+#include "linkedList.h"
+#include "ds.h"
 #include "common.h"
 #include "color.h"
 #include "args.h"
 #include "display.h"
-#include "format_long.h"
+#include "useLong.h"
 
 u_int8_t Nparams;
 u_int16_t Sparams;
@@ -21,27 +21,27 @@ int Tparam;
 char *Pth = NULL;
 char *Bfr = NULL;
 int PthLen = 0;
-linklist ColorsList = NULL;
+linkedList ColorsList = NULL;
 char *TimeStyle = NULL;
 
-void run(linklist l)
+void run(linkedList l)
 {
     char *nm;
     int len;
     struct stat s;
     TreeInfo tree;
     File file;
-    linklist files_list = lopen();
+    linkedList filesList = lOpen();
     long int mularg = (l->count == 1) ? 0 : l->count;
 
-    Initial();
+    initProgram();
 
     if (Opts & OT)
     {
         tree.level = 0;
-        tree.has_next = (char *)Alloc(PATH_MAX);
+        tree.has_next = (char *)memAlloc(PATH_MAX);
     }
-    for (iterator it = lat(l, LFIRST); it; linc(&it))
+    for (Iterator it = lAt(l, LFIRST); it; lInc(&it))
     {
         nm = (char *)it->data;
         len = strlen(nm);
@@ -49,13 +49,13 @@ void run(linklist l)
         {
             nm[--len] = 0;
         }
-        // if multiple arguments then print name of each argument before list.
+        // if multiple arguments then print name of each argument before linkedList.
         if (mularg)
         {
             printf("%s:\n", nm);
             --mularg;
         }
-        if (Stat(nm, &s))
+        if (fileStat(nm, &s))
         {
             if ((S_ISDIR(s.st_mode) || S_ISLNK(s.st_mode)) && !(Opts & OD))
             {
@@ -68,7 +68,7 @@ void run(linklist l)
                 {
                     if (!readLink(nm))
                     {
-                        printf("%s: Cannot read the reference of \"%s\": %s\n", PROGRAM, nm, strerror(errno));
+                        printf("%s: Cannot read the reference of '%s': %s\n", PROGRAM, nm, strerror(errno));
                         continue;
                     }
                     strcpy(Pth, Bfr);
@@ -78,9 +78,9 @@ void run(linklist l)
                         nm[--len] = 0;
                     }
                     PthLen = len;
-                    if (!Stat(Bfr, &s))
+                    if (!fileStat(Bfr, &s))
                     {
-                        printf("%s: Cannot access the reference of \"%s\": %s\n", PROGRAM, nm, strerror(errno));
+                        printf("%s: Cannot access the reference of '%s': %s\n", PROGRAM, nm, strerror(errno));
                         continue;
                     }
                 }
@@ -99,12 +99,12 @@ void run(linklist l)
             {
                 if (Opts & OL)
                 {
-                    lreset(files_list);
-                    file = (File)Alloc(_FILE_SIZE);
+                    lReset(filesList);
+                    file = (File)memAlloc(FILE_SIZE);
                     file->name = nm;
                     file->st = s;
-                    ladd(files_list, LFIRST, file);
-                    long_main(files_list);
+                    lInsert(filesList, LFIRST, file);
+                    longMain(filesList);
                 }
                 else
                 {
@@ -118,10 +118,10 @@ void run(linklist l)
         }
         else
         {
-            printf("%s: \"%s\": %s\n", PROGRAM, nm, strerror(errno));
+            printf("%s: '%s': %s\n", PROGRAM, nm, strerror(errno));
         }
     }
-    lclose(files_list);
+    lClose(filesList);
 }
 
 Bool isSingleCol()
@@ -131,26 +131,26 @@ Bool isSingleCol()
 
 int main(int argc, char *argv[], char *envp[])
 {
-    linklist l = lopen();
+    linkedList l = lOpen();
 
     setlocale(LC_ALL, "");
 
-    set_options(argc, argv, l);
+    setOptions(argc, argv, l);
 
     if ((Opts & OL) && countActiveBits(Opts, 5))
     {
-        Quit(PROGRAM
-             ": Option \"l\" can't be used with options"
-             " \"t\", \"1\", \"2\", \"3\" and \"4\".");
+        quitProgram(PROGRAM
+             ": Option 'l' can't be used with options"
+             " 't', '1', '2', '3' and '4'.");
     }
 
     if (Opts & OT)
     {
-        if ((Tparam <= 0) || (Tparam > MAX_DEPTH))
+        if ((Tparam <= 0) || (Tparam > TREEMAXDEPTH))
         {
             printf("%s: The depth of the tree should be between 1 and %d.\n",
-                   PROGRAM, MAX_DEPTH);
-            Quit(NULL);
+                   PROGRAM, TREEMAXDEPTH);
+            quitProgram(NULL);
         }
     }
 
@@ -189,19 +189,19 @@ int main(int argc, char *argv[], char *envp[])
 
     if (Nparams & NC)
     {
-        ColorsList = scan_for_colors();
-        if (lempty(ColorsList))
+        ColorsList = scanForColors();
+        if (lEmpty(ColorsList))
         {
             printf(PROGRAM
-                   ": warning: \"-c\" needs the environment"
-                   " variable \"LS_COLORS\".\n");
+                   ": warning: '-c' needs the environment"
+                   " variable 'LS_COLORS'.\n");
             Nparams &= ~NC;
         }
-        else if (!getcolor(ColorsList, "rs", False))
+        else if (!getColor(ColorsList, "rs", False))
         { // LS_COLORS must have at least "rs" value
             printf(PROGRAM
-                   ": warning: \"-c\" unavailable due to the environment"
-                   " variable \"LS_COLORS\" has no value \"rs\".\n");
+                   ": warning: '-c' unavailable due to the environment"
+                   " variable 'LS_COLORS' has no value 'rs'.\n");
             Nparams &= ~NC;
         }
     }
@@ -245,13 +245,13 @@ int main(int argc, char *argv[], char *envp[])
         TimeStyle = "%F %R";
     }
 
-    // default folder to list is current working directory.
-    if (lempty(l))
+    // default folder to linkedList is current working directory.
+    if (lEmpty(l))
     {
-        ladd(l, LFIRST, ".");
+        lInsert(l, LFIRST, ".");
     }
     run(l);
-    Quit(NULL);
-    lclose(l);
+    quitProgram(NULL);
+    lClose(l);
     return 0;
 }

@@ -9,14 +9,14 @@ clean:
 build:
 	if [ ! -d build ]; then mkdir build;fi
 
-ds: build/color.o build/args.o build/common.o build/display.o build/format_column.o build/format_list.o build/format_tree.o build/format_long.o build/list.o build/lf.o build/main.o 
+ds: build/color.o build/args.o build/common.o build/display.o build/useColumn.o build/useList.o build/useTree.o build/useLong.o build/linkedList.o build/ds.o build/main.o 
 	${cc} ${coptions} $? -o $@
 
-build/main.o: src/main.c src/list.h src/common.h
+build/main.o: src/main.c src/linkedList.h src/common.h
 	${cc} ${coptions} src/main.c -c -o build/main.o
 
-build/lf.o: src/lf.c src/common.h
-	${cc} ${coptions} src/lf.c -c -o build/lf.o
+build/ds.o: src/ds.c src/common.h
+	${cc} ${coptions} src/ds.c -c -o build/ds.o
 
 build/display.o: src/display.c src/common.h src/color.h
 	${cc} ${coptions} src/display.c -c -o build/display.o
@@ -24,19 +24,19 @@ build/display.o: src/display.c src/common.h src/color.h
 build/color.o: src/color.c src/common.h
 	${cc} ${coptions} src/color.c -c -o build/color.o
 
-build/list.o: src/list.c
+build/linkedList.o: src/linkedList.c
 	${cc} ${coptions} $? -c -o $@
 
-build/format_column.o: src/format_column.c
+build/useColumn.o: src/useColumn.c
 	${cc} ${coptions} $? -c -o $@
 
-build/format_tree.o: src/format_tree.c
+build/useTree.o: src/useTree.c
 	${cc} ${coptions} $? -c -o $@
 
-build/format_list.o: src/format_list.c
+build/useList.o: src/useList.c
 	${cc} ${coptions} $? -c -o $@
 
-build/format_long.o: src/format_long.c
+build/useLong.o: src/useLong.c
 	${cc} ${coptions} $? -c -o $@
 
 build/common.o: src/common.c

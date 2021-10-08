@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "list.h"
+#include "linkedList.h"
 
-void quicksort(linklist l, int from, int to, int compare(void *, void *));
-int partition(linklist l, int from, int to, int compare(void *, void *));
+void quicksort(linkedList l, int from, int to, int compare(void *, void *));
+int partition(linkedList l, int from, int to, int compare(void *, void *));
 
 void LERR(const char *msg)
 {
@@ -14,11 +14,11 @@ void LERR(const char *msg)
     }
 }
 
-linklist lopen()
+linkedList lOpen()
 {
-    linklist l;
+    linkedList l;
 
-    l = (linklist)malloc(LINKLISTSIZ);
+    l = (linkedList)malloc(LINKEDLIST_SIZE);
     if (!l)
     {
         LERR("[LOPEN] Memory allocation failed");
@@ -30,11 +30,11 @@ linklist lopen()
     return l;
 }
 
-void lclose(linklist l)
+void lClose(linkedList l)
 {
     if (!l)
     {
-        node x, y = l->first;
+        Node x, y = l->first;
         while (l->count)
         {
             --l->count;
@@ -46,7 +46,7 @@ void lclose(linklist l)
     }
 }
 
-int lempty(linklist l)
+int lEmpty(linkedList l)
 {
     if (l)
     {
@@ -55,26 +55,26 @@ int lempty(linklist l)
     return 1;
 }
 
-void lreset(linklist l)
+void lReset(linkedList l)
 {
     if (!l)
     {
-        LERR("[LRESET] No list is given");
+        LERR("[LRESET] No linkedList is given");
         return;
     }
-    while (!lempty(l))
+    while (!lEmpty(l))
     {
-        ldel(l, LFIRST);
+        lDelete(l, LFIRST);
     }
 }
 
-void ladd(linklist l, long int at, void *data)
+void lInsert(linkedList l, long int at, void *data)
 {
-    node n, x, y;
+    Node n, x, y;
 
     if (!l)
     {
-        LERR("[LADD] No list is given");
+        LERR("[LADD] No linkedList is given");
         return;
     }
     if (!data)
@@ -95,7 +95,7 @@ void ladd(linklist l, long int at, void *data)
     {
         at = l->count;
     }
-    n = (node)malloc(NODESIZ);
+    n = (Node)malloc(NODE_SIZE);
     n->data = data;
     n->next = NULL;
 
@@ -145,13 +145,13 @@ void ladd(linklist l, long int at, void *data)
     l->count++;
 }
 
-void ldel(linklist l, long int at)
+void lDelete(linkedList l, long int at)
 {
-    node x, y;
+    Node x, y;
 
     if (!l)
     {
-        LERR("[LDEL] No list is given");
+        LERR("[LDEL] No linkedList is given");
         return;
     }
     if (at < LFIRST || at >= l->count)
@@ -214,13 +214,13 @@ void ldel(linklist l, long int at)
     --l->count;
 }
 
-void *lget(linklist l, long int at)
+void *lGet(linkedList l, long int at)
 {
-    node y;
+    Node y;
 
     if (!l)
     {
-        LERR("[LGET] No list is given");
+        LERR("[LGET] No linkedList is given");
         return NULL;
     }
     if (at < LFIRST || (at >= l->count))
@@ -228,9 +228,9 @@ void *lget(linklist l, long int at)
         LERR("[LGET] Out of bounds");
         return NULL;
     }
-    if (lempty(l))
+    if (lEmpty(l))
     {
-        LERR("[LGET] The list is empty");
+        LERR("[LGET] The linkedList is empty");
         return NULL;
     }
     if (at == LFIRST)
@@ -250,14 +250,14 @@ void *lget(linklist l, long int at)
     return y->data;
 }
 
-void *lset(linklist l, long int at, void *data)
+void *lSet(linkedList l, long int at, void *data)
 {
-    node n;
+    Node n;
     void *tmp;
 
     if (!l)
     {
-        LERR("[LSET] No list is given");
+        LERR("[LSET] No linkedList is given");
         return NULL;
     }
     if (at < LFIRST || (at >= l->count))
@@ -265,9 +265,9 @@ void *lset(linklist l, long int at, void *data)
         LERR("[LSET] Out of bounds");
         return NULL;
     }
-    if (lempty(l))
+    if (lEmpty(l))
     {
-        LERR("[LSET] The list is empty");
+        LERR("[LSET] The linkedList is empty");
         return NULL;
     }
     if (at == LFIRST)
@@ -289,7 +289,7 @@ void *lset(linklist l, long int at, void *data)
     return tmp;
 }
 
-void lsort(linklist l, long int from, long int to, int compare(void *, void *))
+void lSort(linkedList l, long int from, long int to, int compare(void *, void *))
 {
     if (!l)
     {
@@ -319,17 +319,17 @@ void lsort(linklist l, long int from, long int to, int compare(void *, void *))
     }
     if (from > to)
     {
-        LERR("[LSORT] \"from\" must be less than \"to\"");
+        LERR("[LSORT] 'from' must be less than 'to'");
         return;
     }
     quicksort(l, from, to, compare);
 }
 
-int partition(linklist l, int from, int to, int compare(void *, void *))
+int partition(linkedList l, int from, int to, int compare(void *, void *))
 {
-    iterator p = lat(l, to);
-    iterator j = lat(l, from);
-    iterator i = NULL;
+    Iterator p = lAt(l, to);
+    Iterator j = lAt(l, from);
+    Iterator i = NULL;
     void *x;
     int k = from;
 
@@ -339,27 +339,27 @@ int partition(linklist l, int from, int to, int compare(void *, void *))
         {
             if (i)
             {
-                linc(&i);
+                lInc(&i);
             }
             else
             {
-                i = lat(l, from);
+                i = lAt(l, from);
             }
             x = j->data;
             j->data = i->data;
             i->data = x;
             ++k;
         }
-        linc(&j);
+        lInc(&j);
         --to;
     }
     if (i)
     {
-        linc(&i);
+        lInc(&i);
     }
     else
     {
-        i = lat(l, from);
+        i = lAt(l, from);
     }
     x = p->data;
     p->data = i->data;
@@ -367,7 +367,7 @@ int partition(linklist l, int from, int to, int compare(void *, void *))
     return k;
 }
 
-void quicksort(linklist l, int from, int to, int compare(void *, void *))
+void quicksort(linkedList l, int from, int to, int compare(void *, void *))
 {
     if (from < to)
     {
@@ -377,7 +377,7 @@ void quicksort(linklist l, int from, int to, int compare(void *, void *))
     }
 }
 
-void linc(iterator *i)
+void lInc(Iterator *i)
 {
     if (i)
     {
@@ -385,9 +385,9 @@ void linc(iterator *i)
     }
 }
 
-iterator lat(linklist l, int at)
+Iterator lAt(linkedList l, int at)
 {
-    iterator i;
+    Iterator i;
 
     if (!l)
     {
@@ -397,7 +397,7 @@ iterator lat(linklist l, int at)
     {
         return NULL;
     }
-    if (lempty(l))
+    if (lEmpty(l))
     {
         return NULL;
     }
@@ -422,7 +422,7 @@ iterator lat(linklist l, int at)
 // {
 //     if (!l)
 //     {
-//         LERR("[LSHOW]: The list is empty");
+//         LERR("[LSHOW]: The linkedList is empty");
 //     }
 //     printf("%d nodes: ", l->count);
 //     for (int i = 0; i < l->count; i++)
