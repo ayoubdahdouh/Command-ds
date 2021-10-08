@@ -119,6 +119,7 @@ Bool checkMode(mode_t *m)
     }
     return ok;
 }
+
 void core(TreeInfo *tree)
 {
     DIR *dir = opendir(Pth);
@@ -192,6 +193,11 @@ void core(TreeInfo *tree)
     {
         Sort(filesList);
     }
+    if (Opts & OR)
+    {
+        lReverse(filesList);
+    }
+
     if (Opts & OT)
     { // format tree
         treeMain(filesList, tree);

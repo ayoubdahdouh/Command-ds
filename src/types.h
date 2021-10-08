@@ -99,6 +99,7 @@ typedef enum
 #define OH B11
 #define OC B12
 #define OF B13
+#define OR B14
 
 typedef struct File
 {

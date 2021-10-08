@@ -74,17 +74,17 @@ void lInsert(linkedList l, long int at, void *data)
 
     if (!l)
     {
-        LERR("[LADD] No linkedList is given");
+        LERR("[lInsert] No linkedList is given");
         return;
     }
     if (!data)
     {
-        LERR("[LADD] No data is given");
+        LERR("[lInsert] No data is given");
         return;
     }
     if (at < LFIRST || at > l->count)
     {
-        LERR("[LADD] Out of bounds");
+        LERR("[lInsert] Out of bounds");
         return;
     }
     if (at == LFIRST)
@@ -417,107 +417,55 @@ Iterator lAt(linkedList l, int at)
     }
     return i;
 }
+// || -> || -> || -> || -> || ->
+void reverseOrder(Node curr, Node next)
+{
+    if (next)
+    {
+        reverseOrder(next, next->next);
+        next->next = curr;
+    }
+}
+void lReverse(linkedList l)
+{
+    if (!l || (l->count <= 1))
+    {
+        return;
+    }
+    reverseOrder(l->first, l->first->next);
+    l->first->next = NULL;
+    Node tmp = l->last;
+    l->last = l->first;
+    l->first = tmp;
+}
 
-// void LSHOW(LIST l)
+// void lShow(linkedList l)
 // {
 //     if (!l)
 //     {
-//         LERR("[LSHOW]: The linkedList is empty");
+//         LERR("[lShow]: The linkedList is empty");
 //     }
-//     printf("%d nodes: ", l->count);
+//     printf("%ld nodes: ", l->count);
 //     for (int i = 0; i < l->count; i++)
 //     {
-//         printf("%s -> ", (char *)LGET(l, i));
+//         printf("%s -> ", (char *)lGet(l, i));
 //     }
 //     printf("NULL\n\n");
 // }
 
-// // compare no case sensative
-// int strcompare(char *s1, char *s2)
-// {
-//     int n, l1, l2, ok;
-//     char c1, c2;
-
-//     if (!s1 && !s2)
-//     {
-//         return 0;
-//     }
-//     if (!s1)
-//     {
-//         return -1;
-//     }
-//     if (!s2)
-//     {
-//         return 1;
-//     }
-//     l1 = strlen(s1);
-//     l2 = strlen(s2);
-//     if (l1 > l2)
-//     {
-//         n = l2;
-//     }
-//     else
-//     {
-//         n = l1;
-//     }
-//     ok = 0;
-//     for (int i = 0; !ok && i < n; i++)
-//     {
-//         // convert s1 to lower case
-//         if (s1[i] >= 'A' && s1[i] <= 'Z')
-//         {
-//             c1 = s1[i] + 32;
-//         }
-//         else
-//         {
-//             c1 = s1[i];
-//         }
-//         // convert s2 to lower case
-//         if (s2[i] >= 'A' && s2[i] <= 'Z')
-//         {
-//             c2 = s2[i] + 32;
-//         }
-//         else
-//         {
-//             c2 = s2[i];
-//         }
-//         if (c1 < c2)
-//         {
-//             ok = -1;
-//         }
-//         else if (c1 > c2)
-//         {
-//             ok = 1;
-//         }
-//     }
-//     if (!ok)
-//     {
-//         if (l1 > l2)
-//         {
-//             ok = 1;
-//         }
-//         else if (l1 < l2)
-//         {
-//             ok = -1;
-//         }
-//     }
-//     return ok;
-// }
-
 // int main()
 // {
-//     LIST l;
+//     linkedList l = lOpen();
 //     setbuf(stdout, NULL);
-//     l = LOPEN();
 
-//     LADD(l, LFIRST, "xaaa");
-//     LADD(l, LLAST, "abc");
-//     LADD(l, 2, "cba");
-//     LADD(l, 3, "jbA");
-//     LADD(l, LLAST, "ba");
-//     LADD(l, LLAST, "acba");
-//     LSHOW(l);
-//     LSORT(l, LFIRST, LLAST, (int (*)(void *, void *))strcompare);
-//     LSHOW(l);
-//     LCLOSE(l);
+//     lInsert(l, LFIRST, "xaaa");
+//     lInsert(l, LLAST, "abc");
+//     lInsert(l, 2, "cba");
+//     lInsert(l, 3, "jbA");
+//     lInsert(l, LLAST, "ba");
+//     lInsert(l, LLAST, "acba");
+//     lShow(l);
+//     lReverse(l);
+//     lShow(l);
+//     lClose(l);
 // }
