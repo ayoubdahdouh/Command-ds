@@ -35,6 +35,8 @@ void lDelete(linkedList l, long int at);
 void *lGet(linkedList l, long int at);
 void *lSet(linkedList l, long int at, void *data);
 
+void lReverse(linkedList l);
+
 void lSort(linkedList l, long int from, long int to, int selector(void *, void *));
 
 //  iterator functions

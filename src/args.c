@@ -392,6 +392,9 @@ void setOptions(int argc, char *argv[], linkedList l)
                 case 'h':
                     Opts |= OH;
                     break;
+                case 'r':
+                    Opts |= OR;
+                    break;
                 case 't':
                     Opts |= OT;
                     ++c;
