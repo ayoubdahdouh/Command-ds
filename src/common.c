@@ -12,7 +12,7 @@
 #include "list.h"
 #include <wchar.h>
 
-void _print_help()
+void printHelp()
 {
     printf("Usage:  %s [OPTION]=[ARGUMENT],... [FILE]...\n\n", PROGRAM);
     printf("    List information about the FILEs (the current directory by default).\n");
@@ -96,12 +96,12 @@ void _print_help()
     printf("    -v  print version information.\n");
 }
 
-void _print_version()
+void printVersion()
 {
     printf("Version: %s %s.\n", PROGRAM, VERSION);
 }
 
-void *_alloc(long int size)
+void *Alloc(long int size)
 {
     void *b;
     b = malloc(size);
@@ -114,61 +114,60 @@ void *_alloc(long int size)
 }
 // places the contents of the symbolic link pathname in the buffer "buf" (global variable).
 // if failed, also print error in the buffer "buf"
-_bool _link(const char *nm)
+Bool readLink(const char *nm)
 {
     int cnt;
     if (!nm)
     {
-        return _false;
+        return False;
     }
-    cnt = readlink(nm, _buffer, PATH_MAX - 1);
+    cnt = readlink(nm, Bfr, PATH_MAX - 1);
     if (cnt == -1)
     {
-        strcpy(_buffer, strerror(errno));
-        return _false;
+        strcpy(Bfr, strerror(errno));
+        return False;
     }
-    _buffer[cnt] = 0;
-    return _true;
+    Bfr[cnt] = 0;
+    return True;
 }
 // if failed, also print error in the buffer "buf"
-_bool _stat(const char *nm, struct stat *s)
+Bool Stat(const char *nm, struct stat *s)
 {
     if (lstat(nm, s) == -1)
     {
-        // strcpy(buf, strerror(errno));
-        return _false;
+        return False;
     }
-    return _true;
+    return True;
 }
 
-void _initial()
+void Initial()
 {
     setbuf(stdout, NULL);
     // init PATH
-    _path = (char *)_alloc(PATH_MAX);
+    Pth = (char *)Alloc(PATH_MAX);
     // init BUF
-    _buffer = (char *)_alloc(PATH_MAX);
+    Bfr = (char *)Alloc(PATH_MAX);
 }
 
-void _quit(char *msg)
+void Quit(char *msg)
 {
-    if (_path)
+    if (Pth)
     {
-        free(_path);
+        free(Pth);
     }
-    if (_buffer)
+    if (Bfr)
     {
-        free(_buffer);
+        free(Bfr);
     }
     if (msg)
     {
-        printf("%s\nTry \"%s -h\" for help.\n", msg, PROGRAM);
+        printf("%s\n", msg);
         exit(EXIT_FAILURE);
     }
     exit(EXIT_SUCCESS);
 }
 
-int has_space(char *nm)
+int countSpaces(char *nm)
 {
     int i = 0;
     for (; *nm; ++nm)
@@ -181,12 +180,12 @@ int has_space(char *nm)
     return i;
 }
 
-_bool is_absolute_path(const char *p)
+Bool isAbsolutePath(const char *p)
 {
-    return (p) ? (p[0] == '/') : _false;
+    return (p) ? (p[0] == '/') : False;
 }
 
-char *file_ext(char *s)
+char *fileExtension(char *s)
 {
     // not null and not empty
     char *last = s + strlen(s) - 1;
@@ -211,7 +210,7 @@ char *file_ext(char *s)
     return NULL;
 }
 
-char file_type(mode_t *m)
+char fileType(mode_t *m)
 {
     char c;
     switch (*m & S_IFMT)
@@ -244,7 +243,7 @@ char file_type(mode_t *m)
     return c;
 }
 
-int str_width(char *s)
+int strWidth(char *s)
 {
     int len;
     wchar_t *wcs;
@@ -259,7 +258,7 @@ int str_width(char *s)
 }
 
 // strings compareing no case sensative
-int _strcmp(char *s1, char *s2)
+int strCmp(char *s1, char *s2)
 {
     int res = 0;
     char c1, c2;
@@ -306,4 +305,19 @@ int _strcmp(char *s1, char *s2)
         return -1;
     }
     return res;
+}
+
+// count number of bit equal to 1.
+int countActiveBits(u_int32_t stream, int n)
+{
+    int cnt = 0;
+
+    for (int i = 0; i < n; i++)
+    {
+        if (stream & (1 << i))
+        {
+            ++cnt;
+        }
+    }
+    return cnt;
 }

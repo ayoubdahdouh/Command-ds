@@ -5,21 +5,21 @@
 #include "format_tree.h"
 #include "common.h"
 
-_bool validate_mode(mode_t *mode);
-void core(_tree_info *tree);
-int _strcmp(char *s1, char *s2);
+Bool validate_mode(mode_t *mode);
+void core(TreeInfo *tree);
+int strCmp(char *s1, char *s2);
 
-void _sort(linklist l);
-int _sort_name(_file t1, _file t2);
-int _sort_i(_file t1, _file t2);
-int _sort_n(_file t1, _file t2);
-int _sort_u(_file t1, _file t2);
-int _sort_g(_file t1, _file t2);
-int _sort_s(_file t1, _file t2);
-int _sort_a(_file t1, _file t2);
-int _sort_m(_file t1, _file t2);
-int _sort_c(_file t1, _file t2);
-int _sort_t(_file t1, _file t2);
-int _sort_e(_file t1, _file t2);
+void Sort(linklist l);
+int sortNames(File t1, File t2);
+int sortI(File t1, File t2);
+int sortN(File t1, File t2);
+int sortU(File t1, File t2);
+int sortG(File t1, File t2);
+int sortS(File t1, File t2);
+int sortA(File t1, File t2);
+int sortM(File t1, File t2);
+int sortC(File t1, File t2);
+int sortT(File t1, File t2);
+int sortE(File t1, File t2);
 
 #endif

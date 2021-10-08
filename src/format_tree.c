@@ -8,7 +8,7 @@
 #include "list.h"
 #include "display.h"
 
-void tree_display(_tree_info *tree, _bool islast)
+void tree_display(TreeInfo *tree, Bool islast)
 {
     for (int j = 0; j < tree->level; j++)
     {
@@ -31,18 +31,18 @@ void tree_display(_tree_info *tree, _bool islast)
     }
 }
 
-void tree_main(linklist l, _tree_info *tree)
+void tree_main(linklist l, TreeInfo *tree)
 {
-    _bool islast;
-    _file file;
-    int i = 0, tmp_path_len = _path_len;
-    int n = l->count - (_opt.ml->h ? 2 : 0);
+    Bool islast;
+    File file;
+    int i = 0, tmp_path_len = PthLen;
+    int n = l->count - ((Mparams & MH) ? 2 : 0);
 
     while (i < n)
     {
-        islast = (i == n - 1) ? _true : _false;
-        _path_len = tmp_path_len;
-        file = (_file)(lat(l, LFIRST))->data;
+        islast = (i == n - 1) ? True : False;
+        PthLen = tmp_path_len;
+        file = (File)(lat(l, LFIRST))->data;
         if (S_ISDIR(file->st.st_mode))
         {
             if (strcmp(file->name, ".") && strcmp(file->name, ".."))
@@ -57,15 +57,15 @@ void tree_main(linklist l, _tree_info *tree)
                     tree->has_next[tree->level] = '1';
                 }
                 tree_display(tree, islast);
-                display(file->name, &file->st.st_mode, _true);
-                if (tree->level + 1 < _opt.td)
+                display(file->name, &file->st.st_mode, True);
+                if (tree->level + 1 < Tparam)
                 {
                     tree->level++;
-                    strcpy(&_path[_path_len], file->name);
-                    _path_len = strlen(_path);
-                    _path[_path_len] = '/'; // add slash to path
-                    _path_len++;
-                    _path[_path_len] = 0;
+                    strcpy(&Pth[PthLen], file->name);
+                    PthLen = strlen(Pth);
+                    Pth[PthLen] = '/'; // add slash to path
+                    PthLen++;
+                    Pth[PthLen] = 0;
                     core(tree);
                     tree->level--;
                 }
@@ -75,7 +75,7 @@ void tree_main(linklist l, _tree_info *tree)
         {
             ++i;
             tree_display(tree, islast);
-            display(file->name, &file->st.st_mode, _true);
+            display(file->name, &file->st.st_mode, True);
         }
         free(file->name);
         free(file);

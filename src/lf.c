@@ -18,158 +18,158 @@
 #include "color.h"
 #include "display.h"
 
-_bool validate_mode(mode_t *mode)
+Bool validate_mode(mode_t *m)
 {
-    _bool ok = _false;
+    Bool ok = False;
 
-    switch (*mode & S_IFMT)
+    switch (*m & S_IFMT)
     {
     case S_IFBLK:
-        if (_opt.ml->b)
+        if (Mparams & MB)
         {
-            ok = _true;
+            ok = True;
         }
         break;
     case S_IFCHR:
-        if (_opt.ml->c)
+        if (Mparams & MC)
         {
-            ok = _true;
+            ok = True;
         }
         break;
     case S_IFDIR:
-        if (_opt.ml->d)
+        if (Mparams & MD)
         {
-            ok = _true;
+            ok = True;
         }
         break;
     case S_IFIFO:
-        if (_opt.ml->p)
+        if (Mparams & MP)
         {
-            ok = _true;
+            ok = True;
         }
         break;
     case S_IFLNK:
-        if (_opt.ml->l)
+        if (Mparams & ML)
         {
-            ok = _true;
+            ok = True;
         }
         break;
     case S_IFREG:
-        if (_opt.ml->r)
+        if (Mparams & MR)
         {
-            ok = _true;
+            ok = True;
         }
         break;
     case S_IFSOCK:
-        if (_opt.ml->s)
+        if (Mparams & MS)
         {
-            ok = _true;
+            ok = True;
         }
         break;
     default:
         break;
     }
-    if (ok && _opt.ml->u)
+    if (ok && (Mparams & MU))
     { /* SUID */
-        ok = S_ISUID && *mode;
+        ok = S_ISUID && *m;
     }
-    if (ok && _opt.ml->g)
+    if (ok && (Mparams & MG))
     { /* SGID */
-        ok = S_ISGID && *mode;
+        ok = S_ISGID && *m;
     }
-    if (ok && _opt.ml->t)
+    if (ok && (Mparams & MT))
     { /* sticky bit */
-        ok = S_ISVTX && *mode;
+        ok = S_ISVTX && *m;
     }
-    if (ok && _opt.ml->_1)
+    if (ok && (Mparams & M1))
     { /* read by owner */
-        ok = S_IRUSR & *mode;
+        ok = S_IRUSR & *m;
     }
-    if (ok && _opt.ml->_2)
+    if (ok && (Mparams & M2))
     { /* write by owner */
-        ok = S_IWUSR & *mode;
+        ok = S_IWUSR & *m;
     }
-    if (ok && _opt.ml->_3)
+    if (ok && (Mparams & M3))
     { /* execute by owner */
-        ok = S_IXUSR & *mode;
+        ok = S_IXUSR & *m;
     }
-    if (ok && _opt.ml->_4)
+    if (ok && (Mparams & M4))
     { /* read by group */
-        ok = S_IRGRP & *mode;
+        ok = S_IRGRP & *m;
     }
-    if (ok && _opt.ml->_5)
+    if (ok && (Mparams & M5))
     { /* write by group */
-        ok = S_IWGRP & *mode;
+        ok = S_IWGRP & *m;
     }
-    if (ok && _opt.ml->_6)
+    if (ok && (Mparams & M6))
     { /* execute by group */
-        ok = S_IXGRP & *mode;
+        ok = S_IXGRP & *m;
     }
-    if (ok && _opt.ml->_7)
+    if (ok && (Mparams & M7))
     { /* read by others */
-        ok = S_IROTH & *mode;
+        ok = S_IROTH & *m;
     }
-    if (ok && _opt.ml->_8)
+    if (ok && (Mparams & M8))
     { /* write by others */
-        ok = S_IWOTH & *mode;
+        ok = S_IWOTH & *m;
     }
-    if (ok && _opt.ml->_9)
+    if (ok && (Mparams & M9))
     { /* execute by others */
-        ok = S_IXOTH & *mode;
+        ok = S_IXOTH & *m;
     }
     return ok;
 }
-void core(_tree_info *tree)
+void core(TreeInfo *tree)
 {
-    DIR *dir = opendir(_path);
+    DIR *dir = opendir(Pth);
     struct dirent *item;
     struct stat s;
     linklist files_list = lopen();
-    _file file;
+    File file;
     long int cnt = 0;
-    _bool ok, err_occured;
+    Bool ok, err_occured;
 
     // keep value of "path" and "path_z"
     if (!dir)
     {
-        strcpy(_buffer, strerror(errno));
-        if (_opt.t)
+        strcpy(Bfr, strerror(errno));
+        if (Opts & OT)
         {
-            tree_display(tree, _true);
-            printf("access denied: %s\n", _buffer);
+            tree_display(tree, True);
+            printf("access denied: %s\n", Bfr);
         }
         else
         {
-            printf("%s: access denied to \"%s\": %s\n", PROGRAM, _path, _buffer);
+            printf("%s: access denied to \"%s\": %s\n", PROGRAM, Pth, Bfr);
         }
         return;
     }
 
     while ((item = readdir(dir)))
     {
-        ok = _false;
-        err_occured = _true;
-        if (_opt.ml->h || (item->d_name[0] != '.'))
+        ok = False;
+        err_occured = True;
+        if ((Mparams & MH) || (item->d_name[0] != '.'))
         {
-            strcpy(&_path[_path_len], item->d_name);
-            if (_stat(_path, &s))
+            strcpy(&Pth[PthLen], item->d_name);
+            if (Stat(Pth, &s))
             {
                 if (validate_mode(&s.st_mode))
                 {
-                    ok = _true;
-                    err_occured = _false;
+                    ok = True;
+                    err_occured = False;
                 }
             }
             if (ok)
             {
-                if (_opt.c)
+                if (Opts & OC)
                 {
                     ++cnt;
                 }
                 else
                 {
-                    file = (_file)_alloc(_FILE_SIZE);
-                    file->name = (char *)_alloc((strlen(item->d_name) + 1));
+                    file = (File)Alloc(_FILE_SIZE);
+                    file->name = (char *)Alloc((strlen(item->d_name) + 1));
                     file->st = s;
                     file->err = err_occured;
                     strcpy(file->name, item->d_name);
@@ -179,7 +179,7 @@ void core(_tree_info *tree)
         }
     }
     closedir(dir);
-    if (_opt.c)
+    if (Opts & OC)
     {
         printf("%ld\n", cnt);
         return;
@@ -188,19 +188,19 @@ void core(_tree_info *tree)
     {
         return;
     }
-    if (_opt.s_char != 'd')
+    if (!(Sparams & SD))
     {
-        _sort(files_list);
+        Sort(files_list);
     }
-    if (_opt.t)
+    if (Opts & OT)
     { // format tree
         tree_main(files_list, tree);
     }
-    else if (_opt.l)
+    else if (Opts & OL)
     { // format long
         long_main(files_list);
     }
-    else if (_opt._1 || _opt._2 || _opt._3 || _opt._4)
+    else if (Opts & O1 || Opts & O2 || Opts & O3 || Opts & O4)
     { // format long
         list_main(files_list, NULL, 0);
     }
@@ -210,107 +210,98 @@ void core(_tree_info *tree)
     }
     for (iterator it = lat(files_list, LFIRST); it; linc(&it))
     {
-        file = (_file)it->data;
+        file = (File)it->data;
         free(file->name);
         free(file);
     }
     lclose(files_list);
 }
 
-int _sort_name(_file f1, _file f2)
+int sortNames(File f1, File f2)
 {
-    return _strcmp(f1->name, f2->name);
+    return strCmp(f1->name, f2->name);
 }
-int _sort_i(_file f1, _file f2)
+int sortI(File f1, File f2)
 {
     return (f1->st.st_ino < f2->st.st_ino) ? -1 : 1;
 }
-int _sort_n(_file f1, _file f2)
+int sortN(File f1, File f2)
 {
     return (f1->st.st_nlink < f2->st.st_nlink) ? -1 : 1;
 }
-int _sort_u(_file f1, _file f2)
+int sortU(File f1, File f2)
 {
     return (f1->st.st_uid < f2->st.st_uid) ? -1 : 1;
 }
-int _sort_g(_file f1, _file f2)
+int sortG(File f1, File f2)
 {
     return (f1->st.st_gid < f2->st.st_gid) ? -1 : 1;
 }
-int _sort_s(_file f1, _file f2)
+int sortS(File f1, File f2)
 {
     return (f1->st.st_size < f2->st.st_size) ? -1 : 1;
 }
-int _sort_a(_file f1, _file f2)
+int sortA(File f1, File f2)
 {
     return (f1->st.st_atime < f2->st.st_atime) ? -1 : 1;
 }
-int _sort_m(_file f1, _file f2)
+int sortM(File f1, File f2)
 {
     return (f1->st.st_mtime < f2->st.st_mtime) ? -1 : 1;
 }
-int _sort_c(_file f1, _file f2)
+int sortC(File f1, File f2)
 {
     return (f1->st.st_ctime < f2->st.st_ctime) ? -1 : 1;
 }
-int _sort_t(_file f1, _file f2)
+int sortT(File f1, File f2)
 {
     return ((f1->st.st_mode) < (f2->st.st_mode)) ? -1 : 1;
 }
-int _sort_e(_file f1, _file f2)
+int sortE(File f1, File f2)
 {
-    char *s1 = file_ext(f1->name), *s2 = file_ext(f2->name);
+    char *s1 = fileExtension(f1->name), *s2 = fileExtension(f2->name);
     if (s1 && s2 && strcmp(s1, s2))
     {
-        return _strcmp(s1, s2);
+        return strCmp(s1, s2);
     }
-    return _strcmp(f1->name, f2->name);
+    return strCmp(f1->name, f2->name);
 }
 
-void _sort(linklist l)
+void Sort(linklist l)
 {
-    lsort(l, LFIRST, LLAST, (int (*)(void *, void *))_sort_name);
+    lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortNames);
 
-    switch (_opt.s_char)
+    switch (Sparams)
     {
-    case 'i':
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))_sort_i);
+    case SI:
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortI);
         break;
-
-    case 'n':
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))_sort_n);
+    case SN:
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortN);
         break;
-
-    case 'u':
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))_sort_u);
+    case SU:
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortU);
         break;
-
-    case 'g':
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))_sort_g);
+    case SG:
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortG);
         break;
-
-    case 's':
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))_sort_s);
+    case SS:
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortS);
         break;
-
-    case 'a':
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))_sort_a);
+    case SM:
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortM);
         break;
-
-    case 'm':
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))_sort_m);
+    case SA:
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortA);
         break;
-
-    case 'c':
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))_sort_c);
+    case SC:
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortC);
         break;
-
-    case 't':
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))_sort_t);
+    case ST:
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortT);
         break;
-
-    case 'e':
-        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))_sort_e);
+    case SE:
+        lsort(l, LFIRST, LLAST, (int (*)(void *, void *))sortE);
         break;
     default:
         break;

@@ -10,15 +10,15 @@
 #include "types.h"
 #include "format_long.h"
 
-void list_main(linklist l, _file_info *files_info, int index)
+void list_main(linklist l, FileInfo *files_info, int index)
 {
     struct winsize w;
     int window_size;
-    _file file;
+    File file;
     int nb_spaces;
     int nbr, remain;
     int i = 0;
-    _bool beginning_of_line;
+    Bool beginning_of_line;
 
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     window_size = w.ws_col;
@@ -26,30 +26,30 @@ void list_main(linklist l, _file_info *files_info, int index)
 
     for (iterator it = lat(l, LFIRST); it; linc(&it), ++i)
     {
-        beginning_of_line = _false;
-        file = (_file)it->data;
+        beginning_of_line = False;
+        file = (File)it->data;
         nbr = strlen(file->name) + 1; // +1 for the character in use.
-        nb_spaces = has_space(file->name);
+        nb_spaces = countSpaces(file->name);
         if (nb_spaces)
         {
-            if (_opt.nl->b)
+            if (Nparams & NB)
             {
                 nbr += nb_spaces;
             }
-            if (_opt.nl->q || !_opt.nl->b)
+            if (Nparams & NQ)
             {
                 nbr += 2;
             }
         }
-        else if (_opt.nl->q)
+        else if (Nparams & NQ)
         {
             nbr += 2;
         }
-        if (_opt.nl->i && (S_ISDIR(file->st.st_mode) ||
-                           S_ISLNK(file->st.st_mode) ||
-                           S_ISSOCK(file->st.st_mode) ||
-                           S_ISFIFO(file->st.st_mode) ||
-                           (S_IEXEC & file->st.st_mode)))
+        if (Nparams & NI && (S_ISDIR(file->st.st_mode) ||
+                             S_ISLNK(file->st.st_mode) ||
+                             S_ISSOCK(file->st.st_mode) ||
+                             S_ISFIFO(file->st.st_mode) ||
+                             (S_IEXEC & file->st.st_mode)))
         {
             nbr += 1;
         }
@@ -63,14 +63,14 @@ void list_main(linklist l, _file_info *files_info, int index)
         }
         else
         { // go to newline
-            beginning_of_line = _true;
+            beginning_of_line = True;
             remain = window_size - nbr;
-            if (!_opt._1)
+            if (!(Opts & O1))
             {
                 printf("\n");
             }
         }
-        if (i && !beginning_of_line && !_opt._1 && !_opt._2)
+        if (i && !beginning_of_line && !(Opts & O1) && !(Opts & O2))
         {
             printf(" ");
             --remain;
@@ -79,16 +79,16 @@ void list_main(linklist l, _file_info *files_info, int index)
         {
             printf("%s ", files_info[i].bfr[index]);
         }
-        display(file->name, &file->st.st_mode, _false);
-        if (_opt._1)
+        display(file->name, &file->st.st_mode, False);
+        if (Opts & O1)
         {
             printf("\n");
         }
-        else if (_opt._3)
+        else if (Opts & O3)
         {
             printf(",");
         }
-        else if (_opt._4)
+        else if (Opts & O4)
         {
             printf(";");
         }
@@ -98,7 +98,7 @@ void list_main(linklist l, _file_info *files_info, int index)
             printf(" ");
         }
     }
-    if (!_opt._1)
+    if (!(Opts & O1))
     {
         printf("\n");
     }

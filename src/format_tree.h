@@ -4,7 +4,7 @@
 #include "list.h"
 #include "types.h"
 
-void tree_display(_tree_info *tree, _bool islast);
-void tree_main(linklist l, _tree_info *tree);
+void tree_display(TreeInfo *tree, Bool islast);
+void tree_main(linklist l, TreeInfo *tree);
 
 #endif
