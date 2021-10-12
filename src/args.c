@@ -238,7 +238,7 @@ void setLParams(char **c)
                 Lparams |= LS;
                 break;
             case 'r':
-                Lparams |= LR;
+                Lparams |= (LS | LR);
                 break;
             case 'u':
                 Lparams |= LU;
@@ -394,6 +394,9 @@ void setOptions(int argc, char *argv[], linkedList l)
                     break;
                 case 'r':
                     Opts |= OR;
+                    break;
+                case 'i':
+                    Opts |= OI;
                     break;
                 case 't':
                     Opts |= OT;

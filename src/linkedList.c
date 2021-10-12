@@ -3,8 +3,9 @@
 #include <string.h>
 #include "linkedList.h"
 
-void quicksort(linkedList l, int from, int to, int compare(void *, void *));
+void quickSort(linkedList l, int from, int to, int compare(void *, void *));
 int partition(linkedList l, int from, int to, int compare(void *, void *));
+void reverseOrder(Node curr, Node next);
 
 void LERR(const char *msg)
 {
@@ -322,7 +323,7 @@ void lSort(linkedList l, long int from, long int to, int compare(void *, void *)
         LERR("[LSORT] 'from' must be less than 'to'");
         return;
     }
-    quicksort(l, from, to, compare);
+    quickSort(l, from, to, compare);
 }
 
 int partition(linkedList l, int from, int to, int compare(void *, void *))
@@ -367,13 +368,13 @@ int partition(linkedList l, int from, int to, int compare(void *, void *))
     return k;
 }
 
-void quicksort(linkedList l, int from, int to, int compare(void *, void *))
+void quickSort(linkedList l, int from, int to, int compare(void *, void *))
 {
     if (from < to)
     {
         int p = partition(l, from, to, compare);
-        quicksort(l, from, p - 1, compare);
-        quicksort(l, p + 1, to, compare);
+        quickSort(l, from, p - 1, compare);
+        quickSort(l, p + 1, to, compare);
     }
 }
 
@@ -417,7 +418,7 @@ Iterator lAt(linkedList l, int at)
     }
     return i;
 }
-// || -> || -> || -> || -> || ->
+
 void reverseOrder(Node curr, Node next)
 {
     if (next)

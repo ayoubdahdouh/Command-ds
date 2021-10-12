@@ -162,7 +162,7 @@ Usage:  lf -[OPTION]=[ARGUMENT],... [FILE]...
     -h  print help.
     -v  print version information.
 
- # remove all sizeof(char)      
+# remove all sizeof(char)      
 # set_f_arg check if format is correct before continue.
 # error on long_time().
 #optimise long_main redefine struct _file_info 
@@ -172,9 +172,10 @@ Usage:  lf -[OPTION]=[ARGUMENT],... [FILE]...
 #replace Bool with array of bit. (bit mask) in ml,nl,ll,options
 #bug in (./ds -nmt)
 #rename all files/functions/variable to java style.
-
 # add -r option (reverse output).
-
 # add column names when 'l' is set.
+
+
 # OS not used.
 # implementation of "+" and "="
+# optimise linkedList.c

@@ -5,7 +5,7 @@
 #include "types.h"
 
 void printFormattedValue(char *nm, int m, Bool rtl);
-void longDisplay(linkedList l, FileInfo *filesInfo, int mi, int mn, int mu, int mg, int mp, int ms, int ma, int mm, int mc);
+void longDisplay(linkedList l, FileInfo *filesInfo, int max[]);
 void longMain(linkedList l);
 int nbrOfDigits(long int n);
 char *getIno(char *buf, ino_t data);

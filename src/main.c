@@ -140,8 +140,8 @@ int main(int argc, char *argv[], char *envp[])
     if ((Opts & OL) && countActiveBits(Opts, 5))
     {
         quitProgram(PROGRAM
-             ": Option 'l' can't be used with options"
-             " 't', '1', '2', '3' and '4'.");
+                    ": Option 'l' can't be used with options"
+                    " 't', '1', '2', '3' and '4'.");
     }
 
     if (Opts & OT)
@@ -210,14 +210,7 @@ int main(int argc, char *argv[], char *envp[])
     {
         if (!Lparams)
         {
-            Lparams = LN | LP | LR | LU | LG | LM;
-        }
-        else
-        {
-            if ((Lparams & LR) && (Lparams & LS))
-            {
-                Lparams &= ~LS;
-            }
+            Lparams = LN | LP | LS | LR | LU | LG | LM;
         }
     }
 

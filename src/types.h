@@ -57,12 +57,12 @@ typedef enum
 #define LN B1
 #define LU B2
 #define LG B3
-#define LS B4
-#define LR B5
-#define LP B6
-#define LA B7
-#define LM B8
-#define LC B9
+#define LP B4
+#define LS B5
+#define LA B6
+#define LM B7
+#define LC B8
+#define LR B9
 
 // Options N parameters
 #define NC B0
@@ -100,6 +100,7 @@ typedef enum
 #define OC B12
 #define OF B13
 #define OR B14
+#define OI B14
 
 typedef struct File
 {

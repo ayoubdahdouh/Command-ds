@@ -49,10 +49,44 @@ void printFormattedValue(char *nm, int m, Bool rtl)
     }
 }
 
-void longDisplay(linkedList l, FileInfo *filesInfo, int mi, int mn, int mu, int mg, int mp, int ms, int ma, int mm, int mc)
+void longDisplay(linkedList l, FileInfo *filesInfo, int max[])
 {
     File file;
     int i = 0;
+    int tmp;
+    // show columns header if neccessaryß
+    if (Opts & OI)
+    {
+        char *bfr[9] = {"Inode", "Links", "User", "Group", "Permissions",
+                        "Size", "Access", "Modification", "Change"};
+        for (int i = 0; i < 9; ++i)
+        {
+            if (Lparams & (1 << i))
+            {
+                if (i != 0 && i != 1 && i != 5)
+                {
+                    printf("\e[4m%s\e[0m ", bfr[i]);
+                }
+                tmp = strlen(bfr[i]);
+                if (max[i] <= tmp)
+                {
+                    max[i] = tmp;
+                }
+                else
+                {
+                    for (int j = 0; j < max[i] - tmp; ++j)
+                    {
+                        printf(" ");
+                    }
+                }
+                if (i == 0 || i == 1 || i == 5)
+                {
+                    printf("\e[4m%s\e[0m ", bfr[i]);
+                }
+            }
+        }
+        printf("\e[4mName\e[0m\n");
+    }
 
     for (Iterator it = lAt(l, LFIRST); it; lInc(&it), ++i)
     {
@@ -61,54 +95,54 @@ void longDisplay(linkedList l, FileInfo *filesInfo, int mi, int mn, int mu, int 
         // inodes
         if (Lparams & LI)
         {
-            printFormattedValue(filesInfo[i].bfr[I_INDEX], mi, False);
+            printFormattedValue(filesInfo[i].bfr[I_INDEX], max[0], True);
         }
         // nlink
         if (Lparams & LN)
         {
-            printFormattedValue(filesInfo[i].bfr[N_INDEX], mn, False);
+            printFormattedValue(filesInfo[i].bfr[N_INDEX], max[1], True);
         }
         // user
         if (Lparams & LU)
         {
-            printFormattedValue(filesInfo[i].bfr[U_INDEX], mu, False);
+            printFormattedValue(filesInfo[i].bfr[U_INDEX], max[2], False);
         }
         // group
         if (Lparams & LG)
         {
-            printFormattedValue(filesInfo[i].bfr[G_INDEX], mg, False);
+            printFormattedValue(filesInfo[i].bfr[G_INDEX], max[3], False);
         }
         // permissions
         if (Lparams & LP)
         {
-            printFormattedValue(filesInfo[i].bfr[P_INDEX], mp, False);
+            printFormattedValue(filesInfo[i].bfr[P_INDEX], max[4], False);
         }
         // size
-        if (Lparams & LS || Lparams & LR)
+        if (Lparams & LS)
         {
-            printFormattedValue(filesInfo[i].bfr[S_INDEX], ms, True);
+            printFormattedValue(filesInfo[i].bfr[S_INDEX], max[5], True);
         }
         // access
         if (Lparams & LA)
         {
-            printFormattedValue(filesInfo[i].bfr[A_INDEX], ma, False);
+            printFormattedValue(filesInfo[i].bfr[A_INDEX], max[6], False);
         }
         // modification
         if (Lparams & LM)
         {
-            printFormattedValue(filesInfo[i].bfr[M_INDEX], mm, False);
+            printFormattedValue(filesInfo[i].bfr[M_INDEX], max[7], False);
         }
         // change
         if (Lparams & LC)
         {
-            printFormattedValue(filesInfo[i].bfr[C_INDEX], mc, False);
+            printFormattedValue(filesInfo[i].bfr[C_INDEX], max[8], False);
         }
         // file's name
         display(file->name, &file->st.st_mode, True);
     }
 }
 
-int max_length(FileInfo *filesInfo, int n, int index)
+int maxLength(FileInfo *filesInfo, int n, int index)
 {
     int max = 0, len;
     // verify that fieds not empties.
@@ -131,7 +165,6 @@ void longMain(linkedList l)
     FileInfo *filesInfo;
     File file;
     int i = 0;
-    int mi = 1, mn = 1, mu = 1, mg = 1, ms = 1, mp = 1, ma = 1, mm = 1, mc = 1;
 
     int col_index;
     int col_cnt = 0;
@@ -155,7 +188,7 @@ void longMain(linkedList l)
         ++col_cnt;
         col_index = G_INDEX;
     }
-    if ((Lparams & LR) || (Lparams & LS))
+    if (Lparams & LS)
     {
         ++col_cnt;
         col_index = S_INDEX;
@@ -204,12 +237,15 @@ void longMain(linkedList l)
             filesInfo[i].bfr[G_INDEX] = getGroup(NULL, file->st.st_gid);
         }
         if (Lparams & LS)
-        { // dable size
-            filesInfo[i].bfr[S_INDEX] = getSize(NULL, file->st.st_size);
-        }
-        else if (Lparams & LR)
-        { // size
-            filesInfo[i].bfr[S_INDEX] = getReadableSize(NULL, file->st.st_size);
+        {
+            if (Lparams & LR)
+            { // humain readable size
+                filesInfo[i].bfr[S_INDEX] = getReadableSize(NULL, file->st.st_size);
+            }
+            else
+            {
+                filesInfo[i].bfr[S_INDEX] = getSize(NULL, file->st.st_size);
+            }
         }
         if (Lparams & LP)
         { // permissions
@@ -243,16 +279,17 @@ void longMain(linkedList l)
     }
     else
     { // display one column
-        mi = max_length(filesInfo, l->count, I_INDEX);
-        mn = max_length(filesInfo, l->count, N_INDEX);
-        mu = max_length(filesInfo, l->count, U_INDEX);
-        mg = max_length(filesInfo, l->count, G_INDEX);
-        mp = max_length(filesInfo, l->count, P_INDEX);
-        ms = max_length(filesInfo, l->count, S_INDEX);
-        ma = max_length(filesInfo, l->count, A_INDEX);
-        mm = max_length(filesInfo, l->count, M_INDEX);
-        mc = max_length(filesInfo, l->count, C_INDEX);
-        longDisplay(l, filesInfo, mi ? mi : 1, mn ? mn : 1, mu ? mu : 1, mg ? mg : 1, mp ? mp : 1, ms ? ms : 1, ma ? ma : 1, mm ? mm : 1, mc ? mc : 1);
+        int max[9] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+        max[0] = maxLength(filesInfo, l->count, I_INDEX);
+        max[1] = maxLength(filesInfo, l->count, N_INDEX);
+        max[2] = maxLength(filesInfo, l->count, U_INDEX);
+        max[3] = maxLength(filesInfo, l->count, G_INDEX);
+        max[4] = maxLength(filesInfo, l->count, P_INDEX);
+        max[5] = maxLength(filesInfo, l->count, S_INDEX);
+        max[6] = maxLength(filesInfo, l->count, A_INDEX);
+        max[7] = maxLength(filesInfo, l->count, M_INDEX);
+        max[8] = maxLength(filesInfo, l->count, C_INDEX);
+        longDisplay(l, filesInfo, max);
     }
     free(filesInfo);
 }
