@@ -3,8 +3,8 @@
 #include <string.h>
 #include "linkedList.h"
 
-void quickSort(linkedList l, int from, int to, int compare(void *, void *));
-int partition(linkedList l, int from, int to, int compare(void *, void *));
+void quickSort(LinkedList l, int from, int to, int compare(void *, void *));
+int partition(LinkedList l, int from, int to, int compare(void *, void *));
 void reverseOrder(Node curr, Node next);
 
 void LERR(const char *msg)
@@ -15,11 +15,11 @@ void LERR(const char *msg)
     }
 }
 
-linkedList lOpen()
+LinkedList lOpen()
 {
-    linkedList l;
+    LinkedList l;
 
-    l = (linkedList)malloc(LINKEDLIST_SIZE);
+    l = (LinkedList)malloc(LINKEDLIST_SIZE);
     if (!l)
     {
         LERR("[LOPEN] Memory allocation failed");
@@ -31,7 +31,7 @@ linkedList lOpen()
     return l;
 }
 
-void lClose(linkedList l)
+void lClose(LinkedList l)
 {
     if (!l)
     {
@@ -47,7 +47,7 @@ void lClose(linkedList l)
     }
 }
 
-int lEmpty(linkedList l)
+int lEmpty(LinkedList l)
 {
     if (l)
     {
@@ -56,11 +56,11 @@ int lEmpty(linkedList l)
     return 1;
 }
 
-void lReset(linkedList l)
+void lReset(LinkedList l)
 {
     if (!l)
     {
-        LERR("[LRESET] No linkedList is given");
+        LERR("[LRESET] No LinkedList is given");
         return;
     }
     while (!lEmpty(l))
@@ -69,13 +69,13 @@ void lReset(linkedList l)
     }
 }
 
-void lInsert(linkedList l, long int at, void *data)
+void lInsert(LinkedList l, long int at, void *data)
 {
     Node n, x, y;
 
     if (!l)
     {
-        LERR("[lInsert] No linkedList is given");
+        LERR("[lInsert] No LinkedList is given");
         return;
     }
     if (!data)
@@ -146,13 +146,13 @@ void lInsert(linkedList l, long int at, void *data)
     l->count++;
 }
 
-void lDelete(linkedList l, long int at)
+void lDelete(LinkedList l, long int at)
 {
     Node x, y;
 
     if (!l)
     {
-        LERR("[LDEL] No linkedList is given");
+        LERR("[LDEL] No LinkedList is given");
         return;
     }
     if (at < LFIRST || at >= l->count)
@@ -215,13 +215,13 @@ void lDelete(linkedList l, long int at)
     --l->count;
 }
 
-void *lGet(linkedList l, long int at)
+void *lGet(LinkedList l, long int at)
 {
     Node y;
 
     if (!l)
     {
-        LERR("[LGET] No linkedList is given");
+        LERR("[LGET] No LinkedList is given");
         return NULL;
     }
     if (at < LFIRST || (at >= l->count))
@@ -231,7 +231,7 @@ void *lGet(linkedList l, long int at)
     }
     if (lEmpty(l))
     {
-        LERR("[LGET] The linkedList is empty");
+        LERR("[LGET] The LinkedList is empty");
         return NULL;
     }
     if (at == LFIRST)
@@ -251,14 +251,14 @@ void *lGet(linkedList l, long int at)
     return y->data;
 }
 
-void *lSet(linkedList l, long int at, void *data)
+void *lSet(LinkedList l, long int at, void *data)
 {
     Node n;
     void *tmp;
 
     if (!l)
     {
-        LERR("[LSET] No linkedList is given");
+        LERR("[LSET] No LinkedList is given");
         return NULL;
     }
     if (at < LFIRST || (at >= l->count))
@@ -268,7 +268,7 @@ void *lSet(linkedList l, long int at, void *data)
     }
     if (lEmpty(l))
     {
-        LERR("[LSET] The linkedList is empty");
+        LERR("[LSET] The LinkedList is empty");
         return NULL;
     }
     if (at == LFIRST)
@@ -290,7 +290,7 @@ void *lSet(linkedList l, long int at, void *data)
     return tmp;
 }
 
-void lSort(linkedList l, long int from, long int to, int compare(void *, void *))
+void lSort(LinkedList l, long int from, long int to, int compare(void *, void *))
 {
     if (!l)
     {
@@ -326,7 +326,7 @@ void lSort(linkedList l, long int from, long int to, int compare(void *, void *)
     quickSort(l, from, to, compare);
 }
 
-int partition(linkedList l, int from, int to, int compare(void *, void *))
+int partition(LinkedList l, int from, int to, int compare(void *, void *))
 {
     Iterator p = lAt(l, to);
     Iterator j = lAt(l, from);
@@ -368,7 +368,7 @@ int partition(linkedList l, int from, int to, int compare(void *, void *))
     return k;
 }
 
-void quickSort(linkedList l, int from, int to, int compare(void *, void *))
+void quickSort(LinkedList l, int from, int to, int compare(void *, void *))
 {
     if (from < to)
     {
@@ -386,7 +386,7 @@ void lInc(Iterator *i)
     }
 }
 
-Iterator lAt(linkedList l, int at)
+Iterator lAt(LinkedList l, int at)
 {
     Iterator i;
 
@@ -427,7 +427,7 @@ void reverseOrder(Node curr, Node next)
         next->next = curr;
     }
 }
-void lReverse(linkedList l)
+void lReverse(LinkedList l)
 {
     if (!l || (l->count <= 1))
     {
@@ -440,11 +440,11 @@ void lReverse(linkedList l)
     l->first = tmp;
 }
 
-// void lShow(linkedList l)
+// void lShow(LinkedList l)
 // {
 //     if (!l)
 //     {
-//         LERR("[lShow]: The linkedList is empty");
+//         LERR("[lShow]: The LinkedList is empty");
 //     }
 //     printf("%ld nodes: ", l->count);
 //     for (int i = 0; i < l->count; i++)
@@ -456,7 +456,7 @@ void lReverse(linkedList l)
 
 // int main()
 // {
-//     linkedList l = lOpen();
+//     LinkedList l = lOpen();
 //     setbuf(stdout, NULL);
 
 //     lInsert(l, LFIRST, "xaaa");

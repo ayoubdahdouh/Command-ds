@@ -125,12 +125,11 @@ void core(TreeInfo *tree)
     DIR *dir = opendir(Pth);
     struct dirent *item;
     struct stat s;
-    linkedList filesList = lOpen();
+    LinkedList filesList = lOpen();
     File file;
     long int cnt = 0;
     Bool ok, errOccured;
 
-    // keep value of "path" and "path_z"
     if (!dir)
     {
         strcpy(Bfr, strerror(errno));
@@ -189,7 +188,7 @@ void core(TreeInfo *tree)
     {
         return;
     }
-    if (!(Sparams & SD))
+    if (Opts & OS)
     {
         Sort(filesList);
     }
@@ -273,7 +272,7 @@ int sortE(File f1, File f2)
     return strCompare(f1->name, f2->name);
 }
 
-void Sort(linkedList l)
+void Sort(LinkedList l)
 {
     lSort(l, LFIRST, LLAST, (int (*)(void *, void *))sortNames);
 

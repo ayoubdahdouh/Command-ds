@@ -8,7 +8,7 @@
 Bool checkMode(mode_t *mode);
 void core(TreeInfo *tree);
 
-void Sort(linkedList l);
+void Sort(LinkedList l);
 int sortNames(File t1, File t2);
 int sortI(File t1, File t2);
 int sortN(File t1, File t2);

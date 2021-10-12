@@ -10,6 +10,6 @@ void setMParams(char **c);
 void setLParams(char **c);
 void setNParams(char **c);
 void setFParam(char **c);
-void setOptions(int argc, char *argv[], linkedList l);
+void setOptions(int argc, char *argv[], LinkedList l);
 
 #endif

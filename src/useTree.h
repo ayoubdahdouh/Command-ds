@@ -5,6 +5,6 @@
 #include "types.h"
 
 void printBranch(TreeInfo *tree, Bool islast);
-void treeMain(linkedList l, TreeInfo *tree);
+void treeMain(LinkedList l, TreeInfo *tree);
 
 #endif

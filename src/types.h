@@ -72,17 +72,16 @@ typedef enum
 #define NI B4
 
 // Options S parameters
-#define SD B0
-#define SI B1
-#define SN B2
-#define SS B3
-#define SU B4
-#define SG B5
-#define SA B6
-#define SM B7
-#define SC B8
-#define ST B9
-#define SE B10
+#define SI B0
+#define SN B1
+#define SS B2
+#define SU B3
+#define SG B4
+#define SA B5
+#define SM B6
+#define SC B7
+#define ST B8
+#define SE B9
 
 // Options
 #define O1 B0

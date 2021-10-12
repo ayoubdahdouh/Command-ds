@@ -49,7 +49,7 @@ void printFormattedValue(char *nm, int m, Bool rtl)
     }
 }
 
-void longDisplay(linkedList l, FileInfo *filesInfo, int max[])
+void longDisplay(LinkedList l, FileInfo *filesInfo, int max[])
 {
     File file;
     int i = 0;
@@ -57,8 +57,8 @@ void longDisplay(linkedList l, FileInfo *filesInfo, int max[])
     // show columns header if neccessaryß
     if (Opts & OI)
     {
-        char *bfr[9] = {"Inode", "Links", "User", "Group", "Permissions",
-                        "Size", "Access", "Modification", "Change"};
+        char *bfr[9] = {"INO", "LNK", "USER", "GROUP", "PERMISSIONS",
+                        "SIZE", "ACCESS", "MODIFICATION", "CHANGE"};
         for (int i = 0; i < 9; ++i)
         {
             if (Lparams & (1 << i))
@@ -85,7 +85,7 @@ void longDisplay(linkedList l, FileInfo *filesInfo, int max[])
                 }
             }
         }
-        printf("\e[4mName\e[0m\n");
+        printf("\e[4mNAME\e[0m\n");
     }
 
     for (Iterator it = lAt(l, LFIRST); it; lInc(&it), ++i)
@@ -160,7 +160,7 @@ int maxLength(FileInfo *filesInfo, int n, int index)
     }
     return max;
 }
-void longMain(linkedList l)
+void longMain(LinkedList l)
 {
     FileInfo *filesInfo;
     File file;
@@ -423,7 +423,7 @@ char *getTime(char *buf, const time_t *atm)
     }
     if (repeat == 0 && result == 0)
     {
-        quitProgram("%s: error: can't allocate enough memory to handle the time style");
+        exitProgram("%s: error: can't allocate enough memory to handle the time style");
     }
 
     if (!buf)

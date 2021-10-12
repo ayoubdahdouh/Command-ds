@@ -11,7 +11,7 @@
 #include "display.h"
 #include "types.h"
 
-void columnDisplay(linkedList l, int *ls, int *lm, FileInfo *filesInfo, int index, int *ts, int *tm, int cl, int ln)
+void columnDisplay(LinkedList l, int *ls, int *lm, FileInfo *filesInfo, int index, int *ts, int *tm, int cl, int ln)
 {
     int x;
     File t;
@@ -45,7 +45,7 @@ void columnDisplay(linkedList l, int *ls, int *lm, FileInfo *filesInfo, int inde
     }
 }
 
-void columnMain(linkedList l, FileInfo *filesInfo, int index)
+void columnMain(LinkedList l, FileInfo *filesInfo, int index)
 {
     struct winsize w;
     int cl = l->count, ln = 1, winsiz, ok = 0;

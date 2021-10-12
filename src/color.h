@@ -25,7 +25,7 @@
 #include "linkedList.h"
 #include "types.h"
 
-char *getColor(linkedList l, const char *nm, Bool is_ext);
-linkedList scanForColors();
+char *getColor(LinkedList l, const char *nm, Bool is_ext);
+LinkedList scanForColors();
 
 #endif

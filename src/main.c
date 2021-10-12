@@ -17,21 +17,22 @@ u_int16_t Sparams;
 u_int16_t Lparams;
 u_int32_t Mparams;
 u_int16_t Opts;
+
 int Tparam;
 char *Pth = NULL;
 char *Bfr = NULL;
 int PthLen = 0;
-linkedList ColorsList = NULL;
+LinkedList ColorsList = NULL;
 char *TimeStyle = NULL;
 
-void run(linkedList l)
+void run(LinkedList l)
 {
     char *nm;
     int len;
     struct stat s;
     TreeInfo tree;
     File file;
-    linkedList filesList = lOpen();
+    LinkedList filesList = lOpen();
     long int mularg = (l->count == 1) ? 0 : l->count;
 
     initProgram();
@@ -131,7 +132,7 @@ Bool isSingleCol()
 
 int main(int argc, char *argv[], char *envp[])
 {
-    linkedList l = lOpen();
+    LinkedList l = lOpen();
 
     setlocale(LC_ALL, "");
 
@@ -139,7 +140,7 @@ int main(int argc, char *argv[], char *envp[])
 
     if ((Opts & OL) && countActiveBits(Opts, 5))
     {
-        quitProgram(PROGRAM
+        exitProgram(PROGRAM
                     ": Option 'l' can't be used with options"
                     " 't', '1', '2', '3' and '4'.");
     }
@@ -150,7 +151,7 @@ int main(int argc, char *argv[], char *envp[])
         {
             printf("%s: The depth of the tree should be between 1 and %d.\n",
                    PROGRAM, TREEMAXDEPTH);
-            quitProgram(NULL);
+            exitProgram(NULL);
         }
     }
 
@@ -244,7 +245,7 @@ int main(int argc, char *argv[], char *envp[])
         lInsert(l, LFIRST, ".");
     }
     run(l);
-    quitProgram(NULL);
+    exitProgram(NULL);
     lClose(l);
     return 0;
 }

@@ -5,9 +5,9 @@
 #include "common.h"
 #include "types.h"
 
-linkedList scanForColors()
+LinkedList scanForColors()
 {
-    linkedList l = lOpen();
+    LinkedList l = lOpen();
     Color *c;
     char *b, *v;
     int n, i, eq = 0, sm = 0;
@@ -75,7 +75,7 @@ linkedList scanForColors()
     return l;
 }
 
-char *getColor(linkedList l, const char *nm, Bool is_ext)
+char *getColor(LinkedList l, const char *nm, Bool is_ext)
 {
     int ok = 0;
     Iterator i;

@@ -5,8 +5,8 @@
 #include "linkedList.h"
 #include "types.h"
 
-#define PROGRAM "lf"
-#define VERSION "1.0.0-alpha+pre"
+#define PROGRAM "ds"
+#define VERSION "1.0.0-alpha"
 
 extern u_int8_t Nparams;
 extern u_int16_t Sparams;
@@ -16,7 +16,7 @@ extern u_int16_t Opts;
 extern int Tparam;
 extern char *Pth, *Bfr;
 extern int PthLen;
-extern linkedList ColorsList;
+extern LinkedList ColorsList;
 extern char *TimeStyle;
 
 void printHelp();
@@ -27,7 +27,7 @@ Bool fileStat(const char *nm, struct stat *s);
 Bool readLink(const char *nm);
 
 void initProgram();
-void quitProgram(char *msg); // free memories + print "msg" if exist and return 0 otherwise return 1
+void exitProgram(char *msg); // free memories + print "msg" if exist and return 0 otherwise return 1
 
 int countSpaces(char *nm);
 Bool isAbsolutePath(const char *pth);

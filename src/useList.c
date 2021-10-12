@@ -10,7 +10,7 @@
 #include "types.h"
 #include "useLong.h"
 
-void listMain(linkedList l, FileInfo *filesInfo, int index)
+void listMain(LinkedList l, FileInfo *filesInfo, int index)
 {
     struct winsize w;
     int wSize;

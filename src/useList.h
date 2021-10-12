@@ -3,6 +3,6 @@
 
 #include "types.h"
 #include "linkedList.h"
-void listMain(linkedList l, FileInfo *filesInfo, int index);
+void listMain(LinkedList l, FileInfo *filesInfo, int index);
 
 #endif

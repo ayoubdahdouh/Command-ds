@@ -14,7 +14,7 @@
 
 void printHelp()
 {
-    printf("Usage:  %s [OPTION]=[ARGUMENT],... [FILE]...\n\n", PROGRAM);
+    printf("Usage:  %s [OPTION]:[ARGUMENT],... [FILE]...\n\n", PROGRAM);
     printf("    List information about the FILEs (the current directory by default).\n");
     printf("    it's possible to combine those options together\n\n");
     printf("    -1  separate files with a newline(\\n).\n");
@@ -22,10 +22,10 @@ void printHelp()
     printf("    -3  separate files with commas(,).\n");
     printf("    -4  separate files with a semicolon(;).\n");
     printf("    -c  count number of files and folders.\n");
-    printf("    -d  linkedList directories/dirlinks themselves, not their contents.\n");
-    printf("        by default, %s linkedList directories/dirlinks contents.\n", PROGRAM);
-    printf("    -[...]m=[hbcdplrsugt123456789]   Mode settings\n");
-    printf("          choose the files to linkedList from the linkedList below:\n");
+    printf("    -d  display directories/dirlinks themselves, not their contents.\n");
+    printf("        by default, %s display directories/dirlinks contents.\n", PROGRAM);
+    printf("    -[...]m:[hbcdplrsugt123456789]   Mode settings\n");
+    printf("          choose the files to display from the display below:\n");
     printf("            h  hidden files, all files began with a dot.\n");
     printf("            b  block device\n");
     printf("            c  character device\n");
@@ -49,11 +49,11 @@ void printHelp()
     printf("          Without '-m', %s displays all files and folders except the hidden ones.\n", PROGRAM);
     printf("          By default, '-m' displays all files and folders.\n");
     printf("          wich has the same effect as not using the '-m' option.\n");
-    printf("    -[...]t=[DEPTH]   Tree settings\n");
+    printf("    -[...]t:[DEPTH]   Tree settings\n");
     printf("            DEPTH  tree depth\n");
     printf("          By default (without DEPTH), the depth is unlimited.\n");
-    printf("    -[...]l=[inpsrugamc]   Information settings\n");
-    printf("          choose the information to display from the linkedList below:\n");
+    printf("    -[...]l:[inpsrugamc]   Information settings\n");
+    printf("          choose the information to display from the display below:\n");
     printf("            i  inode number\n");
     printf("            n  number of hard links\n");
     printf("            p  permissions\n");
@@ -65,7 +65,7 @@ void printHelp()
     printf("            m  last modification\n");
     printf("            c  last status change\n");
     printf("          By default, if no argument is set, '-l' show i,n,p,r,u,g,m.\n");
-    printf("    -[...]n=[cbfqi]   Name settings\n");
+    printf("    -[...]n:[cbfqi]   Name settings\n");
     printf("            c  color the output\n");
     printf("            f  follow link, if the file is link then display also link content\n");
     printf("            b  adds a backslash to the string containing spaces\n");
@@ -77,9 +77,8 @@ void printHelp()
     printf("                '|'  FIFO/pipe\n");
     printf("                '='  sockets\n");
     printf("          By default, if no argument is set, '-n' show c,f,q.\n");
-    printf("    -[...]s=[dinsugamcte]   Sort settings\n");
+    printf("    -[...]s:[dinsugamcte]   Sort settings\n");
     printf("          Sort the output\n");
-    printf("            d  disable sorting (don't sort)\n");
     printf("            i  inode number\n");
     printf("            n  number of hard links\n");
     printf("            s  size\n");
@@ -91,7 +90,6 @@ void printHelp()
     printf("            t  file [t]ype\n");
     printf("            e  file [e]xtension\n");
     printf("          By default, if no argument is set, '-s' will sort the output by names,\n");
-    printf("          Wich has the same effect as not using it.\n");
     printf("    -h  print help.\n");
     printf("    -v  print version information.\n");
 }
@@ -149,7 +147,7 @@ void initProgram()
     Bfr = (char *)memAlloc(PATH_MAX);
 }
 
-void quitProgram(char *msg)
+void exitProgram(char *msg)
 {
     if (Pth)
     {

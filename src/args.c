@@ -31,11 +31,11 @@ void setTParam(char **c)
         }
         else if (!ok)
         {
-            quitProgram(PROGRAM ": the depth must be a positive number (without the + sign).");
+            exitProgram(PROGRAM ": the depth must be a positive number (without the + sign).");
         }
         else
         { // if (cnt == 0)
-            quitProgram(PROGRAM ": 't' needs a parameter after ':'.");
+            exitProgram(PROGRAM ": 't' needs a parameter after ':'.");
         }
     }
     else
@@ -56,15 +56,12 @@ void setSParam(char **c)
             {
                 if (*(*c + 1))
                 {
-                    quitProgram(PROGRAM ": The 's' accepts only one parameter.");
+                    exitProgram(PROGRAM ": The 's' accepts only one parameter.");
                 }
                 else
                 {
                     switch (**c)
                     {
-                    case 'd':
-                        Sparams = SD;
-                        break;
                     case 'i':
                         Sparams = SI;
                         break;
@@ -101,12 +98,12 @@ void setSParam(char **c)
             else
             {
                 printf("%s: 's' doesn't recognize '%c'.", PROGRAM, **c);
-                quitProgram(NULL);
+                exitProgram(NULL);
             }
         }
         else
         {
-            quitProgram(PROGRAM ": The 's' needs a parameter after ':'.");
+            exitProgram(PROGRAM ": The 's' needs a parameter after ':'.");
         }
     }
     else
@@ -200,11 +197,11 @@ void setMParams(char **c)
         else if (!ok)
         {
             printf("%s: 'm' doesn't recognize '%c'.\n", PROGRAM, *d);
-            quitProgram(NULL);
+            exitProgram(NULL);
         }
         else
         { // if (*d==c)
-            quitProgram(PROGRAM ": 'm' needs a parameter after ':'.");
+            exitProgram(PROGRAM ": 'm' needs a parameter after ':'.");
         }
     }
     else
@@ -268,11 +265,11 @@ void setLParams(char **c)
         else if (!ok)
         {
             printf("%s: 'l' doesn't recognize '%c'.\n", PROGRAM, *d);
-            quitProgram(NULL);
+            exitProgram(NULL);
         }
         else
         { // if (*d == c)
-            quitProgram(PROGRAM ": The 'l' needs a parameter after ':'.\n");
+            exitProgram(PROGRAM ": The 'l' needs a parameter after ':'.\n");
         }
     }
 }
@@ -317,11 +314,11 @@ void setNParams(char **c)
         else if (!ok)
         {
             printf("%s: 'n' doesn't recognize '%c'.\n", PROGRAM, *d);
-            quitProgram(NULL);
+            exitProgram(NULL);
         }
         else
         { //  if (d == *c)
-            quitProgram(PROGRAM ": 'n' needs a parameter after ':'.");
+            exitProgram(PROGRAM ": 'n' needs a parameter after ':'.");
         }
     }
     else
@@ -347,7 +344,7 @@ void setFParam(char **c)
     }
 }
 
-void setOptions(int argc, char *argv[], linkedList l)
+void setOptions(int argc, char *argv[], LinkedList l)
 {
     Bool ok = True;
 
@@ -454,6 +451,6 @@ void setOptions(int argc, char *argv[], linkedList l)
     if (!ok)
     {
         printf("%s: Unknown option '%c'\n", PROGRAM, *c);
-        quitProgram(NULL);
+        exitProgram(NULL);
     }
 }
