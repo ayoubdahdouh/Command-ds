@@ -1,9 +1,9 @@
 
-# Command lf
+# Command ds
 
-`lf` (List Files) is a directory listing command for linux distro, it displays directories and files as a tree. It lists information about the files such as permissions, size, modifications, etc.
+`ds` (List Files) is a directory listing command for linux distro, it displays directories and files as a tree. It lists information about the files such as permissions, size, modifications, etc.
 
-`lf` is an alternative to the `ls` command, but has a different perspective. It is much simpler to use thanks to its few options that make it very easy to handle.
+`ds` is an alternative to the `ls` command, but has a different perspective. It is much simpler to use thanks to its few options that make it very easy to handle.
 
 
 ## Features
@@ -20,73 +20,46 @@
 ## Usage
 
 ```plaintext
-Usage:
-     lf -[OPTION]=[ARGUMENT],... [FILE]...
+Usage:  ds [OPTION]:[PARAMETERS]... [FILE]...
 
-Options:
-    it's possible to combine those lettre together
+    Display information about the FILEs (the current directory by default).
+    without parameters, 'ds' displays all contents except the hidden ones.
+    in form of columns, also, the output is not sorted or colored.
 
-    -0  separate files with a space.
-    -1  lists one file per line.
-    -2  separate files with commas.
-    -3  separate files with a semicolon.
-    -a  show hidden files.
-    -[...]m=[bcdflrsugtrwx],[...]
-          File's mode, choose the files to list from the list below:
-            b  block device
-            c  character device
-            d  directory
-            p  FIFO/pipe
-            l  symlink
-            f  regular file
-            s  socket
-            u  set-user identification (SUID)
-            g  set-group identification (SGID)
-            t  sticky bit
-            r  read by owner
-            w  write by owner
-            x  execute by owner
-          By default, "-m" displays all files and folders except the hidden ones.
-          wich has the same effect as not using the "-m" option.
-    -[...]l=[inpsugamc],[...]
-          File's information, choose the information to display from the list below:
-            i  inode number
-            n  number of hard links
-            p  permissions
-            s  size
-            u  file owner
-            g  file group
-            a  last access
-            m  last modification
-            c  last status change
-          By default, "-l" show i,n,p,s,m if no argument is set
-    -[...]s=[insugamcte],[...]
-          Sort the output
-            i  inode number
-            n  number of hard links
-            s  size
-            u  file owner
-            g  file group
-            a  last access
-            m  last modification
-            c  last status change
-            t  file type
-            e  file extension
-          By default, lf will sort the output by name,
-          But if you invoke "-s" without giving any arguments, you disable sorting of the output.
-    -[...]n=[bfqs],[...]
-            b  adds a backslash to the string containing spaces
-            f  follow link
-            q  display the name in quotes
-            s  display the folder name with a slash
-    -[...]t=[DEPTH]
-             DEPTH  tree depth
-          By default (without DEPTH), the depth is unlimited.
-    -r  make the size readable like 7K, 423M, 2G etc.
-    -c  color the output.
-    -h  print help.
-    -v  print version information.
+    'ds' organise FILEs into FILE'name (-n), FILE's mode(-m) wich represent
+    FILE's permissions and types, and FILE's information (-l),
 
+    it's possible to combine those options together
+
+    -1  separate with a newline(\n)
+
+    -2  separate with a space(SPACE)
+    
+    -3  separate with a commas(,)
+    
+    -4  separate with a semicolon(;)
+
+    -c  count the number of contents
+
+    -d  don't follow if FILE is directories or dirlinks.
+
+    -[...]m:[hbcdplrsugt123456789]   Mode parameters (file's mode)
+          Without parameters, displays everything, the same effect as not using it.
+
+    -[...]t:[DEPTH]   Tree parameters
+
+    -[...]l:[inpsrugamc]   Information parameters (long format)
+          i,n,p,r,u,g,m are specified if no argument is given
+
+    -[...]n:[cbfqi]   Name parameters
+          c,f,q are specified if no argument is given
+
+    -[...]s:[dinsugamcte]   Sort parameters
+           sort by names if no argument is given,
+
+    -h  print help
+
+    -v  print version information
 ```
 
   
@@ -96,13 +69,12 @@ For the moment, there's no installation file yet, but it will be available soon.
 
 To build and run the project, follow these steps:
 ```bash
-git clone git@github.com:thedevelopr/Command-lf.git
-cd Command-lf
+git clone git@github.com:thedevelopr/Command-ds.git
+cd Command-ds
 make all
-./lf
-
+./ds
 ```
-    
+
 ## Environment Variables
 
 To color the output, you will need the `LS_COLORS` environment variable which is the same one used by `ls`.
@@ -111,7 +83,7 @@ To color the output, you will need the `LS_COLORS` environment variable which is
   
 ## Documentation
 
-[Documentation](https://ayoub-dahdouh-etu.pedaweb.univ-amu.fr/extranet/applications/Command-lf/index.php)
+[Documentation](https://ayoub-dahdouh-etu.pedaweb.univ-amu.fr/extranet/applications/Command-ds/index.php)
 
   
 ## Feedback
