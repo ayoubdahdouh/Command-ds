@@ -6,7 +6,7 @@
 #include "types.h"
 
 #define PROGRAM "ds"
-#define VERSION "1.0.0-alpha"
+#define VERSION "1.0.0"
 
 extern u_int8_t Nparams;
 extern u_int16_t Sparams;

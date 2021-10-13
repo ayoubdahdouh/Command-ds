@@ -25,6 +25,9 @@ int PthLen = 0;
 LinkedList ColorsList = NULL;
 char *TimeStyle = NULL;
 
+#define DEFAULT_TIME_STYLE "%F %R"
+#define DEFAULT_DIR "."
+
 void run(LinkedList l)
 {
     char *nm;
@@ -141,15 +144,14 @@ int main(int argc, char *argv[], char *envp[])
     if ((Opts & OL) && countActiveBits(Opts, 5))
     {
         exitProgram(PROGRAM
-                    ": Option 'l' can't be used with options"
-                    " 't', '1', '2', '3' and '4'.");
+                    ": -l can't be combined with -t, -1, -2, -3 and -4.");
     }
 
     if (Opts & OT)
     {
         if ((Tparam <= 0) || (Tparam > TREEMAXDEPTH))
         {
-            printf("%s: The depth of the tree should be between 1 and %d.\n",
+            printf("%s: depth should be between 1 and %d.\n",
                    PROGRAM, TREEMAXDEPTH);
             exitProgram(NULL);
         }
@@ -211,7 +213,7 @@ int main(int argc, char *argv[], char *envp[])
     {
         if (!Lparams)
         {
-            Lparams = LN | LP | LS | LR | LU | LG | LM;
+            Lparams = LN | LP | LS | LR | LO | LG | LM;
         }
     }
 
@@ -236,13 +238,13 @@ int main(int argc, char *argv[], char *envp[])
 
     if (!TimeStyle)
     {
-        TimeStyle = "%F %R";
+        TimeStyle = DEFAULT_TIME_STYLE;
     }
 
     // default folder to linkedList is current working directory.
     if (lEmpty(l))
     {
-        lInsert(l, LFIRST, ".");
+        lInsert(l, LFIRST, DEFAULT_DIR);
     }
     run(l);
     exitProgram(NULL);

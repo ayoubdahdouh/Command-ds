@@ -57,7 +57,7 @@ void longDisplay(LinkedList l, FileInfo *filesInfo, int max[])
     // show columns header if neccessaryß
     if (Opts & OI)
     {
-        char *bfr[9] = {"INO", "LNK", "USER", "GROUP", "PERMISSIONS",
+        char *bfr[9] = {"INO", "LNK", "OWNER", "GROUP", "PERMISSIONS",
                         "SIZE", "ACCESS", "MODIFICATION", "CHANGE"};
         for (int i = 0; i < 9; ++i)
         {
@@ -103,7 +103,7 @@ void longDisplay(LinkedList l, FileInfo *filesInfo, int max[])
             printFormattedValue(filesInfo[i].bfr[N_INDEX], max[1], True);
         }
         // user
-        if (Lparams & LU)
+        if (Lparams & LO)
         {
             printFormattedValue(filesInfo[i].bfr[U_INDEX], max[2], False);
         }
@@ -178,7 +178,7 @@ void longMain(LinkedList l)
         ++col_cnt;
         col_index = N_INDEX;
     }
-    if (Lparams & LU)
+    if (Lparams & LO)
     {
         ++col_cnt;
         col_index = U_INDEX;
@@ -228,7 +228,7 @@ void longMain(LinkedList l)
         { // nlink
             filesInfo[i].bfr[N_INDEX] = getNlink(NULL, file->st.st_nlink);
         }
-        if (Lparams & LU)
+        if (Lparams & LO)
         { // user
             filesInfo[i].bfr[U_INDEX] = getUser(NULL, file->st.st_uid);
         }

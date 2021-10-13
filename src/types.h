@@ -55,7 +55,7 @@ typedef enum
 // Options L parameters
 #define LI B0
 #define LN B1
-#define LU B2
+#define LO B2
 #define LG B3
 #define LP B4
 #define LS B5

@@ -237,8 +237,8 @@ void setLParams(char **c)
             case 'r':
                 Lparams |= (LS | LR);
                 break;
-            case 'u':
-                Lparams |= LU;
+            case 'o':
+                Lparams |= LO;
                 break;
             case 'g':
                 Lparams |= LG;
