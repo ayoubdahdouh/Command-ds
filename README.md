@@ -1,20 +1,19 @@
 
 # Command ds
 
-`ds` (List Files) is a directory listing command for linux distro, it displays directories and files as a tree. It lists information about the files such as permissions, size, modifications, etc.
+`ds` (Display) is a directory listing command for linux distro, it displays directories and files as a tree. It lists information about the files such as permissions, size, modifications, etc.
 
-`ds` is an alternative to the `ls` command, but has a different perspective. It is much simpler to use thanks to its few options that make it very easy to handle.
+`ds` is an alternative to the `ls` command, but using a different perspective. It is very easy to use thanks to its few options.
 
 
 ## Features
 
-- Display in a tree-like format
-- Display by columns
-- List by space, comma or semicolon
 - Colored output
+- Sorting using different criteria
 - Select the files to be displayed
 - Select the information to be displayed
-- Sorting using different criteria
+- Display using tree-like format
+- Display using columns, space, comma or semicolon
 
   
 ## Usage
@@ -22,56 +21,66 @@
 ```plaintext
 Usage:  ds [OPTION]:[PARAMETERS]... [FILE]...
 
-    Display information about the FILEs (the current directory by default).
-    without parameters, 'ds' displays all contents except the hidden ones.
-    in form of columns, also, the output is not sorted or colored.
-
-    'ds' organise FILEs into FILE'name (-n), FILE's mode(-m) wich represent
-    FILE's permissions and types, and FILE's information (-l),
-
-    it's possible to combine those options together
-
-    -1  separate with a newline(\n)
-
-    -2  separate with a space(SPACE)
-    
-    -3  separate with a commas(,)
-    
-    -4  separate with a semicolon(;)
-
-    -c  count the number of contents
-
-    -d  don't follow if FILE is directories or dirlinks.
-
-    -[...]m:[hbcdplrsugt123456789]   Mode parameters (file's mode)
-          Without parameters, displays everything, the same effect as not using it.
-
-    -[...]t:[DEPTH]   Tree parameters
-
-    -[...]l:[inpsrugamc]   Information parameters (long format)
-          i,n,p,r,u,g,m are specified if no argument is given
-
-    -[...]n:[cbfqi]   Name parameters
-          c,f,q are specified if no argument is given
-
-    -[...]s:[dinsugamcte]   Sort parameters
-           sort by names if no argument is given,
-
-    -h  print help
-
-    -v  print version information
 ```
+Display information about the FILE (the current directory by default).
+without parameters, 'ds' displays all contents except the hidden ones.
+in form of columns, also, the output is not sorted or colored.
 
-  
-## Build
+'ds' organise FILE information into FILE'name (-n), FILE's mode(-m) wich
+represent FILE's permissions and types, and FILE's information (-l),
 
-For the moment, there's no installation file yet, but it will be available soon. 
+all options can be combined together except:
+- combining -l with any of -t, -1, -2, -3 and -4
+- also, you cannot combine -t, -1, -2, -3 and -4 together
+
+`-1`  separate with a newline(\n)
+
+`-2`  separate with a space(SPACE)
+
+`-3`  separate with a commas(,)
+
+`-4`  separate with a semicolon(;)
+
+`-c`  count the number of contents
+
+`-d`  don't follow if FILE is directories or dirlinks.
+
+`-[...]m:[hbcdplrsugt123456789]` Mode parameters (file's mode), Without parameters, displays all.
+
+`-[...]t:[DEPTH]` Tree parameters, without parameter, the depth is unlimited
+
+`-[...]l:[inpsrugamc]` Information parameters (long format), without parameters, i,n,p,r,u,g,m are set.
+
+`-[...]n:[cbfqi]` Name parameters, Without parameters, c,f,q are set.
+
+`-[...]s:[dinsugamcte]` Sort parameters, without parameters, sort by names
+
+`-h`  print help
+
+`-v`  print version
+
+
+
+## Build and Run
+
+For the moment, there's no installation package yet, but it will be available soon.
 
 To build and run the project, follow these steps:
+
+- Download the repository
 ```bash
 git clone git@github.com:thedevelopr/Command-ds.git
+```
+- Change current working directory
+```bash
 cd Command-ds
+```
+- Compile using any c compiler (i.e `gcc`)
+```bash
 make all
+```
+- Execute
+```bash
 ./ds
 ```
 
