@@ -20,7 +20,6 @@
 
 ```plaintext
 Usage:  ds [OPTION]:[PARAMETERS]... [FILE]...
-
 ```
 Display information about the FILE (the current directory by default).
 without parameters, 'ds' displays all contents except the hidden ones.
